@@ -1,0 +1,99 @@
+package board
+
+import "testing"
+
+func TestSetBit(t *testing.T) {
+	InitBitboards()
+
+	tests := []struct {
+		name string
+		bb   Bitboard
+		sq   uint8
+		want Bitboard
+	}{
+		{"set bit 0", 0, 0, 1 << 0},
+		{"set bit 1", 0, 1, 1 << 1},
+		{"set bit 3", 0, 3, 1 << 3},
+		{"set bit 8", 0, 8, 1 << 8},
+		{"set bit 9", 0, 9, 1 << 9},
+		{"set bit 62", 0, 62, 1 << 62},
+		{"set bit 63", 0, 63, 1 << 63},
+		{"set on existing bitboard", 1, 1, 3},
+		{"set bit 8 on existing", 1, 8, 257},
+		{"set bit 63 on existing", 256, 63, (1 << 63) + 256},
+		{"set already set bit", 256, 8, 256},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.bb.SetBit(tt.sq)
+			if tt.bb != tt.want {
+				t.Errorf("expected %d but got %d", tt.want, tt.bb)
+			}
+		})
+	}
+}
+
+func TestClearBit(t *testing.T) {
+	InitBitboards()
+
+	tests := []struct {
+		name string
+		bb   Bitboard
+		sq   uint8
+		want Bitboard
+	}{
+		{"clear bit 0", 1 << 0, 0, 0},
+		{"clear bit 1", 1 << 1, 1, 0},
+		{"clear bit 3", 1 << 3, 3, 0},
+		{"clear bit 8", 1 << 8, 8, 0},
+		{"clear bit 9", 1 << 9, 9, 0},
+		{"clear bit 62", 1 << 62, 62, 0},
+		{"clear bit 63", 1 << 63, 63, 0},
+		{"clear one of many bits", (1 << 0) | (1 << 1), 1, 1 << 0},
+		{"clear bit 8 from existing", (1 << 0) | (1 << 8), 8, 1 << 0},
+		{"clear bit 63 from existing", (1 << 8) | (1 << 63), 63, 1 << 8},
+		{"clear already clear bit", 256, 0, 256},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.bb.ClearBit(tt.sq)
+			if tt.bb != tt.want {
+				t.Errorf("expected %d but got %d", tt.want, tt.bb)
+			}
+		})
+	}
+}
+
+func TestIsBitSet(t *testing.T) {
+	InitBitboards()
+
+	tests := []struct {
+		name string
+		bb   Bitboard
+		sq   uint8
+		want bool
+	}{
+		{"empty bitboard", 0, 0, false},
+		{"bit 0 set", 1 << 0, 0, true},
+		{"bit 1 set", 1 << 1, 1, true},
+		{"bit 3 set", 1 << 3, 3, true},
+		{"bit 8 set", 1 << 8, 8, true},
+		{"bit 9 set", 1 << 9, 9, true},
+		{"bit 62 set", 1 << 62, 62, true},
+		{"bit 63 set", 1 << 63, 63, true},
+		{"wrong bit not set", 1 << 3, 8, false},
+		{"one of many bits set", (1 << 0) | (1 << 8), 8, true},
+		{"bit not present in many", (1 << 0) | (1 << 8), 63, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.bb.IsBitSet(tt.sq)
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
