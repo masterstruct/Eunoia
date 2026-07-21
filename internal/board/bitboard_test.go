@@ -156,3 +156,34 @@ func TestLSB(t *testing.T) {
 		})
 	}
 }
+
+func TestPopLSB(t *testing.T) {
+	tests := []struct {
+		name   string
+		bb     Bitboard
+		wantBB Bitboard
+		wantSq int
+	}{
+		{"empty", EmptyBB, EmptyBB, -1},
+		{"single bit 0", 1 << 0, EmptyBB, 0},
+		{"single bit 3", 1 << 3, EmptyBB, 3},
+		{"single high bit", 1 << 63, EmptyBB, 63},
+		{"two bits low first", (1 << 3) | (1 << 8), 1 << 8, 3},
+		{"two bits high first", (1 << 0) | (1 << 63), 1 << 63, 0},
+		{"many bits", (1 << 0) | (1 << 3) | (1 << 8), (1 << 3) | (1 << 8), 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bb := tt.bb
+			gotSq := bb.PopLSB()
+
+			if gotSq != tt.wantSq {
+				t.Errorf("expected square %d but got %d", tt.wantSq, gotSq)
+			}
+			if bb != tt.wantBB {
+				t.Errorf("expected bitboard %d but got %d", tt.wantBB, bb)
+			}
+		})
+	}
+}

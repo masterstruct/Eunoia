@@ -37,3 +37,11 @@ func (bb Bitboard) LSB() int {
 	}
 	return bits.TrailingZeros64(uint64(bb))
 }
+
+func (bb *Bitboard) PopLSB() int {
+	bit := bb.LSB()
+	if bit >= 0 {
+		bb.ClearBit(uint8(bit))
+	}
+	return bit
+}
