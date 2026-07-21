@@ -129,3 +129,30 @@ func TestCountBits(t *testing.T) {
 		})
 	}
 }
+
+func TestLSB(t *testing.T) {
+	tests := []struct {
+		name string
+		bb   Bitboard
+		want int
+	}{
+		{"empty", EmptyBB, -1},
+		{"bit 0", 1 << 0, 0},
+		{"bit 1", 1 << 1, 1},
+		{"bit 3", 1 << 3, 3},
+		{"bit 8", 1 << 8, 8},
+		{"bit 63", 1 << 63, 63},
+		{"multiple bits low first", (1 << 3) | (1 << 8), 3},
+		{"multiple bits high first", (1 << 0) | (1 << 63), 0},
+		{"full board", FullBB, 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.bb.LSB()
+			if got != tt.want {
+				t.Errorf("expected %d but got %d", tt.want, got)
+			}
+		})
+	}
+}

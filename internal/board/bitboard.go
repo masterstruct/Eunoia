@@ -30,3 +30,10 @@ func (bb Bitboard) IsBitSet(sq uint8) bool {
 func (bb Bitboard) CountBits() int {
 	return bits.OnesCount64(uint64(bb))
 }
+
+func (bb Bitboard) LSB() int {
+	if bb == EmptyBB {
+		return -1
+	}
+	return bits.TrailingZeros64(uint64(bb))
+}
