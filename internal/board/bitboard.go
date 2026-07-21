@@ -1,6 +1,11 @@
 package board
 
+import "math/bits"
+
 type Bitboard uint64
+
+const FullBB Bitboard = ^Bitboard(0)
+const EmptyBB Bitboard = 0
 
 var SquareBB [64]Bitboard
 
@@ -20,4 +25,8 @@ func (bb *Bitboard) ClearBit(sq uint8) {
 
 func (bb Bitboard) IsBitSet(sq uint8) bool {
 	return (bb & SquareBB[sq]) != 0
+}
+
+func (bb Bitboard) CountBits() int {
+	return bits.OnesCount64(uint64(bb))
 }

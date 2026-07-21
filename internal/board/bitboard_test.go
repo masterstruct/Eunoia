@@ -11,13 +11,13 @@ func TestSetBit(t *testing.T) {
 		sq   uint8
 		want Bitboard
 	}{
-		{"set bit 0", 0, 0, 1 << 0},
-		{"set bit 1", 0, 1, 1 << 1},
-		{"set bit 3", 0, 3, 1 << 3},
-		{"set bit 8", 0, 8, 1 << 8},
-		{"set bit 9", 0, 9, 1 << 9},
-		{"set bit 62", 0, 62, 1 << 62},
-		{"set bit 63", 0, 63, 1 << 63},
+		{"set bit 0", EmptyBB, 0, 1 << 0},
+		{"set bit 1", EmptyBB, 1, 1 << 1},
+		{"set bit 3", EmptyBB, 3, 1 << 3},
+		{"set bit 8", EmptyBB, 8, 1 << 8},
+		{"set bit 9", EmptyBB, 9, 1 << 9},
+		{"set bit 62", EmptyBB, 62, 1 << 62},
+		{"set bit 63", EmptyBB, 63, 1 << 63},
 		{"set on existing bitboard", 1, 1, 3},
 		{"set bit 8 on existing", 1, 8, 257},
 		{"set bit 63 on existing", 256, 63, (1 << 63) + 256},
@@ -43,13 +43,13 @@ func TestClearBit(t *testing.T) {
 		sq   uint8
 		want Bitboard
 	}{
-		{"clear bit 0", 1 << 0, 0, 0},
-		{"clear bit 1", 1 << 1, 1, 0},
-		{"clear bit 3", 1 << 3, 3, 0},
-		{"clear bit 8", 1 << 8, 8, 0},
-		{"clear bit 9", 1 << 9, 9, 0},
-		{"clear bit 62", 1 << 62, 62, 0},
-		{"clear bit 63", 1 << 63, 63, 0},
+		{"clear bit 0", 1 << 0, 0, EmptyBB},
+		{"clear bit 1", 1 << 1, 1, EmptyBB},
+		{"clear bit 3", 1 << 3, 3, EmptyBB},
+		{"clear bit 8", 1 << 8, 8, EmptyBB},
+		{"clear bit 9", 1 << 9, 9, EmptyBB},
+		{"clear bit 62", 1 << 62, 62, EmptyBB},
+		{"clear bit 63", 1 << 63, 63, EmptyBB},
 		{"clear one of many bits", (1 << 0) | (1 << 1), 1, 1 << 0},
 		{"clear bit 8 from existing", (1 << 0) | (1 << 8), 8, 1 << 0},
 		{"clear bit 63 from existing", (1 << 8) | (1 << 63), 63, 1 << 8},
@@ -75,7 +75,7 @@ func TestIsBitSet(t *testing.T) {
 		sq   uint8
 		want bool
 	}{
-		{"empty bitboard", 0, 0, false},
+		{"empty bitboard", EmptyBB, 0, false},
 		{"bit 0 set", 1 << 0, 0, true},
 		{"bit 1 set", 1 << 1, 1, true},
 		{"bit 3 set", 1 << 3, 3, true},
@@ -91,6 +91,38 @@ func TestIsBitSet(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.bb.IsBitSet(tt.sq)
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestCountBits(t *testing.T) {
+	InitBitboards()
+
+	tests := []struct {
+		name string
+		bb   Bitboard
+		want int
+	}{
+		{"empty bitboard", EmptyBB, 0},
+		{"one bit set", 1 << 0, 1},
+		{"bit 3 set", 1 << 3, 1},
+		{"two bits set", (1 << 0) | (1 << 3), 2},
+		{"three bits set", (1 << 0) | (1 << 3) | (1 << 8), 3},
+		{"low bits set", 0b1111, 4},
+		{"non-adjacent bits", (1 << 1) | (1 << 9) | (1 << 63), 3},
+		{"half board", 0x00000000FFFFFFFF, 32},
+		{"full board", FullBB, 64},
+		{"single high bit", 1 << 63, 1},
+		{"alternating bits", 0xAAAAAAAAAAAAAAAA, 32},
+		{"other alternating bits", 0x5555555555555555, 32},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.bb.CountBits()
 			if got != tt.want {
 				t.Errorf("expected %v but got %v", tt.want, got)
 			}
