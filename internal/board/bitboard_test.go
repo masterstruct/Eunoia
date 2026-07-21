@@ -8,7 +8,7 @@ func TestSetBit(t *testing.T) {
 	tests := []struct {
 		name string
 		bb   Bitboard
-		sq   uint8
+		sq   int
 		want Bitboard
 	}{
 		{"set bit 0", EmptyBB, 0, 1 << 0},
@@ -40,7 +40,7 @@ func TestClearBit(t *testing.T) {
 	tests := []struct {
 		name string
 		bb   Bitboard
-		sq   uint8
+		sq   int
 		want Bitboard
 	}{
 		{"clear bit 0", 1 << 0, 0, EmptyBB},
@@ -72,7 +72,7 @@ func TestIsBitSet(t *testing.T) {
 	tests := []struct {
 		name string
 		bb   Bitboard
-		sq   uint8
+		sq   int
 		want bool
 	}{
 		{"empty bitboard", EmptyBB, 0, false},
