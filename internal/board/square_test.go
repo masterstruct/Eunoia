@@ -91,3 +91,13 @@ func TestNewSquare(t *testing.T) {
 		})
 	}
 }
+
+func TestNewSquareRoundTrip(t *testing.T) {
+	for sq := A1; sq <= H8; sq++ {
+		got := NewSquare(sq.File(), sq.Rank())
+		if got != sq {
+			t.Errorf("round trip failed: square %d -> file %d, rank %d -> %d",
+				sq, sq.File(), sq.Rank(), got)
+		}
+	}
+}
