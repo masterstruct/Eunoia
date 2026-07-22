@@ -44,3 +44,25 @@ func TestFile(t *testing.T) {
 		})
 	}
 }
+
+func TestRank(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   Square
+		want int
+	}{
+		{"A1 rank is 0", A1, 0},
+		{"H1 rank is 0", H1, 0},
+		{"E4 rank is 3", E4, 3},
+		{"A8 rank is 7", A8, 7},
+		{"H8 rank is 7", H8, 7},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Rank(); got != tt.want {
+				t.Errorf("%s: got %d, want %d", tt.name, got, tt.want)
+			}
+		})
+	}
+}

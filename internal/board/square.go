@@ -18,3 +18,7 @@ const (
 func (sq Square) File() int {
 	return int(sq) % 8
 }
+
+func (sq Square) Rank() int {
+	return 0
+}
