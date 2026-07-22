@@ -11,4 +11,10 @@ const (
 	A3, B3, C3, D3, E3, F3, G3, H3 = 16, 17, 18, 19, 20, 21, 22, 23
 	A2, B2, C2, D2, E2, F2, G2, H2 = 8, 9, 10, 11, 12, 13, 14, 15
 	A1, B1, C1, D1, E1, F1, G1, H1 = 0, 1, 2, 3, 4, 5, 6, 7
+
+	NoSq = -1
 )
+
+func (sq Square) File() int {
+	return int(sq) % 8
+}
