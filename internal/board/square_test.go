@@ -30,10 +30,10 @@ func TestFile(t *testing.T) {
 		sq   Square
 		want int
 	}{
-		{"A1 file is 0", A1, 0},
-		{"H1 file is 7", H1, 7},
-		{"E4 file is 4", E4, 4},
-		{"A8 file is 0", A8, 0},
+		{"A1 file is FileA", A1, FileA},
+		{"H1 file is FileH", H1, FileH},
+		{"E4 file is FileE", E4, FileE},
+		{"A8 file is FileA", A8, FileA},
 	}
 
 	for _, tt := range tests {
@@ -51,11 +51,11 @@ func TestRank(t *testing.T) {
 		sq   Square
 		want int
 	}{
-		{"A1 rank is 0", A1, 0},
-		{"H1 rank is 0", H1, 0},
-		{"E4 rank is 3", E4, 3},
-		{"A8 rank is 7", A8, 7},
-		{"H8 rank is 7", H8, 7},
+		{"A1 rank is Rank1", A1, Rank1},
+		{"H1 rank is Rank1", H1, Rank1},
+		{"E4 rank is Rank4", E4, Rank4},
+		{"A8 rank is Rank8", A8, Rank8},
+		{"H8 rank is Rank8", H8, Rank8},
 	}
 
 	for _, tt := range tests {
@@ -74,12 +74,12 @@ func TestNewSquare(t *testing.T) {
 		rank int
 		want Square
 	}{
-		{"a1", 0, 0, A1},
-		{"h1", 7, 0, H1},
-		{"a8", 0, 7, A8},
-		{"h8", 7, 7, H8},
-		{"e4", 4, 3, E4},
-		{"d5", 3, 4, D5},
+		{"a1", FileA, Rank1, A1},
+		{"h1", FileH, Rank1, H1},
+		{"a8", FileA, Rank8, A8},
+		{"h8", FileH, Rank8, H8},
+		{"e4", FileE, Rank4, E4},
+		{"d5", FileD, Rank5, D5},
 	}
 
 	for _, tt := range tests {

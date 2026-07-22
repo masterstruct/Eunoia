@@ -15,6 +15,28 @@ const (
 	NoSq Square = -1
 )
 
+const (
+	FileA = iota
+	FileB
+	FileC
+	FileD
+	FileE
+	FileF
+	FileG
+	FileH
+)
+
+const (
+	Rank1 = iota
+	Rank2
+	Rank3
+	Rank4
+	Rank5
+	Rank6
+	Rank7
+	Rank8
+)
+
 func (sq Square) File() int {
 	return int(sq) % 8
 }
