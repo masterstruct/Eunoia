@@ -1,5 +1,7 @@
 package board
 
+import "fmt"
+
 type Square int
 
 const (
@@ -47,6 +49,14 @@ func (sq Square) Rank() int {
 
 func (sq Square) IsValid() bool {
 	return sq >= A1 && sq <= H8
+}
+
+func (sq Square) String() string {
+	f := sq.File()
+	r := sq.Rank()
+	// ascii manipulation
+	letter := string('a' + rune(f))
+	return fmt.Sprintf("%s%d", letter, r+1)
 }
 
 func NewSquare(file, rank int) Square {

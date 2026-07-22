@@ -116,6 +116,31 @@ func TestNewSquare(t *testing.T) {
 	}
 }
 
+func TestString(t *testing.T) {
+	tests := []struct {
+		sq   Square
+		want string
+	}{
+		{A1, "a1"},
+		{H1, "h1"},
+		{A8, "a8"},
+		{H8, "h8"},
+		{E4, "e4"},
+		{D5, "d5"},
+		{B2, "b2"},
+		{G7, "g7"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.want, func(t *testing.T) {
+			got := tt.sq.String()
+			if got != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestNewSquareRoundTrip(t *testing.T) {
 	for sq := A1; sq <= H8; sq++ {
 		got := NewSquare(sq.File(), sq.Rank())
