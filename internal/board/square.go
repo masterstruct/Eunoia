@@ -22,3 +22,7 @@ func (sq Square) File() int {
 func (sq Square) Rank() int {
 	return int(sq) / 8
 }
+
+func NewSquare(file, rank int) Square {
+	return Square(0)
+}

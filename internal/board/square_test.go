@@ -66,3 +66,28 @@ func TestRank(t *testing.T) {
 		})
 	}
 }
+
+func TestNewSquare(t *testing.T) {
+	tests := []struct {
+		name string
+		file int
+		rank int
+		want Square
+	}{
+		{"a1", 0, 0, A1},
+		{"h1", 7, 0, H1},
+		{"a8", 0, 7, A8},
+		{"h8", 7, 7, H8},
+		{"e4", 4, 3, E4},
+		{"d5", 3, 4, D5},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewSquare(tt.file, tt.rank)
+			if got != tt.want {
+				t.Errorf("NewSquare(%d, %d) = %d, want %d", tt.file, tt.rank, got, tt.want)
+			}
+		})
+	}
+}
