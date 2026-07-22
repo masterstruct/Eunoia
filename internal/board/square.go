@@ -45,6 +45,10 @@ func (sq Square) Rank() int {
 	return int(sq) / 8
 }
 
+func (sq Square) IsValid() bool {
+	return sq >= A1 && sq <= H8
+}
+
 func NewSquare(file, rank int) Square {
 	return Square(rank*8 + file)
 }

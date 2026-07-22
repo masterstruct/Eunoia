@@ -67,6 +67,30 @@ func TestRank(t *testing.T) {
 	}
 }
 
+func TestIsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   Square
+		want bool
+	}{
+		{"A1 valid", A1, true},
+		{"H8 valid", H8, true},
+		{"E4 valid", E4, true},
+		{"NoSquare invalid", NoSquare, false},
+		{"negative invalid", Square(-5), false},
+		{"out of range high invalid", Square(64), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.sq.IsValid()
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestNewSquare(t *testing.T) {
 	tests := []struct {
 		name string
