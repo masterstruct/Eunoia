@@ -1,6 +1,10 @@
 package board
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"strconv"
+)
 
 type Square int
 
@@ -39,6 +43,12 @@ const (
 	Rank8
 )
 
+var (
+	ErrInvalidSquareLength = errors.New("square: string must be exactly 2 characters")
+	ErrInvalidFile         = errors.New("square: file must be a letter between 'a' and 'h'")
+	ErrInvalidRank         = errors.New("square: rank must be a digit between '1' and '8'")
+)
+
 func (sq Square) File() int {
 	return int(sq) % 8
 }
@@ -55,8 +65,27 @@ func (sq Square) String() string {
 	f := sq.File()
 	r := sq.Rank()
 	// ascii manipulation
-	letter := string('a' + rune(f))
+	letter := string('a' + byte(f))
 	return fmt.Sprintf("%s%d", letter, r+1)
+}
+
+func ParseSquare(s string) (Square, error) {
+	if len(s) != 2 {
+		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidSquareLength, s)
+	}
+
+	f := s[0] | 0x20 // fast lowercase conversion
+
+	if f < 'a' || f > 'h' {
+		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidFile, s)
+	}
+
+	r, err := strconv.Atoi(string(s[1]))
+	if err != nil || r < 1 || r > 8 {
+		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidRank, s)
+	}
+
+	return NewSquare(int(f-'a'), r-1), nil
 }
 
 func NewSquare(file, rank int) Square {

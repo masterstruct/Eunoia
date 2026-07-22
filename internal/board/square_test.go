@@ -1,6 +1,9 @@
 package board
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestSquareConstants(t *testing.T) {
 	tests := []struct {
@@ -136,6 +139,58 @@ func TestString(t *testing.T) {
 			got := tt.sq.String()
 			if got != tt.want {
 				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestParseSquare(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    Square
+		wantErr error
+	}{
+		{"a1", "a1", A1, nil},
+		{"h1", "h1", H1, nil},
+		{"a8", "a8", A8, nil},
+		{"h8", "h8", H8, nil},
+		{"e4", "e4", E4, nil},
+		{"d5", "d5", D5, nil},
+
+		{"empty string", "", NoSquare, ErrInvalidSquareLength},
+		{"too short", "e", NoSquare, ErrInvalidSquareLength},
+		{"too long", "e44", NoSquare, ErrInvalidSquareLength},
+
+		{"invalid file low", "`4", NoSquare, ErrInvalidFile},
+		{"invalid file high", "i4", NoSquare, ErrInvalidFile},
+		{"invalid file digit", "1a", NoSquare, ErrInvalidFile},
+		{"uppercase file", "E4", E4, nil},
+
+		{"invalid rank zero", "e0", NoSquare, ErrInvalidRank},
+		{"invalid rank nine", "e9", NoSquare, ErrInvalidRank},
+		{"invalid rank letter", "ee", NoSquare, ErrInvalidRank},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseSquare(tt.input)
+
+			if tt.wantErr != nil {
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf("expected error %v but got %v", tt.wantErr, err)
+				}
+				if got != NoSquare {
+					t.Errorf("expected NoSquare on error but got %v", got)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
 			}
 		})
 	}
