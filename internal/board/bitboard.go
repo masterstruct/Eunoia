@@ -15,15 +15,15 @@ func InitBitboards() {
 	}
 }
 
-func (bb *Bitboard) SetBit(sq int) {
+func (bb *Bitboard) SetBit(sq Square) {
 	*bb |= SquareBB[sq]
 }
 
-func (bb *Bitboard) ClearBit(sq int) {
+func (bb *Bitboard) ClearBit(sq Square) {
 	*bb &^= SquareBB[sq]
 }
 
-func (bb Bitboard) IsBitSet(sq int) bool {
+func (bb Bitboard) IsBitSet(sq Square) bool {
 	return (bb & SquareBB[sq]) != 0
 }
 
@@ -31,14 +31,14 @@ func (bb Bitboard) CountBits() int {
 	return bits.OnesCount64(uint64(bb))
 }
 
-func (bb Bitboard) LSB() int {
+func (bb Bitboard) LSB() Square {
 	if bb == EmptyBB {
-		return -1
+		return NoSquare
 	}
-	return bits.TrailingZeros64(uint64(bb))
+	return Square(bits.TrailingZeros64(uint64(bb)))
 }
 
-func (bb *Bitboard) PopLSB() int {
+func (bb *Bitboard) PopLSB() Square {
 	bit := bb.LSB()
 	if bit >= 0 {
 		bb.ClearBit(bit)
