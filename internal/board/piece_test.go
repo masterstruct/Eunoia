@@ -65,3 +65,28 @@ func TestOpponent(t *testing.T) {
 		})
 	}
 }
+
+func TestPieceTypeString(t *testing.T) {
+	tests := []struct {
+		name string
+		pt   PieceType
+		want string
+	}{
+		{"pawn", Pawn, "p"},
+		{"knight", Knight, "n"},
+		{"bishop", Bishop, "b"},
+		{"rook", Rook, "r"},
+		{"queen", Queen, "q"},
+		{"king", King, "k"},
+		{"no piece type", NoPieceType, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.pt.String()
+			if got != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
