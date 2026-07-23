@@ -23,6 +23,28 @@ func TestColorString(t *testing.T) {
 	}
 }
 
+func TestParseColor(t *testing.T) {
+	tests := []struct {
+		name  string
+		input byte
+		want  Color
+	}{
+		{"white lower", 'w', White},
+		{"white upper", 'W', White},
+		{"black lower", 'b', Black},
+		{"black upper", 'B', Black},
+		{"invalid", '-', NoColor},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ParseColor(tt.input); got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestOpponent(t *testing.T) {
 	tests := []struct {
 		name  string

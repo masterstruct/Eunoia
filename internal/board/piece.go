@@ -19,6 +19,17 @@ func (c Color) String() string {
 	}
 }
 
+func ParseColor(s byte) Color {
+	switch s {
+	case 'b', 'B':
+		return Black
+	case 'w', 'W':
+		return White
+	default:
+		return NoColor
+	}
+}
+
 func (c Color) Opponent() Color {
 	switch c {
 	case Black:
