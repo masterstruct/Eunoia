@@ -120,3 +120,18 @@ func TestParsePieceType(t *testing.T) {
 		})
 	}
 }
+
+func TestPieceTypes(t *testing.T) {
+	got := PieceTypes()
+	want := []PieceType{Pawn, Knight, Bishop, Rook, Queen, King}
+
+	if len(got) != len(want) {
+		t.Fatalf("expected length %d but got %d", len(want), len(got))
+	}
+
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("at index %d expected %v but got %v", i, want[i], got[i])
+		}
+	}
+}
