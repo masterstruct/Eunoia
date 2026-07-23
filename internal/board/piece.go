@@ -40,3 +40,15 @@ func (c Color) Opponent() Color {
 		return NoColor
 	}
 }
+
+type PieceType uint8
+
+const (
+	Pawn PieceType = iota
+	Knight
+	Bishop
+	Rook
+	Queen
+	King
+	NoPieceType
+)
