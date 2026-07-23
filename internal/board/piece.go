@@ -94,3 +94,8 @@ func ParsePieceType(b byte) PieceType {
 func PieceTypes() [6]PieceType {
 	return [6]PieceType{Pawn, Knight, Bishop, Rook, Queen, King}
 }
+
+type Piece struct {
+	Type  PieceType
+	Color Color
+}
