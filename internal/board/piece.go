@@ -19,8 +19,8 @@ func (c Color) String() string {
 	}
 }
 
-func ParseColor(s byte) Color {
-	switch s {
+func ParseColor(b byte) Color {
+	switch b {
 	case 'b', 'B':
 		return Black
 	case 'w', 'W':
@@ -69,5 +69,24 @@ func (pt PieceType) String() string {
 		return "k"
 	default:
 		return ""
+	}
+}
+
+func ParsePieceType(b byte) PieceType {
+	switch b {
+	case 'p', 'P':
+		return Pawn
+	case 'n', 'N':
+		return Knight
+	case 'b', 'B':
+		return Bishop
+	case 'r', 'R':
+		return Rook
+	case 'q', 'Q':
+		return Queen
+	case 'k', 'K':
+		return King
+	default:
+		return NoPieceType
 	}
 }

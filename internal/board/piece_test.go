@@ -90,3 +90,33 @@ func TestPieceTypeString(t *testing.T) {
 		})
 	}
 }
+
+func TestParsePieceType(t *testing.T) {
+	tests := []struct {
+		name  string
+		input byte
+		want  PieceType
+	}{
+		{"pawn lower", 'p', Pawn},
+		{"pawn upper", 'P', Pawn},
+		{"knight lower", 'n', Knight},
+		{"knight upper", 'N', Knight},
+		{"bishop lower", 'b', Bishop},
+		{"bishop upper", 'B', Bishop},
+		{"rook lower", 'r', Rook},
+		{"rook upper", 'R', Rook},
+		{"queen lower", 'q', Queen},
+		{"queen upper", 'Q', Queen},
+		{"king lower", 'k', King},
+		{"king upper", 'K', King},
+		{"invalid", '-', NoPieceType},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ParsePieceType(tt.input); got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
