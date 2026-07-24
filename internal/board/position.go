@@ -58,3 +58,14 @@ func (bb Bitboards) PieceOn(sq Square) (Piece, bool) {
 		return NoPiece, false
 	}
 }
+
+type Position struct {
+	Bitboards
+	Board      [64]Piece
+	SideToMove Color
+	// Castling      Castling
+	EnPassant     Square
+	HalfmoveClock uint8
+	Ply           uint16
+	Hash          uint64
+}
