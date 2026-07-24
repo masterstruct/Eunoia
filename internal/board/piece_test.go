@@ -155,6 +155,7 @@ func TestPieceString(t *testing.T) {
 		{"black queen", BlackQueen, "q"},
 		{"black king", BlackKing, "k"},
 		{"no piece", NoPiece, ""},
+		{"illegal piece", Piece{NoPieceType, White}, ""},
 	}
 
 	for _, tt := range tests {

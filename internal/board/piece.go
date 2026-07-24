@@ -120,7 +120,7 @@ var (
 
 func (p Piece) String() string {
 	letter := p.Type.String()
-	if p.Color == White {
+	if p.Color == White && p.Type != NoPieceType {
 		// capitalize letter
 		letter = string(byte(letter[0]) &^ 0x20)
 	}
