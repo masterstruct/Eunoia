@@ -320,6 +320,37 @@ func TestRemovePiece(t *testing.T) {
 	}
 }
 
+func TestPieceOn(t *testing.T) {
+	InitBitboards()
+
+	var bb Bitboards
+	bb.PlacePiece(WhiteKing, E1)
+	bb.PlacePiece(BlackPawn, E7)
+
+	tests := []struct {
+		name   string
+		sq     Square
+		want   Piece
+		wantOk bool
+	}{
+		{"white king on e1", E1, WhiteKing, true},
+		{"black pawn on e7", E7, BlackPawn, true},
+		{"empty square", E4, NoPiece, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := bb.PieceOn(tt.sq)
+			if ok != tt.wantOk {
+				t.Errorf("expected ok=%v but got %v", tt.wantOk, ok)
+			}
+			if got != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
 func setBits(sqs []Square) Bitboard {
 	var bb Bitboard
 	for _, sq := range sqs {
