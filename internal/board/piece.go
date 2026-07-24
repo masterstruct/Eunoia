@@ -99,3 +99,28 @@ type Piece struct {
 	Type  PieceType
 	Color Color
 }
+
+var (
+	BlackPawn   = Piece{Pawn, Black}
+	BlackKnight = Piece{Knight, Black}
+	BlackBishop = Piece{Bishop, Black}
+	BlackRook   = Piece{Rook, Black}
+	BlackQueen  = Piece{Queen, Black}
+	BlackKing   = Piece{King, Black}
+
+	WhitePawn   = Piece{Pawn, White}
+	WhiteKnight = Piece{Knight, White}
+	WhiteBishop = Piece{Bishop, White}
+	WhiteRook   = Piece{Rook, White}
+	WhiteQueen  = Piece{Queen, White}
+	WhiteKing   = Piece{King, White}
+
+	NoPiece = Piece{NoPieceType, NoColor}
+)
+
+func NewPiece(pt PieceType, c Color) Piece {
+	if pt == NoPieceType || c == NoColor {
+		return Piece{NoPieceType, NoColor}
+	}
+	return Piece{pt, c}
+}

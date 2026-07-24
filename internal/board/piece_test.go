@@ -135,3 +135,29 @@ func TestPieceTypes(t *testing.T) {
 		}
 	}
 }
+
+func TestNewPiece(t *testing.T) {
+	tests := []struct {
+		name  string
+		pt    PieceType
+		color Color
+		want  Piece
+	}{
+		{"white pawn", Pawn, White, WhitePawn},
+		{"white king", King, White, WhiteKing},
+		{"black pawn", Pawn, Black, BlackPawn},
+		{"black king", King, Black, BlackKing},
+		{"no piece type", NoPieceType, White, NoPiece},
+		{"no color", Pawn, NoColor, NoPiece},
+		{"both invalid", NoPieceType, NoColor, NoPiece},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := NewPiece(tt.pt, tt.color)
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
