@@ -69,3 +69,11 @@ type Position struct {
 	Ply           uint16
 	Hash          uint64
 }
+
+func NewBoard() [64]Piece {
+	var board [64]Piece
+	for sq := range board {
+		board[sq] = NoPiece
+	}
+	return board
+}

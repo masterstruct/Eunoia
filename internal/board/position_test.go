@@ -366,3 +366,13 @@ func allPieceBB(bb Bitboards) Bitboard {
 	}
 	return b
 }
+
+func TestNewBoard(t *testing.T) {
+	board := NewBoard()
+
+	for sq, p := range board {
+		if p != NoPiece {
+			t.Errorf("square %d: expected %v but got %v", sq, NoPiece, p)
+		}
+	}
+}
