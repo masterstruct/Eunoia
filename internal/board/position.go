@@ -17,3 +17,13 @@ func (bb *Bitboards) PlacePiece(p Piece, sq Square) {
 	bb.pieces[p.Type].SetBit(sq)
 	bb.colors[p.Color].SetBit(sq)
 }
+
+func (bb *Bitboards) RemovePiece(sq Square) {
+	// TODO: replace with mailbox lookup
+
+	for _, pt := range PieceTypes() {
+		bb.pieces[pt].ClearBit(sq)
+	}
+	bb.colors[Black].ClearBit(sq)
+	bb.colors[White].ClearBit(sq)
+}

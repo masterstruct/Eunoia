@@ -252,6 +252,64 @@ func TestPlacePiece(t *testing.T) {
 	}
 }
 
+func TestRemovePiece(t *testing.T) {
+	InitBitboards()
+
+	tests := []struct {
+		name   string
+		place  []placement
+		remove Square
+		want   Bitboard
+	}{
+		{
+			name: "empty",
+			want: EmptyBB,
+		},
+		{
+			name: "remove single piece",
+			place: []placement{
+				{WhiteQueen, D1},
+			},
+			remove: D1,
+			want:   EmptyBB,
+		},
+		{
+			name: "remove one of multiple pieces",
+			place: []placement{
+				{WhiteQueen, D1},
+				{BlackKnight, E8},
+				{WhiteRook, A1},
+			},
+			remove: E8,
+			want:   setBits([]Square{D1, A1}),
+		},
+		{
+			name: "remove nonexistent piece leaves board unchanged",
+			place: []placement{
+				{WhiteQueen, D1},
+			},
+			remove: E1,
+			want:   setBits([]Square{D1}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var bb Bitboards
+			for _, pl := range tt.place {
+				bb.PlacePiece(pl.p, pl.sq)
+			}
+
+			bb.RemovePiece(tt.remove)
+
+			got := bb.Occupied()
+			if got != tt.want {
+				t.Fatalf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
 func setBits(sqs []Square) Bitboard {
 	var bb Bitboard
 	for _, sq := range sqs {
