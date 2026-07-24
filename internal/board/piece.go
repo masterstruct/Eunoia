@@ -118,6 +118,15 @@ var (
 	NoPiece = Piece{NoPieceType, NoColor}
 )
 
+func (p Piece) String() string {
+	letter := p.Type.String()
+	if p.Color == White {
+		// capitalize letter
+		letter = string(byte(letter[0]) &^ 0x20)
+	}
+	return letter
+}
+
 func NewPiece(pt PieceType, c Color) Piece {
 	if pt == NoPieceType || c == NoColor {
 		return Piece{NoPieceType, NoColor}

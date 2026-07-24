@@ -136,6 +136,37 @@ func TestPieceTypes(t *testing.T) {
 	}
 }
 
+func TestPieceString(t *testing.T) {
+	tests := []struct {
+		name string
+		p    Piece
+		want string
+	}{
+		{"white pawn", WhitePawn, "P"},
+		{"white knight", WhiteKnight, "N"},
+		{"white bishop", WhiteBishop, "B"},
+		{"white rook", WhiteRook, "R"},
+		{"white queen", WhiteQueen, "Q"},
+		{"white king", WhiteKing, "K"},
+		{"black pawn", BlackPawn, "p"},
+		{"black knight", BlackKnight, "n"},
+		{"black bishop", BlackBishop, "b"},
+		{"black rook", BlackRook, "r"},
+		{"black queen", BlackQueen, "q"},
+		{"black king", BlackKing, "k"},
+		{"no piece", NoPiece, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.p.String()
+			if got != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestNewPiece(t *testing.T) {
 	tests := []struct {
 		name  string
