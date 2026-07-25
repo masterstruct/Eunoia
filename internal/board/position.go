@@ -1,6 +1,9 @@
 package board
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type CastlingRights uint8
 
@@ -50,7 +53,37 @@ func (cr CastlingRights) String() string {
 }
 
 func ParseCastlingRights(s string) (CastlingRights, error) {
-	return NoCastling, nil
+	n := len(s)
+	if n < 1 || n > 4 {
+		return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingLength, s)
+	}
+
+	cr := NoCastling
+
+	for i, char := range s {
+		last := cr
+		switch char {
+		case 'k':
+			cr |= BlackKingside
+		case 'q':
+			cr |= BlackQueenside
+		case 'K':
+			cr |= WhiteKingside
+		case 'Q':
+			cr |= WhiteQueenside
+		case '-':
+			if n != 1 {
+				return NoCastling, ErrInvalidCastlingLength
+			}
+			cr = NoCastling
+		default:
+			return NoCastling, ErrInvalidCastlingChar
+		}
+		if last == cr && i != 0 {
+			return NoCastling, ErrDuplicateCastlingChar
+		}
+	}
+	return cr, nil
 }
 
 type Bitboards struct {
