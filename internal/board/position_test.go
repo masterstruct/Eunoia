@@ -116,81 +116,81 @@ func TestPlacePiece(t *testing.T) {
 	InitBitboards()
 
 	tests := []struct {
-		name         string
-		place        []placement
-		wantOccupied Bitboard
-		wantPiece    map[Piece]Bitboard
+		name       string
+		placements []placement
+		pieces     map[Piece]Bitboard
+		want       Bitboard
 	}{
 		{
-			name:         "single white queen",
-			place:        []placement{{WhiteQueen, D1}},
-			wantOccupied: setBits([]Square{D1}),
-			wantPiece: map[Piece]Bitboard{
+			name:       "single white queen",
+			placements: []placement{{WhiteQueen, D1}},
+			pieces: map[Piece]Bitboard{
 				WhiteQueen: setBits([]Square{D1}),
 			},
+			want: setBits([]Square{D1}),
 		},
 		{
-			name:         "single black king",
-			place:        []placement{{BlackKing, E8}},
-			wantOccupied: setBits([]Square{E8}),
-			wantPiece: map[Piece]Bitboard{
+			name:       "single black king",
+			placements: []placement{{BlackKing, E8}},
+			pieces: map[Piece]Bitboard{
 				BlackKing: setBits([]Square{E8}),
 			},
+			want: setBits([]Square{E8}),
 		},
 		{
 			name: "multiple pieces different colors",
-			place: []placement{
+			placements: []placement{
 				{WhiteQueen, D1},
 				{BlackKing, E8},
 				{WhiteRook, A1},
 			},
-			wantOccupied: setBits([]Square{D1, E8, A1}),
-			wantPiece: map[Piece]Bitboard{
+			pieces: map[Piece]Bitboard{
 				WhiteQueen: setBits([]Square{D1}),
 				BlackKing:  setBits([]Square{E8}),
 				WhiteRook:  setBits([]Square{A1}),
 			},
+			want: setBits([]Square{D1, E8, A1}),
 		},
 		{
 			name: "same square different pieces",
-			place: []placement{
+			placements: []placement{
 				{WhiteQueen, D1},
 				{WhiteRook, D1},
 			},
-			wantOccupied: setBits([]Square{D1}),
-			wantPiece: map[Piece]Bitboard{
+			pieces: map[Piece]Bitboard{
 				WhiteQueen: setBits([]Square{D1}),
 				WhiteRook:  setBits([]Square{D1}),
 			},
+			want: setBits([]Square{D1}),
 		},
 		{
 			name: "duplicate same piece same square",
-			place: []placement{
+			placements: []placement{
 				{WhiteQueen, D1},
 				{WhiteQueen, D1},
 			},
-			wantOccupied: setBits([]Square{D1}),
-			wantPiece: map[Piece]Bitboard{
+			pieces: map[Piece]Bitboard{
 				WhiteQueen: setBits([]Square{D1}),
 			},
+			want: setBits([]Square{D1}),
 		},
 		{
 			name: "multiple same color pieces",
-			place: []placement{
+			placements: []placement{
 				{WhiteKing, E1},
 				{WhiteQueen, D1},
 				{WhiteRook, A1},
 			},
-			wantOccupied: setBits([]Square{E1, D1, A1}),
-			wantPiece: map[Piece]Bitboard{
+			pieces: map[Piece]Bitboard{
 				WhiteKing:  setBits([]Square{E1}),
 				WhiteQueen: setBits([]Square{D1}),
 				WhiteRook:  setBits([]Square{A1}),
 			},
+			want: setBits([]Square{E1, D1, A1}),
 		},
 		{
 			name: "board with all piece types",
-			place: []placement{
+			placements: []placement{
 				{WhitePawn, A2},
 				{WhiteKnight, B1},
 				{WhiteBishop, C1},
@@ -204,8 +204,7 @@ func TestPlacePiece(t *testing.T) {
 				{BlackQueen, E8},
 				{BlackKing, F8},
 			},
-			wantOccupied: setBits([]Square{A2, B1, C1, D1, E1, F1, A7, B8, C8, D8, E8, F8}),
-			wantPiece: map[Piece]Bitboard{
+			pieces: map[Piece]Bitboard{
 				WhitePawn:   setBits([]Square{A2}),
 				WhiteKnight: setBits([]Square{B1}),
 				WhiteBishop: setBits([]Square{C1}),
@@ -219,6 +218,7 @@ func TestPlacePiece(t *testing.T) {
 				BlackQueen:  setBits([]Square{E8}),
 				BlackKing:   setBits([]Square{F8}),
 			},
+			want: setBits([]Square{A2, B1, C1, D1, E1, F1, A7, B8, C8, D8, E8, F8}),
 		},
 	}
 
@@ -226,20 +226,24 @@ func TestPlacePiece(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos := NewPosition()
 
-			for _, pl := range tt.place {
+			for _, pl := range tt.placements {
 				pos.PlacePiece(pl.p, pl.sq)
+
+				if pos.Board[pl.sq] != pl.p {
+					t.Fatalf("placed piece %v on square %v but board did not update", pl.p, pl.sq)
+				}
 			}
 
-			if got := pos.Occupied(); got != tt.wantOccupied {
-				t.Fatalf("occupied: expected %v but got %v", tt.wantOccupied, got)
+			if got := pos.Occupied(); got != tt.want {
+				t.Fatalf("occupied: expected %v but got %v", tt.want, got)
 			}
 
-			if got := allPieceBB(pos); got != tt.wantOccupied {
-				t.Fatalf("pieces: expected %v but got %v", tt.wantOccupied, got)
+			if got := allPieceBB(pos); got != tt.want {
+				t.Fatalf("pieces: expected %v but got %v", tt.want, got)
 			}
 
-			for p, want := range tt.wantPiece {
-				if got := pos.PieceBB(p); got != want {
+			for piece, want := range tt.pieces {
+				if got := pos.PieceBB(piece); got != want {
 					t.Fatalf("expected %v but got %v", want, got)
 				}
 			}
