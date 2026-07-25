@@ -11,57 +11,45 @@ func TestPieceBB(t *testing.T) {
 	InitBitboards()
 
 	tests := []struct {
-		name string
-		pos  Position
-		p    Piece
-		want Bitboard
+		name       string
+		placements []placement
+		piece      Piece
+		want       Bitboard
 	}{
 		{
-			name: "white queen present",
-			pos: func() Position {
-				pos := NewPosition()
-				pos.PlacePiece(WhiteQueen, D1)
-				return pos
-			}(),
-			p:    WhiteQueen,
-			want: setBits([]Square{D1}),
+			name:       "white queen present",
+			placements: []placement{{WhiteQueen, D1}},
+			piece:      WhiteQueen,
+			want:       setBits([]Square{D1}),
 		},
 		{
-			name: "wrong color",
-			pos: func() Position {
-				pos := NewPosition()
-				pos.PlacePiece(BlackQueen, D1)
-				return pos
-			}(),
-			p:    WhiteQueen,
-			want: EmptyBB,
+			name:       "wrong color",
+			placements: []placement{{BlackQueen, D1}},
+			piece:      WhiteQueen,
+			want:       EmptyBB,
 		},
 		{
-			name: "wrong piece type",
-			pos: func() Position {
-				pos := NewPosition()
-				pos.PlacePiece(WhiteRook, D1)
-				return pos
-			}(),
-			p:    WhiteQueen,
-			want: EmptyBB,
+			name:       "wrong piece type",
+			placements: []placement{{WhiteRook, D1}},
+			piece:      WhiteQueen,
+			want:       EmptyBB,
 		},
 		{
-			name: "mixed board",
-			pos: func() Position {
-				pos := NewPosition()
-				pos.PlacePiece(WhiteQueen, D1)
-				pos.PlacePiece(BlackQueen, D8)
-				return pos
-			}(),
-			p:    WhiteQueen,
-			want: setBits([]Square{D1}),
+			name:       "mixed board",
+			placements: []placement{{WhiteQueen, D1}, {BlackQueen, D8}},
+			piece:      WhiteQueen,
+			want:       setBits([]Square{D1}),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.pos.PieceBB(tt.p)
+			pos := NewPosition()
+			for _, pl := range tt.placements {
+				pos.PlacePiece(pl.p, pl.sq)
+			}
+
+			got := pos.PieceBB(tt.piece)
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
