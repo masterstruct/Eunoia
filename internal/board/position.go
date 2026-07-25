@@ -20,6 +20,27 @@ func (cr *CastlingRights) Remove(right CastlingRights) {
 	*cr &^= right
 }
 
+func (cr CastlingRights) String() string {
+	if cr == NoCastling {
+		return "-"
+	}
+
+	s := ""
+	if cr.Has(WhiteKingside) {
+		s += "K"
+	}
+	if cr.Has(WhiteQueenside) {
+		s += "Q"
+	}
+	if cr.Has(BlackKingside) {
+		s += "k"
+	}
+	if cr.Has(BlackQueenside) {
+		s += "q"
+	}
+	return s
+}
+
 type Bitboards struct {
 	pieces [6]Bitboard
 	colors [2]Bitboard

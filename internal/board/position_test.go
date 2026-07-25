@@ -32,6 +32,42 @@ func TestHas(t *testing.T) {
 	}
 }
 
+func TestCastlingRightsString(t *testing.T) {
+	tests := []struct {
+		name string
+		cr   CastlingRights
+		want string
+	}{
+		{"none", NoCastling, "-"},
+		{"black kingside", BlackKingside, "k"},
+		{"black queenside", BlackQueenside, "q"},
+		{"white kingside", WhiteKingside, "K"},
+		{"white queenside", WhiteQueenside, "Q"},
+
+		{"black kingside + queenside", BlackKingside | BlackQueenside, "kq"},
+		{"white kingside + queenside", WhiteKingside | WhiteQueenside, "KQ"},
+		{"white kingside + black kingside", WhiteKingside | BlackKingside, "Kk"},
+		{"white kingside + black queenside", WhiteKingside | BlackQueenside, "Kq"},
+		{"white queenside + black kingside", WhiteQueenside | BlackKingside, "Qk"},
+		{"white queenside + black queenside", WhiteQueenside | BlackQueenside, "Qq"},
+
+		{"white all + black kingside", WhiteKingside | WhiteQueenside | BlackKingside, "KQk"},
+		{"white all + black queenside", WhiteKingside | WhiteQueenside | BlackQueenside, "KQq"},
+		{"white kingside + black all", WhiteKingside | BlackKingside | BlackQueenside, "Kkq"},
+		{"white queenside + black all", WhiteQueenside | BlackKingside | BlackQueenside, "Qkq"},
+
+		{"all rights", AnyCastling, "KQkq"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.cr.String(); got != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestRemove(t *testing.T) {
 	tests := []struct {
 		name  string
