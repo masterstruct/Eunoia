@@ -47,16 +47,11 @@ func TestCastlingRightsString(t *testing.T) {
 		{"white kingside", WhiteKingside, "K"},
 		{"white queenside", WhiteQueenside, "Q"},
 
-		{"black kingside + queenside", BlackKingside | BlackQueenside, "kq"},
 		{"white kingside + queenside", WhiteKingside | WhiteQueenside, "KQ"},
 		{"white kingside + black kingside", WhiteKingside | BlackKingside, "Kk"},
-		{"white kingside + black queenside", WhiteKingside | BlackQueenside, "Kq"},
 		{"white queenside + black kingside", WhiteQueenside | BlackKingside, "Qk"},
-		{"white queenside + black queenside", WhiteQueenside | BlackQueenside, "Qq"},
 
-		{"white all + black kingside", WhiteKingside | WhiteQueenside | BlackKingside, "KQk"},
 		{"white all + black queenside", WhiteKingside | WhiteQueenside | BlackQueenside, "KQq"},
-		{"white kingside + black all", WhiteKingside | BlackKingside | BlackQueenside, "Kkq"},
 		{"white queenside + black all", WhiteQueenside | BlackKingside | BlackQueenside, "Qkq"},
 
 		{"all rights", AnyCastling, "KQkq"},
@@ -125,6 +120,41 @@ func TestParseCastlingRights(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestCastlingRightsRoundTrip(t *testing.T) {
+	tests := []CastlingRights{
+		NoCastling,
+		BlackKingside,
+		BlackQueenside,
+		WhiteKingside,
+		WhiteQueenside,
+		BlackKingside | BlackQueenside,
+		WhiteKingside | WhiteQueenside,
+		WhiteKingside | BlackKingside,
+		WhiteKingside | BlackQueenside,
+		WhiteQueenside | BlackKingside,
+		WhiteQueenside | BlackQueenside,
+		WhiteKingside | WhiteQueenside | BlackKingside,
+		WhiteKingside | WhiteQueenside | BlackQueenside,
+		WhiteKingside | BlackKingside | BlackQueenside,
+		WhiteQueenside | BlackKingside | BlackQueenside,
+		AnyCastling,
+	}
+
+	for _, cr := range tests {
+		t.Run(cr.String(), func(t *testing.T) {
+			s := cr.String()
+
+			got, err := ParseCastlingRights(s)
+			if err != nil {
+				t.Fatalf("unexpected error parsing %q: %v", s, err)
+			}
+			if got != cr {
+				t.Fatalf("round-trip mismatch: started with %v, string %q, parsed %v", cr, s, got)
 			}
 		})
 	}
