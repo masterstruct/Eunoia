@@ -1,5 +1,17 @@
 package board
 
+type CastlingRights uint8
+
+const (
+	BlackKingside CastlingRights = 1 << iota
+	BlackQueenside
+	WhiteKingside
+	WhiteQueenside
+
+	NoCastling  CastlingRights = 0
+	AnyCastling CastlingRights = BlackKingside | BlackQueenside | WhiteKingside | WhiteQueenside
+)
+
 type Bitboards struct {
 	pieces [6]Bitboard
 	colors [2]Bitboard
@@ -7,13 +19,13 @@ type Bitboards struct {
 
 type Position struct {
 	Bitboards
-	Board      [64]Piece
-	SideToMove Color
-	// CastlingRights CastlingRights
-	EnPassant     Square
-	HalfmoveClock uint8
-	Ply           uint16
-	Hash          uint64
+	Board          [64]Piece
+	SideToMove     Color
+	CastlingRights CastlingRights
+	EnPassant      Square
+	HalfmoveClock  uint8
+	Ply            uint16
+	Hash           uint64
 }
 
 func (pos *Position) PieceBB(piece Piece) Bitboard {
