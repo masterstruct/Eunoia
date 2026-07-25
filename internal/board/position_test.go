@@ -12,47 +12,47 @@ func TestPieceBB(t *testing.T) {
 
 	tests := []struct {
 		name string
-		bb   Bitboards
+		pos  Position
 		p    Piece
 		want Bitboard
 	}{
 		{
 			name: "white queen present",
-			bb: func() Bitboards {
-				var bb Bitboards
-				bb.PlacePiece(WhiteQueen, D1)
-				return bb
+			pos: func() Position {
+				pos := NewPosition()
+				pos.PlacePiece(WhiteQueen, D1)
+				return pos
 			}(),
 			p:    WhiteQueen,
 			want: setBits([]Square{D1}),
 		},
 		{
 			name: "wrong color",
-			bb: func() Bitboards {
-				var bb Bitboards
-				bb.PlacePiece(BlackQueen, D1)
-				return bb
+			pos: func() Position {
+				pos := NewPosition()
+				pos.PlacePiece(BlackQueen, D1)
+				return pos
 			}(),
 			p:    WhiteQueen,
 			want: EmptyBB,
 		},
 		{
 			name: "wrong piece type",
-			bb: func() Bitboards {
-				var bb Bitboards
-				bb.PlacePiece(WhiteRook, D1)
-				return bb
+			pos: func() Position {
+				pos := NewPosition()
+				pos.PlacePiece(WhiteRook, D1)
+				return pos
 			}(),
 			p:    WhiteQueen,
 			want: EmptyBB,
 		},
 		{
 			name: "mixed board",
-			bb: func() Bitboards {
-				var bb Bitboards
-				bb.PlacePiece(WhiteQueen, D1)
-				bb.PlacePiece(BlackQueen, D8)
-				return bb
+			pos: func() Position {
+				pos := NewPosition()
+				pos.PlacePiece(WhiteQueen, D1)
+				pos.PlacePiece(BlackQueen, D8)
+				return pos
 			}(),
 			p:    WhiteQueen,
 			want: setBits([]Square{D1}),
@@ -61,7 +61,7 @@ func TestPieceBB(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.bb.PieceBB(tt.p)
+			got := tt.pos.PieceBB(tt.p)
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
@@ -109,16 +109,16 @@ func TestOccupied(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var bb Bitboards
+			pos := NewPosition()
 			for _, pl := range tt.place {
-				bb.PlacePiece(pl.p, pl.sq)
+				pos.PlacePiece(pl.p, pl.sq)
 			}
-			got := bb.Occupied()
+			got := pos.Occupied()
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
-			if bb.Occupied() != allPieceBB(bb) {
-				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", bb.Occupied(), allPieceBB(bb))
+			if pos.Occupied() != allPieceBB(pos) {
+				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", pos.Occupied(), allPieceBB(pos))
 			}
 		})
 	}
@@ -236,22 +236,22 @@ func TestPlacePiece(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var bb Bitboards
+			pos := NewPosition()
 
 			for _, pl := range tt.place {
-				bb.PlacePiece(pl.p, pl.sq)
+				pos.PlacePiece(pl.p, pl.sq)
 			}
 
-			if got := bb.Occupied(); got != tt.wantOccupied {
+			if got := pos.Occupied(); got != tt.wantOccupied {
 				t.Fatalf("occupied: expected %v but got %v", tt.wantOccupied, got)
 			}
 
-			if got := allPieceBB(bb); got != tt.wantOccupied {
+			if got := allPieceBB(pos); got != tt.wantOccupied {
 				t.Fatalf("pieces: expected %v but got %v", tt.wantOccupied, got)
 			}
 
 			for p, want := range tt.wantPiece {
-				if got := bb.PieceBB(p); got != want {
+				if got := pos.PieceBB(p); got != want {
 					t.Fatalf("expected %v but got %v", want, got)
 				}
 			}
@@ -302,18 +302,18 @@ func TestRemovePiece(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var bb Bitboards
+			pos := NewPosition()
 			for _, pl := range tt.place {
-				bb.PlacePiece(pl.p, pl.sq)
+				pos.PlacePiece(pl.p, pl.sq)
 			}
 
-			bb.RemovePiece(tt.remove)
+			pos.RemovePiece(tt.remove)
 
-			if got := bb.Occupied(); got != tt.want {
+			if got := pos.Occupied(); got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
 
-			if got := allPieceBB(bb); got != tt.want {
+			if got := allPieceBB(pos); got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
 		})
@@ -323,9 +323,9 @@ func TestRemovePiece(t *testing.T) {
 func TestPieceOn(t *testing.T) {
 	InitBitboards()
 
-	var bb Bitboards
-	bb.PlacePiece(WhiteKing, E1)
-	bb.PlacePiece(BlackPawn, E7)
+	pos := NewPosition()
+	pos.PlacePiece(WhiteKing, E1)
+	pos.PlacePiece(BlackPawn, E7)
 
 	tests := []struct {
 		name   string
@@ -340,7 +340,7 @@ func TestPieceOn(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok := bb.PieceOn(tt.sq)
+			got, ok := pos.PieceOn(tt.sq)
 			if ok != tt.wantOk {
 				t.Errorf("expected ok=%v but got %v", tt.wantOk, ok)
 			}
@@ -359,10 +359,10 @@ func setBits(sqs []Square) Bitboard {
 	return bb
 }
 
-func allPieceBB(bb Bitboards) Bitboard {
+func allPieceBB(pos Position) Bitboard {
 	b := EmptyBB
 	for _, pt := range PieceTypes() {
-		b |= bb.pieces[pt]
+		b |= pos.pieces[pt]
 	}
 	return b
 }
