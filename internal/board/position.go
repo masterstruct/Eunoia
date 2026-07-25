@@ -5,11 +5,22 @@ type Bitboards struct {
 	colors [2]Bitboard
 }
 
-func (pos Position) PieceBB(piece Piece) Bitboard {
+type Position struct {
+	Bitboards
+	Board      [64]Piece
+	SideToMove Color
+	// CastlingRights CastlingRights
+	EnPassant     Square
+	HalfmoveClock uint8
+	Ply           uint16
+	Hash          uint64
+}
+
+func (pos *Position) PieceBB(piece Piece) Bitboard {
 	return pos.pieces[piece.Type] & pos.colors[piece.Color]
 }
 
-func (pos Position) Occupied() Bitboard {
+func (pos *Position) Occupied() Bitboard {
 	return pos.colors[White] | pos.colors[Black]
 }
 
@@ -31,17 +42,6 @@ func (pos *Position) RemovePiece(sq Square) {
 func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 	piece := pos.Board[sq]
 	return piece, piece != NoPiece
-}
-
-type Position struct {
-	Bitboards
-	Board      [64]Piece
-	SideToMove Color
-	// CastlingRights CastlingRights
-	EnPassant     Square
-	HalfmoveClock uint8
-	Ply           uint16
-	Hash          uint64
 }
 
 func NewBoard() [64]Piece {
