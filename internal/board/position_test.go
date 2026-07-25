@@ -308,6 +308,12 @@ func TestRemovePiece(t *testing.T) {
 			if got := allPieceBB(pos); got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
+
+			for _, pl := range tt.place {
+				if tt.remove == pl.sq && pos.Board[pl.sq] != NoPiece {
+					t.Fatalf("removed piece %v on square %v but board did not update", pl.p, pl.sq)
+				}
+			}
 		})
 	}
 }

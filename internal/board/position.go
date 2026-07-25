@@ -27,6 +27,7 @@ func (pos *Position) RemovePiece(sq Square) {
 	}
 	pos.colors[Black].ClearBit(sq)
 	pos.colors[White].ClearBit(sq)
+	pos.Board[sq] = NoPiece
 }
 
 func (pos Position) PieceOn(sq Square) (Piece, bool) {
