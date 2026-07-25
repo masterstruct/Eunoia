@@ -16,6 +16,10 @@ func (cr CastlingRights) Has(right CastlingRights) bool {
 	return cr&right != NoCastling
 }
 
+func (cr *CastlingRights) Remove(right CastlingRights) {
+	*cr &^= right
+}
+
 type Bitboards struct {
 	pieces [6]Bitboard
 	colors [2]Bitboard

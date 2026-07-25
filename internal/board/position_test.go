@@ -32,6 +32,35 @@ func TestHas(t *testing.T) {
 	}
 }
 
+func TestRemove(t *testing.T) {
+	tests := []struct {
+		name  string
+		cr    CastlingRights
+		right CastlingRights
+		want  CastlingRights
+	}{
+		{"remove black kingside", AnyCastling, BlackKingside, BlackQueenside | WhiteKingside | WhiteQueenside},
+		{"remove black queenside", AnyCastling, BlackQueenside, BlackKingside | WhiteKingside | WhiteQueenside},
+		{"remove white kingside", AnyCastling, WhiteKingside, BlackKingside | BlackQueenside | WhiteQueenside},
+		{"remove white queenside", AnyCastling, WhiteQueenside, BlackKingside | BlackQueenside | WhiteKingside},
+		{"remove absent right", BlackKingside, BlackQueenside, BlackKingside},
+		{"remove only right", WhiteQueenside, WhiteQueenside, NoCastling},
+		{"remove from none", NoCastling, BlackKingside, NoCastling},
+		{"remove all rights", AnyCastling, AnyCastling, NoCastling},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cr := tt.cr
+			cr.Remove(tt.right)
+
+			if cr != tt.want {
+				t.Errorf("removed %v but got %v, want %v", tt.right, cr, tt.want)
+			}
+		})
+	}
+}
+
 func TestPieceBB(t *testing.T) {
 	InitBitboards()
 
