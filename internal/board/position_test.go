@@ -1,6 +1,9 @@
 package board
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 type placement struct {
 	p  Piece
@@ -63,6 +66,64 @@ func TestCastlingRightsString(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.cr.String(); got != tt.want {
 				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestParseCastlingRights(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		want    CastlingRights
+		wantErr error
+	}{
+		{"none", "-", NoCastling, nil},
+		{"white kingside", "K", WhiteKingside, nil},
+		{"white queenside", "Q", WhiteQueenside, nil},
+		{"black kingside", "k", BlackKingside, nil},
+		{"black queenside", "q", BlackQueenside, nil},
+
+		{"white both", "KQ", WhiteKingside | WhiteQueenside, nil},
+		{"black both", "kq", BlackKingside | BlackQueenside, nil},
+		{"mixed all", "KQkq", AnyCastling, nil},
+		{"mixed unordered", "qKkQ", AnyCastling, nil},
+
+		{"empty string", "", NoCastling, ErrInvalidCastlingLength},
+		{"too long", "KQkq-", NoCastling, ErrInvalidCastlingLength},
+		{"invalid none and black kingside", "-k", NoCastling, ErrInvalidCastlingLength},
+
+		{"invalid char letter", "X", NoCastling, ErrInvalidCastlingChar},
+		{"invalid char digit", "1", NoCastling, ErrInvalidCastlingChar},
+		{"invalid char symbol", "?", NoCastling, ErrInvalidCastlingChar},
+
+		{"duplicate white king", "KK", NoCastling, ErrDuplicateCastlingChar},
+		{"duplicate white queen", "QQ", NoCastling, ErrDuplicateCastlingChar},
+		{"duplicate black king", "kk", NoCastling, ErrDuplicateCastlingChar},
+		{"duplicate black queen", "qq", NoCastling, ErrDuplicateCastlingChar},
+		{"duplicate mixed", "KQK", NoCastling, ErrDuplicateCastlingChar},
+		{"duplicate across order", "qkq", NoCastling, ErrDuplicateCastlingChar},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseCastlingRights(tt.input)
+
+			if tt.wantErr != nil {
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf("expected error %v but got %v", tt.wantErr, err)
+				}
+				if got != NoCastling {
+					t.Errorf("expected NoCastling on error but got %v", got)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
 			}
 		})
 	}

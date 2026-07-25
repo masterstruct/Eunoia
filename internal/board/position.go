@@ -1,5 +1,7 @@
 package board
 
+import "errors"
+
 type CastlingRights uint8
 
 const (
@@ -10,6 +12,12 @@ const (
 
 	NoCastling  CastlingRights = 0
 	AnyCastling CastlingRights = BlackKingside | BlackQueenside | WhiteKingside | WhiteQueenside
+)
+
+var (
+	ErrInvalidCastlingLength = errors.New("castling: string must be 1 to 4 characters, or \"-\" for none")
+	ErrInvalidCastlingChar   = errors.New("castling: character must be one of 'K', 'Q', 'k', 'q'")
+	ErrDuplicateCastlingChar = errors.New("castling: character appears more than once")
 )
 
 func (cr CastlingRights) Has(right CastlingRights) bool {
@@ -39,6 +47,10 @@ func (cr CastlingRights) String() string {
 		s += "q"
 	}
 	return s
+}
+
+func ParseCastlingRights(s string) (CastlingRights, error) {
+	return NoCastling, nil
 }
 
 type Bitboards struct {
