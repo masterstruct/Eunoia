@@ -20,14 +20,12 @@ func (pos *Position) PlacePiece(p Piece, sq Square) {
 }
 
 func (pos *Position) RemovePiece(sq Square) {
-	// TODO: replace with mailbox lookup
-
-	for _, pt := range PieceTypes() {
-		pos.pieces[pt].ClearBit(sq)
+	piece, ok := pos.PieceOn(sq)
+	if ok {
+		pos.pieces[piece.Type].ClearBit(sq)
+		pos.colors[piece.Color].ClearBit(sq)
+		pos.Board[sq] = NoPiece
 	}
-	pos.colors[Black].ClearBit(sq)
-	pos.colors[White].ClearBit(sq)
-	pos.Board[sq] = NoPiece
 }
 
 func (pos *Position) PieceOn(sq Square) (Piece, bool) {
