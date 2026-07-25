@@ -402,15 +402,15 @@ func BenchmarkPieceOn(b *testing.B) {
 		pos.PlacePiece(x.p, x.sq)
 	}
 
-	var p Piece
+	var piece Piece
 	var ok bool
 	b.ResetTimer()
 	for i := 0; b.Loop(); i++ {
 		for sq := range A8 {
-			p, ok = pos.PieceOn(sq)
+			piece, ok = pos.PieceOn(sq)
 		}
 	}
-	_, _ = p, ok
+	_, _ = piece, ok
 }
 
 func setBits(sqs []Square) Bitboard {
@@ -432,9 +432,9 @@ func allPieceBB(pos Position) Bitboard {
 func TestNewBoard(t *testing.T) {
 	board := NewBoard()
 
-	for sq, p := range board {
-		if p != NoPiece {
-			t.Errorf("square %d: expected %v but got %v", sq, NoPiece, p)
+	for sq, piece := range board {
+		if piece != NoPiece {
+			t.Errorf("square %d: expected %v but got %v", sq, NoPiece, piece)
 		}
 	}
 }

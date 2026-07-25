@@ -5,18 +5,18 @@ type Bitboards struct {
 	colors [2]Bitboard
 }
 
-func (pos Position) PieceBB(p Piece) Bitboard {
-	return pos.pieces[p.Type] & pos.colors[p.Color]
+func (pos Position) PieceBB(piece Piece) Bitboard {
+	return pos.pieces[piece.Type] & pos.colors[piece.Color]
 }
 
 func (pos Position) Occupied() Bitboard {
 	return pos.colors[White] | pos.colors[Black]
 }
 
-func (pos *Position) PlacePiece(p Piece, sq Square) {
-	pos.pieces[p.Type].SetBit(sq)
-	pos.colors[p.Color].SetBit(sq)
-	pos.Board[sq] = p
+func (pos *Position) PlacePiece(piece Piece, sq Square) {
+	pos.pieces[piece.Type].SetBit(sq)
+	pos.colors[piece.Color].SetBit(sq)
+	pos.Board[sq] = piece
 }
 
 func (pos *Position) RemovePiece(sq Square) {

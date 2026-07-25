@@ -138,9 +138,9 @@ func TestPieceTypes(t *testing.T) {
 
 func TestPieceString(t *testing.T) {
 	tests := []struct {
-		name string
-		p    Piece
-		want string
+		name  string
+		piece Piece
+		want  string
 	}{
 		{"white pawn", WhitePawn, "P"},
 		{"white knight", WhiteKnight, "N"},
@@ -160,7 +160,7 @@ func TestPieceString(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.p.String()
+			got := tt.piece.String()
 			if got != tt.want {
 				t.Errorf("expected %q but got %q", tt.want, got)
 			}

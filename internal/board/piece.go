@@ -127,9 +127,9 @@ func (p Piece) String() string {
 	return letter
 }
 
-func NewPiece(pt PieceType, c Color) Piece {
-	if pt == NoPieceType || c == NoColor {
+func NewPiece(pt PieceType, color Color) Piece {
+	if pt == NoPieceType || color == NoColor {
 		return Piece{NoPieceType, NoColor}
 	}
-	return Piece{pt, c}
+	return Piece{pt, color}
 }
