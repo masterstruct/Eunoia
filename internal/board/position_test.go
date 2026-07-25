@@ -19,11 +19,11 @@ func TestHas(t *testing.T) {
 	}{
 		{"has black kingside", BlackKingside, BlackKingside, true},
 		{"missing black queenside", BlackKingside, BlackQueenside, false},
-		{"has multiple rights", AnyCastling, WhiteQueenside, true},
+		{"has multiple rights", AllCastling, WhiteQueenside, true},
 		{"subset present", BlackKingside | WhiteKingside, BlackKingside, true},
 		{"subset absent", BlackKingside | WhiteKingside, BlackQueenside, false},
 		{"no castling has nothing", NoCastling, BlackKingside, false},
-		{"any castling has any", AnyCastling, AnyCastling, true},
+		{"all castling has all", AllCastling, AllCastling, true},
 	}
 
 	for _, tt := range tests {
@@ -54,7 +54,7 @@ func TestCastlingRightsString(t *testing.T) {
 		{"white all + black queenside", WhiteKingside | WhiteQueenside | BlackQueenside, "KQq"},
 		{"white queenside + black all", WhiteQueenside | BlackKingside | BlackQueenside, "Qkq"},
 
-		{"all rights", AnyCastling, "KQkq"},
+		{"all rights", AllCastling, "KQkq"},
 	}
 
 	for _, tt := range tests {
@@ -81,8 +81,8 @@ func TestParseCastlingRights(t *testing.T) {
 
 		{"white both", "KQ", WhiteKingside | WhiteQueenside, nil},
 		{"black both", "kq", BlackKingside | BlackQueenside, nil},
-		{"mixed all", "KQkq", AnyCastling, nil},
-		{"mixed unordered", "qKkQ", AnyCastling, nil},
+		{"mixed all", "KQkq", AllCastling, nil},
+		{"mixed unordered", "qKkQ", AllCastling, nil},
 
 		{"empty string", "", NoCastling, ErrInvalidCastlingLength},
 		{"too long", "KQkq-", NoCastling, ErrInvalidCastlingLength},
@@ -142,7 +142,7 @@ func TestCastlingRightsRoundTrip(t *testing.T) {
 		WhiteKingside | WhiteQueenside | BlackQueenside,
 		WhiteKingside | BlackKingside | BlackQueenside,
 		WhiteQueenside | BlackKingside | BlackQueenside,
-		AnyCastling,
+		AllCastling,
 	}
 
 	for _, cr := range tests {
@@ -167,14 +167,14 @@ func TestRemove(t *testing.T) {
 		right CastlingRights
 		want  CastlingRights
 	}{
-		{"remove black kingside", AnyCastling, BlackKingside, BlackQueenside | WhiteKingside | WhiteQueenside},
-		{"remove black queenside", AnyCastling, BlackQueenside, BlackKingside | WhiteKingside | WhiteQueenside},
-		{"remove white kingside", AnyCastling, WhiteKingside, BlackKingside | BlackQueenside | WhiteQueenside},
-		{"remove white queenside", AnyCastling, WhiteQueenside, BlackKingside | BlackQueenside | WhiteKingside},
+		{"remove black kingside", AllCastling, BlackKingside, BlackQueenside | WhiteKingside | WhiteQueenside},
+		{"remove black queenside", AllCastling, BlackQueenside, BlackKingside | WhiteKingside | WhiteQueenside},
+		{"remove white kingside", AllCastling, WhiteKingside, BlackKingside | BlackQueenside | WhiteQueenside},
+		{"remove white queenside", AllCastling, WhiteQueenside, BlackKingside | BlackQueenside | WhiteKingside},
 		{"remove absent right", BlackKingside, BlackQueenside, BlackKingside},
 		{"remove only right", WhiteQueenside, WhiteQueenside, NoCastling},
 		{"remove from none", NoCastling, BlackKingside, NoCastling},
-		{"remove all rights", AnyCastling, AnyCastling, NoCastling},
+		{"remove all rights", AllCastling, AllCastling, NoCastling},
 	}
 
 	for _, tt := range tests {

@@ -14,7 +14,7 @@ const (
 	WhiteQueenside
 
 	NoCastling  CastlingRights = 0
-	AnyCastling CastlingRights = BlackKingside | BlackQueenside | WhiteKingside | WhiteQueenside
+	AllCastling CastlingRights = BlackKingside | BlackQueenside | WhiteKingside | WhiteQueenside
 )
 
 var (
@@ -136,7 +136,14 @@ func NewBoard() [64]Piece {
 }
 
 func NewPosition() Position {
-	pos := Position{SideToMove: White, Ply: 1}
+	pos := Position{
+		SideToMove:     White,
+		CastlingRights: AllCastling,
+		EnPassant:      NoSquare,
+		HalfmoveClock:  0,
+		Ply:            0,
+		Hash:           69420,
+	}
 	pos.Board = NewBoard()
 	return pos
 }
