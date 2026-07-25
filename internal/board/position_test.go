@@ -91,8 +91,8 @@ func TestParseCastlingRights(t *testing.T) {
 
 		{"empty string", "", NoCastling, ErrInvalidCastlingLength},
 		{"too long", "KQkq-", NoCastling, ErrInvalidCastlingLength},
-		{"invalid none and black kingside", "-k", NoCastling, ErrInvalidCastlingLength},
-		{"invalid black kingside and none", "k-", NoCastling, ErrInvalidCastlingLength},
+		{"invalid none and black kingside", "-k", NoCastling, ErrInvalidCastlingChar},
+		{"invalid black kingside and none", "k-", NoCastling, ErrInvalidCastlingChar},
 
 		{"invalid char letter", "X", NoCastling, ErrInvalidCastlingChar},
 		{"invalid char digit", "1", NoCastling, ErrInvalidCastlingChar},

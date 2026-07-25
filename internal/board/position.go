@@ -57,10 +57,12 @@ func ParseCastlingRights(s string) (CastlingRights, error) {
 	if n < 1 || n > 4 {
 		return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingLength, s)
 	}
+	if s == "-" {
+		return NoCastling, nil
+	}
 
 	cr := NoCastling
-
-	for i, char := range s {
+	for _, char := range s {
 		last := cr
 		switch char {
 		case 'k':
@@ -71,16 +73,11 @@ func ParseCastlingRights(s string) (CastlingRights, error) {
 			cr |= WhiteKingside
 		case 'Q':
 			cr |= WhiteQueenside
-		case '-':
-			if n != 1 {
-				return NoCastling, ErrInvalidCastlingLength
-			}
-			cr = NoCastling
 		default:
-			return NoCastling, ErrInvalidCastlingChar
+			return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
 		}
-		if last == cr && i != 0 {
-			return NoCastling, ErrDuplicateCastlingChar
+		if last == cr {
+			return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
 		}
 	}
 	return cr, nil
