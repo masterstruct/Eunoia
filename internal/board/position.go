@@ -12,6 +12,10 @@ const (
 	AnyCastling CastlingRights = BlackKingside | BlackQueenside | WhiteKingside | WhiteQueenside
 )
 
+func (cr CastlingRights) Has(right CastlingRights) bool {
+	return cr&right != NoCastling
+}
+
 type Bitboards struct {
 	pieces [6]Bitboard
 	colors [2]Bitboard

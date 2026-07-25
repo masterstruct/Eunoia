@@ -7,6 +7,31 @@ type placement struct {
 	sq Square
 }
 
+func TestHas(t *testing.T) {
+	tests := []struct {
+		name  string
+		cr    CastlingRights
+		right CastlingRights
+		want  bool
+	}{
+		{"has black kingside", BlackKingside, BlackKingside, true},
+		{"missing black queenside", BlackKingside, BlackQueenside, false},
+		{"has multiple rights", AnyCastling, WhiteQueenside, true},
+		{"subset present", BlackKingside | WhiteKingside, BlackKingside, true},
+		{"subset absent", BlackKingside | WhiteKingside, BlackQueenside, false},
+		{"no castling has nothing", NoCastling, BlackKingside, false},
+		{"any castling has any", AnyCastling, AnyCastling, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.cr.Has(tt.right); got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestPieceBB(t *testing.T) {
 	InitBitboards()
 
