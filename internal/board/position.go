@@ -30,35 +30,9 @@ func (pos *Position) RemovePiece(sq Square) {
 	pos.Board[sq] = NoPiece
 }
 
-func (pos Position) PieceOn(sq Square) (Piece, bool) {
-	// TODO: replace with mailbox lookup
-	sqBB := SquareBB[sq]
-
-	if pos.Occupied()&sqBB == 0 {
-		return NoPiece, false
-	}
-
-	color := White
-	if pos.colors[Black]&sqBB != 0 {
-		color = Black
-	}
-
-	switch {
-	case pos.pieces[Pawn]&sqBB != 0:
-		return NewPiece(Pawn, color), true
-	case pos.pieces[Knight]&sqBB != 0:
-		return NewPiece(Knight, color), true
-	case pos.pieces[Bishop]&sqBB != 0:
-		return NewPiece(Bishop, color), true
-	case pos.pieces[Rook]&sqBB != 0:
-		return NewPiece(Rook, color), true
-	case pos.pieces[Queen]&sqBB != 0:
-		return NewPiece(Queen, color), true
-	case pos.pieces[King]&sqBB != 0:
-		return NewPiece(King, color), true
-	default:
-		return NoPiece, false
-	}
+func (pos *Position) PieceOn(sq Square) (Piece, bool) {
+	piece := pos.Board[sq]
+	return piece, piece != NoPiece
 }
 
 type Position struct {
