@@ -68,7 +68,7 @@ func (pt PieceType) String() string {
 	case King:
 		return "k"
 	default:
-		return ""
+		return "."
 	}
 }
 

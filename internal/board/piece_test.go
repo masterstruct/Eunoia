@@ -78,7 +78,7 @@ func TestPieceTypeString(t *testing.T) {
 		{"rook", Rook, "r"},
 		{"queen", Queen, "q"},
 		{"king", King, "k"},
-		{"no piece type", NoPieceType, ""},
+		{"no piece type", NoPieceType, "."},
 	}
 
 	for _, tt := range tests {
@@ -154,8 +154,8 @@ func TestPieceString(t *testing.T) {
 		{"black rook", BlackRook, "r"},
 		{"black queen", BlackQueen, "q"},
 		{"black king", BlackKing, "k"},
-		{"no piece", NoPiece, ""},
-		{"illegal piece", Piece{NoPieceType, White}, ""},
+		{"no piece", NoPiece, "."},
+		{"illegal piece", Piece{NoPieceType, White}, "."},
 	}
 
 	for _, tt := range tests {
