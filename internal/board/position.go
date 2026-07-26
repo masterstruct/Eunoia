@@ -3,6 +3,7 @@ package board
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type CastlingRights uint8
@@ -125,6 +126,19 @@ func (pos *Position) RemovePiece(sq Square) {
 func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 	piece := pos.Board[sq]
 	return piece, piece != NoPiece
+}
+
+func (pos Position) String() string {
+	var sb strings.Builder
+	for rank := Rank8; rank >= Rank1; rank-- {
+		for file := FileA; file <= FileH; file++ {
+			sq := NewSquare(file, rank)
+			sb.WriteString(pos.Board[sq].String())
+			sb.WriteByte(' ')
+		}
+		sb.WriteByte('\n')
+	}
+	return sb.String()
 }
 
 func NewBoard() [64]Piece {
