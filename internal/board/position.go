@@ -3,6 +3,7 @@ package board
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -131,6 +132,9 @@ func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 func (pos Position) String() string {
 	var sb strings.Builder
 	for rank := Rank8; rank >= Rank1; rank-- {
+		sb.WriteString(strconv.Itoa(int(rank + 1)))
+		sb.WriteByte(' ')
+
 		for file := FileA; file <= FileH; file++ {
 			sq := NewSquare(file, rank)
 			sb.WriteString(pos.Board[sq].String())
@@ -138,6 +142,7 @@ func (pos Position) String() string {
 		}
 		sb.WriteByte('\n')
 	}
+	sb.WriteString("  a b c d e f g h\n")
 	return sb.String()
 }
 
