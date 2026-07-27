@@ -70,6 +70,28 @@ func TestRank(t *testing.T) {
 	}
 }
 
+func TestColor(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   Square
+		want Color
+	}{
+		{"A1 is dark", A1, Black},
+		{"B1 is light", B1, White},
+		{"D4 is dark", D4, Black},
+		{"E4 is light", E4, White},
+		{"H8 is dark", H8, Black},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Color(); got != tt.want {
+				t.Errorf("%s: got %v, want %v", tt.name, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestIsValid(t *testing.T) {
 	tests := []struct {
 		name string

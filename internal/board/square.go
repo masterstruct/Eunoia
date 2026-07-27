@@ -57,6 +57,13 @@ func (sq Square) Rank() int {
 	return int(sq) / 8
 }
 
+func (sq Square) Color() Color {
+	if (sq.File()+sq.Rank())%2 == 0 {
+		return Black
+	}
+	return White
+}
+
 func (sq Square) IsValid() bool {
 	return sq >= A1 && sq <= H8
 }
