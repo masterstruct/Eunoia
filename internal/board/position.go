@@ -20,7 +20,6 @@ const (
 )
 
 const (
-	bold       = "\033[1m"
 	resetColor = "\033[0m"
 )
 
@@ -137,7 +136,6 @@ func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 func (pos Position) String() string {
 	var sb strings.Builder
 	for rank := Rank8; rank >= Rank1; rank-- {
-		sb.WriteString(bold)
 		sb.WriteString(fgRGB(235, 160, 172))
 		sb.WriteString(strconv.Itoa(int(rank + 1)))
 		sb.WriteByte(' ')
@@ -168,7 +166,6 @@ func (pos Position) String() string {
 
 		sb.WriteByte('\n')
 	}
-	sb.WriteString(bold)
 	sb.WriteString(fgRGB(116, 199, 236))
 	sb.WriteString("  a b c d e f g h\n")
 	sb.WriteString(resetColor)
@@ -177,7 +174,7 @@ func (pos Position) String() string {
 
 func fgRGB(r, g, b int) string {
 	// print pretty RGB colors for text foreground
-	return fmt.Sprintf("\033[38;2;%d;%d;%dm", r, g, b)
+	return fmt.Sprintf("\033[1;38;2;%d;%d;%dm", r, g, b)
 }
 
 func bgRGB(r, g, b int) string {
