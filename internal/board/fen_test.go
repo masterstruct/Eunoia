@@ -230,6 +230,32 @@ func TestParseFEN_PiecePlacement(t *testing.T) {
 	}
 }
 
+func TestParseFEN_SideToMove(t *testing.T) {
+	tests := []struct {
+		name    string
+		fen     string
+		wantErr bool
+	}{
+		{"lowercase w valid", "8/8/8/8/8/8/8/8 w - - 0 1", false},
+		{"lowercase b valid", "8/8/8/8/8/8/8/8 b - - 0 1", false},
+		{"uppercase W valid", "8/8/8/8/8/8/8/8 W - - 0 1", false},
+		{"invalid letter", "8/8/8/8/8/8/8/8 x - - 0 1", true},
+		{"empty side field", "8/8/8/8/8/8/8/8  - - 0 1", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseFEN(tt.fen)
+			if tt.wantErr && err == nil {
+				t.Errorf("expected error for %q but got none:", tt.fen)
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("unexpected error for %q: %v", tt.fen, err)
+			}
+		})
+	}
+}
+
 func TestPlyFullmovesRoundTrip(t *testing.T) {
 	for ply := uint16(0); ply < 600; ply++ {
 		fullmoves, side := PlyToFullmoves(ply)

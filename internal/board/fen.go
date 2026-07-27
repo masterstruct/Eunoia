@@ -16,6 +16,7 @@ var (
 	ErrInvalidPieceChar  = errors.New("fen: piece placement contains an unrecognized character")
 	ErrInvalidRankDigit  = errors.New("fen: empty-square digit must be between 1 and 8")
 	ErrInvalidRankLength = errors.New("fen: each rank must total exactly 8 squares")
+	ErrInvalidSideToMove = errors.New("fen: side to move must be 'w' or 'b'")
 )
 
 func ParseFEN(fen string) (Position, error) {
@@ -81,7 +82,11 @@ func ParseFEN(fen string) (Position, error) {
 		}
 	}
 
-	pos.SideToMove = ParseColor(splits[1][0])
+	sideToMove := ParseColor(splits[1][0])
+	if sideToMove == NoColor {
+		return pos, fmt.Errorf("%w: %q", ErrInvalidSideToMove, fen)
+	}
+	pos.SideToMove = sideToMove
 
 	// TODO: handle error
 	rights, _ := ParseCastlingRights(splits[2])
