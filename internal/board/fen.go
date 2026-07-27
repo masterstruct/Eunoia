@@ -8,6 +8,8 @@ import (
 	"unicode"
 )
 
+const startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
 var (
 	ErrInvalidFieldCount = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
 	ErrInvalidRankCount  = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
@@ -178,4 +180,9 @@ func isWhitespaceOnly(s string) bool {
 		}
 	}
 	return true
+}
+
+func StartingPosition() Position {
+	pos, _ := ParseFEN(startingFEN)
+	return pos
 }

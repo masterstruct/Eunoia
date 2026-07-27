@@ -62,7 +62,7 @@ func TestParseFEN_Valid(t *testing.T) {
 	}{
 		{
 			name: "starting position",
-			fen:  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+			fen:  startingFEN,
 			placements: []placement{
 				{BlackRook, A8}, {BlackKnight, B8}, {BlackBishop, C8}, {BlackQueen, D8},
 				{BlackKing, E8}, {BlackBishop, F8}, {BlackKnight, G8}, {BlackRook, H8},
@@ -145,7 +145,7 @@ func TestParseFEN_Valid(t *testing.T) {
 
 func TestParseFEN_RoundTrip(t *testing.T) {
 	tests := []string{
-		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+		startingFEN,
 		"8/8/8/8/8/8/8/8 w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
@@ -256,5 +256,17 @@ func TestFullmovesPlyRoundTrip(t *testing.T) {
 					fm, side, ply, gotFm, gotSide)
 			}
 		}
+	}
+}
+
+func TestStartingPosition(t *testing.T) {
+	want, err := ParseFEN(startingFEN)
+	if err != nil {
+		t.Fatalf("ParseFEN(startingFEN) returned error: %v", err)
+	}
+
+	got := StartingPosition()
+	if got != want {
+		t.Fatalf("StartingPosition mismatch.\nwant:\n%v\ngot:\n%v", want, got)
 	}
 }
