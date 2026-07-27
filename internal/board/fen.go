@@ -11,12 +11,13 @@ import (
 const startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 var (
-	ErrInvalidFieldCount = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
-	ErrInvalidRankCount  = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
-	ErrInvalidPieceChar  = errors.New("fen: piece placement contains an unrecognized character")
-	ErrInvalidRankDigit  = errors.New("fen: empty-square digit must be between 1 and 8")
-	ErrInvalidRankLength = errors.New("fen: each rank must total exactly 8 squares")
-	ErrInvalidSideToMove = errors.New("fen: side to move must be 'w' or 'b'")
+	ErrInvalidFieldCount    = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
+	ErrInvalidRankCount     = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
+	ErrInvalidPieceChar     = errors.New("fen: piece placement contains an unrecognized character")
+	ErrInvalidRankDigit     = errors.New("fen: empty-square digit must be between 1 and 8")
+	ErrInvalidRankLength    = errors.New("fen: each rank must total exactly 8 squares")
+	ErrInvalidSideToMove    = errors.New("fen: side to move must be 'w' or 'b'")
+	ErrInvalidHalfmoveClock = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 255")
 )
 
 func ParseFEN(fen string) (Position, error) {
@@ -100,9 +101,10 @@ func ParseFEN(fen string) (Position, error) {
 
 	if n >= 5 {
 		halfMove, err := strconv.Atoi(splits[4])
-		if err == nil {
-			pos.HalfmoveClock = uint8(halfMove)
-		} // TODO: handle error
+		if err != nil || halfMove < 0 || halfMove > 100 {
+			return pos, fmt.Errorf("%w: %q", ErrInvalidHalfmoveClock, fen)
+		}
+		pos.HalfmoveClock = uint8(halfMove)
 	}
 	if n >= 6 {
 		fullmoves, err := strconv.Atoi(splits[5])
