@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 var (
@@ -24,20 +25,41 @@ func ParseFEN(fen string) (Position, error) {
 		return pos, fmt.Errorf("%w: %q", ErrInvalidFieldCount, fen)
 	}
 
+	ranks := strings.Split(splits[0], "/")
+	if len(ranks) != 8 {
+		return pos, fmt.Errorf("%w: %q", ErrInvalidRankCount, fen)
+	}
+	for _, r := range ranks {
+		if isWhitespaceOnly(r) || strings.ContainsRune(r, ' ') || len(r) > 8 {
+			return pos, fmt.Errorf("%w: %q", ErrInvalidRankLength, fen)
+		}
+	}
+
 	file := FileA
 	rank := Rank8
 
 	for _, char := range splits[0] {
 		if char == '/' {
+			// end of rank
+			// check how many files were processed
+			// in this rank -- must be exactly 8
+			if file != 8 {
+				return pos, fmt.Errorf("%w: %q", ErrInvalidRankLength, fen)
+			}
+
 			file = 0
 			rank -= 1
 			continue
 		}
 		skip, err := strconv.Atoi(string(char))
-		if err == nil && !(skip < 1 || skip > 8) {
+		if err == nil {
+			// number
+			if skip < 1 || skip > 8 {
+				return pos, fmt.Errorf("%w: %q", ErrInvalidRankDigit, fen)
+			}
 			file += skip
 			continue
-		} // TODO: handle error
+		}
 
 		pt := ParsePieceType(byte(char))
 		color := NoColor
@@ -52,6 +74,8 @@ func ParseFEN(fen string) (Position, error) {
 			pos.PlacePiece(NewPiece(pt, color), NewSquare(file, rank))
 			file += 1
 			continue
+		} else {
+			return pos, fmt.Errorf("%w: %q", ErrInvalidPieceChar, fen)
 		}
 	}
 
@@ -142,4 +166,16 @@ func FullmovesToPly(fullmoves uint16, sideToMove Color) uint16 {
 		return (fullmoves - 1) * 2
 	}
 	return (fullmoves-1)*2 + 1
+}
+
+func isWhitespaceOnly(s string) bool {
+	if len(s) == 0 {
+		return true
+	}
+	for _, r := range s {
+		if !unicode.IsSpace(r) {
+			return false
+		}
+	}
+	return true
 }

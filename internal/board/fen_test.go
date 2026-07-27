@@ -202,6 +202,7 @@ func TestParseFEN_PiecePlacement(t *testing.T) {
 		{"too few ranks", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP w KQkq - 0 1", ErrInvalidRankCount},
 		{"too many ranks", "rnbqkbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankCount},
 		{"rank too short", "rnbqkbn/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
+		{"rank too long", "rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
 		{"rank too long, digit overflow", "rnbqkbn9/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankDigit},
 		{"rank sums over 8 with pieces and digit", "rnbqkbnr1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
 		{"digit zero forbidden", "rnbqkbnr/pppppppp/0/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankDigit},
