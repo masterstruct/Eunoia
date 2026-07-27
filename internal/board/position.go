@@ -140,30 +140,26 @@ func (pos Position) String() string {
 		sb.WriteString(strconv.Itoa(int(rank + 1)))
 		sb.WriteByte(' ')
 		for file := FileA; file <= FileH; file++ {
-			if (rank+file)%2 == 0 {
-				// Black tile
+			sq := NewSquare(file, rank)
+
+			if sq.Color() == Black {
 				sb.WriteString(bgRGB(152, 124, 180))
 			} else {
-				// White tile
 				sb.WriteString(bgRGB(229, 218, 241))
 			}
-			sq := NewSquare(file, rank)
+
 			if pos.Board[sq].Color == Black {
 				sb.WriteString(fgRGB(49, 50, 68))
 			} else {
-				if (rank+file)%2 == 0 {
-					// Black tile
+				if sq.Color() == Black {
 					sb.WriteString(fgRGB(211, 183, 146))
 				} else {
-					// White tile
 					sb.WriteString(fgRGB(196, 173, 146))
 				}
 			}
 			sb.WriteString(pos.Board[sq].PrettyString())
-			sb.WriteByte(' ')
-			sb.WriteString(resetColor)
+			sb.WriteString(" " + resetColor)
 		}
-
 		sb.WriteByte('\n')
 	}
 	sb.WriteString(fgRGB(116, 199, 236))
