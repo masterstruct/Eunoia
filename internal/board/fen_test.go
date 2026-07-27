@@ -163,6 +163,33 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 	}
 }
 
+func TestParseFEN_FieldCount(t *testing.T) {
+	tests := []struct {
+		name    string
+		fen     string
+		wantErr bool
+	}{
+		{"empty string", "", true},
+		{"only whitespace", "   ", true},
+		{"missing all fields but placement", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true},
+		{"missing halfmove and fullmove", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -", false},
+		{"missing fullmove only", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0", false},
+		{"too many fields", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 extra", true},
+		{"extra trailing space", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ", false},
+		{"double space between fields", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w  KQkq - 0 1", false},
+		{"kiwipete", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseFEN(tt.fen)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("expected error for %q but got none", tt.fen)
+			}
+		})
+	}
+}
+
 func TestPlyFullmovesRoundTrip(t *testing.T) {
 	for ply := uint16(0); ply < 600; ply++ {
 		fullmoves, side := PlyToFullmoves(ply)
