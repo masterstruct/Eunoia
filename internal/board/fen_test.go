@@ -110,6 +110,21 @@ func TestParseFEN_Valid(t *testing.T) {
 			placements: []placement{{WhiteKing, A8}, {BlackKing, H8}, {BlackKnight, A1}, {WhiteBishop, H1}},
 			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
+		{
+			name: "kiwipete",
+			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			placements: []placement{
+				{BlackRook, A8}, {BlackKing, E8}, {BlackRook, H8},
+				{BlackPawn, A7}, {BlackPawn, C7}, {BlackPawn, D7}, {BlackQueen, E7}, {BlackPawn, F7}, {BlackBishop, G7},
+				{BlackBishop, A6}, {BlackKnight, B6}, {BlackPawn, E6}, {BlackKnight, F6}, {BlackPawn, G6},
+				{WhitePawn, D5}, {WhiteKnight, E5},
+				{BlackPawn, B4}, {WhitePawn, E4},
+				{WhiteKnight, C3}, {WhiteQueen, F3}, {BlackPawn, H3},
+				{WhitePawn, A2}, {WhitePawn, B2}, {WhitePawn, C2}, {WhiteBishop, D2}, {WhiteBishop, E2}, {WhitePawn, F2}, {WhitePawn, G2}, {WhitePawn, H2},
+				{WhiteRook, A1}, {WhiteKing, E1}, {WhiteRook, H1},
+			},
+			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 0,
+		},
 		// TODO: Add more tests
 	}
 
@@ -131,6 +146,7 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 		"8/8/8/8/8/8/8/8 w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
+		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
 	}
 
 	for _, fen := range tests {
