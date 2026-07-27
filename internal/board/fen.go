@@ -11,13 +11,14 @@ import (
 const startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 var (
-	ErrInvalidFieldCount    = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
-	ErrInvalidRankCount     = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
-	ErrInvalidPieceChar     = errors.New("fen: piece placement contains an unrecognized character")
-	ErrInvalidRankDigit     = errors.New("fen: empty-square digit must be between 1 and 8")
-	ErrInvalidRankLength    = errors.New("fen: each rank must total exactly 8 squares")
-	ErrInvalidSideToMove    = errors.New("fen: side to move must be 'w' or 'b'")
-	ErrInvalidHalfmoveClock = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 255")
+	ErrInvalidFieldCount     = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
+	ErrInvalidRankCount      = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
+	ErrInvalidPieceChar      = errors.New("fen: piece placement contains an unrecognized character")
+	ErrInvalidRankDigit      = errors.New("fen: empty-square digit must be between 1 and 8")
+	ErrInvalidRankLength     = errors.New("fen: each rank must total exactly 8 squares")
+	ErrInvalidSideToMove     = errors.New("fen: side to move must be 'w' or 'b'")
+	ErrInvalidHalfmoveClock  = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 255")
+	ErrInvalidFullmoveNumber = errors.New("fen: fullmove number must be a positive integer starting from 1")
 )
 
 func ParseFEN(fen string) (Position, error) {
@@ -110,9 +111,10 @@ func ParseFEN(fen string) (Position, error) {
 	}
 	if n >= 6 {
 		fullmoves, err := strconv.Atoi(splits[5])
-		if err == nil {
-			pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
-		} // TODO: handle error
+		if err != nil || fullmoves <= 0 || fullmoves > 10000 {
+			return pos, fmt.Errorf("%w: %q", ErrInvalidFullmoveNumber, splits[5])
+		}
+		pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
 	}
 
 	return pos, nil

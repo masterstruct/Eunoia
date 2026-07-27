@@ -330,6 +330,33 @@ func TestParseFEN_HalfmoveClock(t *testing.T) {
 	}
 }
 
+func TestParseFEN_FullmoveNumber(t *testing.T) {
+	tests := []struct {
+		name    string
+		fen     string
+		wantErr bool
+	}{
+		{"valid one", "8/8/8/8/8/8/8/8 w - - 0 1", false},
+		{"valid large", "8/8/8/8/8/8/8/8 w - - 0 9999", false},
+		{"zero invalid", "8/8/8/8/8/8/8/8 w - - 0 0", true},
+		{"non numeric", "8/8/8/8/8/8/8/8 w - - 0 abc", true},
+		{"negative", "8/8/8/8/8/8/8/8 w - - 0 -1", true},
+		{"overflow uint16", "8/8/8/8/8/8/8/8 w - - 0 70000", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseFEN(tt.fen)
+			if tt.wantErr && err == nil {
+				t.Errorf("expected error for %q but got none", tt.fen)
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("unexpected error for %q: %v", tt.fen, err)
+			}
+		})
+	}
+}
+
 func TestPlyFullmovesRoundTrip(t *testing.T) {
 	for ply := uint16(0); ply < 600; ply++ {
 		fullmoves, side := PlyToFullmoves(ply)
