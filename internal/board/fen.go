@@ -102,5 +102,15 @@ func (pos Position) FEN() string {
 		}
 	}
 
+	sb.WriteByte(' ')
+	sb.WriteString(pos.SideToMove.String())
+	sb.WriteByte(' ')
+	sb.WriteString(pos.CastlingRights.String())
+	sb.WriteByte(' ')
+	sb.WriteString(pos.EnPassant.String())
+	sb.WriteByte(' ')
+	sb.WriteString(strconv.Itoa(int(pos.HalfmoveClock)))
+	sb.WriteByte(' ')
+	sb.WriteString(strconv.Itoa(int(pos.Ply)))
 	return sb.String()
 }
