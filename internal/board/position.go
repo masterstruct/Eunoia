@@ -136,36 +136,57 @@ func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 func (pos Position) String() string {
 	var sb strings.Builder
 	for rank := Rank8; rank >= Rank1; rank-- {
+		// ranks
 		sb.WriteString(fgRGB(235, 160, 172))
 		sb.WriteString(strconv.Itoa(int(rank + 1)))
 		sb.WriteByte(' ')
+
 		for file := FileA; file <= FileH; file++ {
 			sq := NewSquare(file, rank)
+			sqColor := sq.Color()
 
-			if sq.Color() == Black {
-				sb.WriteString(bgRGB(152, 124, 180))
+			sb.WriteString(squareBG(sqColor))
+
+			piece, ok := pos.PieceOn(sq)
+			if ok {
+				sb.WriteString(pieceFG(piece.Color, sqColor))
+				sb.WriteString(piece.PrettyString())
 			} else {
-				sb.WriteString(bgRGB(229, 218, 241))
+				sb.WriteByte(' ')
 			}
 
-			if pos.Board[sq].Color == Black {
-				sb.WriteString(fgRGB(49, 50, 68))
-			} else {
-				if sq.Color() == Black {
-					sb.WriteString(fgRGB(211, 183, 146))
-				} else {
-					sb.WriteString(fgRGB(196, 173, 146))
-				}
-			}
-			sb.WriteString(pos.Board[sq].PrettyString())
-			sb.WriteString(" " + resetColor)
+			sb.WriteByte(' ')
+			sb.WriteString(resetColor)
 		}
+
 		sb.WriteByte('\n')
 	}
+
+	// files
 	sb.WriteString(fgRGB(116, 199, 236))
 	sb.WriteString("  a b c d e f g h\n")
 	sb.WriteString(resetColor)
+
 	return sb.String()
+}
+
+func squareBG(sqColor Color) string {
+	if sqColor == Black {
+		return bgRGB(152, 124, 180)
+	}
+	return bgRGB(229, 218, 241)
+}
+
+func pieceFG(pieceColor Color, sqColor Color) string {
+	if pieceColor == Black {
+		return fgRGB(49, 50, 68)
+	}
+	if sqColor == Black {
+		// light piece 1
+		return fgRGB(211, 183, 146)
+	}
+	// light piece 2
+	return fgRGB(196, 173, 146)
 }
 
 func fgRGB(r, g, b int) string {
