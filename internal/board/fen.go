@@ -85,7 +85,7 @@ func ParseFEN(fen string) (Position, error) {
 
 	sideToMove := ParseColor(splits[1][0])
 	if sideToMove == NoColor {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidSideToMove, fen)
+		return pos, fmt.Errorf("%w: %q", ErrInvalidSideToMove, splits[1][0])
 	}
 	pos.SideToMove = sideToMove
 
@@ -102,7 +102,7 @@ func ParseFEN(fen string) (Position, error) {
 	if n >= 5 {
 		halfMove, err := strconv.Atoi(splits[4])
 		if err != nil || halfMove < 0 || halfMove > 100 {
-			return pos, fmt.Errorf("%w: %q", ErrInvalidHalfmoveClock, fen)
+			return pos, fmt.Errorf("%w: %q", ErrInvalidHalfmoveClock, splits[4])
 		}
 		pos.HalfmoveClock = uint8(halfMove)
 	}
