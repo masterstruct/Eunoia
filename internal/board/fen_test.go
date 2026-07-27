@@ -21,7 +21,7 @@ func assertPositionEqual(t *testing.T, got, want Position, fen string) {
 	t.Helper()
 
 	if got.Board != want.Board {
-		t.Errorf("%q: board mismatch\ngot:  %v\nwant: %v", fen, got.Board, want.Board)
+		t.Errorf("%q: board mismatch\ngot:\n%v\nwant: \n%v", fen, got, want)
 	}
 	if got.pieces != want.pieces {
 		t.Errorf("%q: piece bitboards mismatch\ngot:  %v\nwant: %v", fen, got.pieces, want.pieces)
