@@ -138,31 +138,36 @@ func TestPieceTypes(t *testing.T) {
 
 func TestPieceString(t *testing.T) {
 	tests := []struct {
-		name  string
-		piece Piece
-		want  string
+		name   string
+		piece  Piece
+		want   string
+		pretty string
 	}{
-		{"white pawn", WhitePawn, "P"},
-		{"white knight", WhiteKnight, "N"},
-		{"white bishop", WhiteBishop, "B"},
-		{"white rook", WhiteRook, "R"},
-		{"white queen", WhiteQueen, "Q"},
-		{"white king", WhiteKing, "K"},
-		{"black pawn", BlackPawn, "p"},
-		{"black knight", BlackKnight, "n"},
-		{"black bishop", BlackBishop, "b"},
-		{"black rook", BlackRook, "r"},
-		{"black queen", BlackQueen, "q"},
-		{"black king", BlackKing, "k"},
-		{"no piece", NoPiece, "."},
-		{"illegal piece", Piece{NoPieceType, White}, "."},
+		{"white pawn", WhitePawn, "P", "♙"},
+		{"white knight", WhiteKnight, "N", "♘"},
+		{"white bishop", WhiteBishop, "B", "♗"},
+		{"white rook", WhiteRook, "R", "♖"},
+		{"white queen", WhiteQueen, "Q", "♕"},
+		{"white king", WhiteKing, "K", "♔"},
+		{"black pawn", BlackPawn, "p", "♟"},
+		{"black knight", BlackKnight, "n", "♞"},
+		{"black bishop", BlackBishop, "b", "♝"},
+		{"black rook", BlackRook, "r", "♜"},
+		{"black queen", BlackQueen, "q", "♛"},
+		{"black king", BlackKing, "k", "♚"},
+		{"no piece", NoPiece, ".", ""},
+		{"illegal piece", Piece{NoPieceType, White}, ".", ""},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.piece.String()
-			if got != tt.want {
-				t.Errorf("expected %q but got %q", tt.want, got)
+			gotWant := tt.piece.String()
+			if gotWant != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, gotWant)
+			}
+			gotPretty := tt.piece.PrettyString()
+			if gotPretty != tt.pretty {
+				t.Errorf("expected pretty %q but got %q", tt.want, gotWant)
 			}
 		})
 	}
