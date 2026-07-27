@@ -213,7 +213,7 @@ func NewPosition() Position {
 		CastlingRights: AllCastling,
 		EnPassant:      NoSquare,
 		HalfmoveClock:  0,
-		Ply:            0,
+		Ply:            1,
 		Hash:           69420,
 	}
 	pos.Board = NewBoard()
