@@ -106,8 +106,8 @@ func TestParseFEN_Valid(t *testing.T) {
 
 		{
 			name:       "single piece each corner",
-			fen:        "K6k/8/8/8/8/8/8/8 w - - 0 1",
-			placements: []placement{{WhiteKing, A8}, {BlackKing, H8}},
+			fen:        "K6k/8/8/8/8/8/8/n6B w - - 0 1",
+			placements: []placement{{WhiteKing, A8}, {BlackKing, H8}, {BlackKnight, A1}, {WhiteBishop, H1}},
 			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 1,
 		},
 		// TODO: Add more tests
