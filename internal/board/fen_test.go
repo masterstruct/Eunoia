@@ -73,13 +73,13 @@ func TestParseFEN_Valid(t *testing.T) {
 				{WhiteRook, A1}, {WhiteKnight, B1}, {WhiteBishop, C1}, {WhiteQueen, D1},
 				{WhiteKing, E1}, {WhiteBishop, F1}, {WhiteKnight, G1}, {WhiteRook, H1},
 			},
-			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 1,
+			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
 			name:       "empty board",
 			fen:        "8/8/8/8/8/8/8/8 w - - 0 1",
 			placements: nil,
-			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 1,
+			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
 			name: "en passant set",
@@ -101,14 +101,14 @@ func TestParseFEN_Valid(t *testing.T) {
 				{WhiteRook, A1}, {WhiteKnight, B1}, {WhiteBishop, C1}, {WhiteQueen, D1},
 				{WhiteKing, E1}, {WhiteBishop, F1}, {WhiteKnight, G1}, {WhiteRook, H1},
 			},
-			sideToMove: White, castling: AllCastling, epSq: E6, halfmove: 0, ply: 3,
+			sideToMove: White, castling: AllCastling, epSq: E6, halfmove: 0, ply: 4,
 		},
 
 		{
 			name:       "single piece each corner",
 			fen:        "K6k/8/8/8/8/8/8/n6B w - - 0 1",
 			placements: []placement{{WhiteKing, A8}, {BlackKing, H8}, {BlackKnight, A1}, {WhiteBishop, H1}},
-			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 1,
+			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		// TODO: Add more tests
 	}

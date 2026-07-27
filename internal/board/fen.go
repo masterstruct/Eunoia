@@ -61,9 +61,13 @@ func ParseFEN(fen string) (Position, error) {
 		} // TODO: handle error
 	}
 	if n >= 6 {
-		ply, err := strconv.Atoi(splits[5])
+		fullmoves, err := strconv.Atoi(splits[5])
 		if err == nil {
-			pos.Ply = uint16(ply)
+			// pos.Ply = uint16(fullmoves)
+			pos.Ply = uint16(fullmoves-1) * 2
+			if pos.SideToMove == Black {
+				pos.Ply += 1
+			}
 		} // TODO: handle error
 	}
 
@@ -111,6 +115,10 @@ func (pos Position) FEN() string {
 	sb.WriteByte(' ')
 	sb.WriteString(strconv.Itoa(int(pos.HalfmoveClock)))
 	sb.WriteByte(' ')
-	sb.WriteString(strconv.Itoa(int(pos.Ply)))
+	if pos.SideToMove == Black {
+		sb.WriteString(strconv.Itoa(int((pos.Ply-1)/2 + 1)))
+	} else {
+		sb.WriteString(strconv.Itoa(int(pos.Ply/2 + 1)))
+	}
 	return sb.String()
 }
