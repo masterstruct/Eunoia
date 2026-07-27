@@ -70,15 +70,15 @@ func TestPieceTypeString(t *testing.T) {
 	tests := []struct {
 		name string
 		pt   PieceType
-		want string
+		want byte
 	}{
-		{"pawn", Pawn, "p"},
-		{"knight", Knight, "n"},
-		{"bishop", Bishop, "b"},
-		{"rook", Rook, "r"},
-		{"queen", Queen, "q"},
-		{"king", King, "k"},
-		{"no piece type", NoPieceType, "."},
+		{"pawn", Pawn, 'p'},
+		{"knight", Knight, 'n'},
+		{"bishop", Bishop, 'b'},
+		{"rook", Rook, 'r'},
+		{"queen", Queen, 'q'},
+		{"king", King, 'k'},
+		{"no piece type", NoPieceType, '.'},
 	}
 
 	for _, tt := range tests {
@@ -140,23 +140,23 @@ func TestPieceString(t *testing.T) {
 	tests := []struct {
 		name   string
 		piece  Piece
-		want   string
+		want   byte
 		pretty string
 	}{
-		{"white pawn", WhitePawn, "P", "♟"},
-		{"white knight", WhiteKnight, "N", "♞"},
-		{"white bishop", WhiteBishop, "B", "♝"},
-		{"white rook", WhiteRook, "R", "♜"},
-		{"white queen", WhiteQueen, "Q", "♛"},
-		{"white king", WhiteKing, "K", "♚"},
-		{"black pawn", BlackPawn, "p", "♟"},
-		{"black knight", BlackKnight, "n", "♞"},
-		{"black bishop", BlackBishop, "b", "♝"},
-		{"black rook", BlackRook, "r", "♜"},
-		{"black queen", BlackQueen, "q", "♛"},
-		{"black king", BlackKing, "k", "♚"},
-		{"no piece", NoPiece, ".", " "},
-		{"illegal piece", Piece{NoPieceType, White}, ".", " "},
+		{"white pawn", WhitePawn, 'P', "♟"},
+		{"white knight", WhiteKnight, 'N', "♞"},
+		{"white bishop", WhiteBishop, 'B', "♝"},
+		{"white rook", WhiteRook, 'R', "♜"},
+		{"white queen", WhiteQueen, 'Q', "♛"},
+		{"white king", WhiteKing, 'K', "♚"},
+		{"black pawn", BlackPawn, 'p', "♟"},
+		{"black knight", BlackKnight, 'n', "♞"},
+		{"black bishop", BlackBishop, 'b', "♝"},
+		{"black rook", BlackRook, 'r', "♜"},
+		{"black queen", BlackQueen, 'q', "♛"},
+		{"black king", BlackKing, 'k', "♚"},
+		{"no piece", NoPiece, '.', " "},
+		{"illegal piece", Piece{NoPieceType, White}, '.', " "},
 	}
 
 	for _, tt := range tests {

@@ -53,22 +53,22 @@ const (
 	NoPieceType
 )
 
-func (pt PieceType) String() string {
+func (pt PieceType) String() byte {
 	switch pt {
 	case Pawn:
-		return "p"
+		return 'p'
 	case Knight:
-		return "n"
+		return 'n'
 	case Bishop:
-		return "b"
+		return 'b'
 	case Rook:
-		return "r"
+		return 'r'
 	case Queen:
-		return "q"
+		return 'q'
 	case King:
-		return "k"
+		return 'k'
 	default:
-		return "."
+		return '.'
 	}
 }
 
@@ -118,11 +118,11 @@ var (
 	NoPiece = Piece{NoPieceType, NoColor}
 )
 
-func (p Piece) String() string {
+func (p Piece) String() byte {
 	letter := p.Type.String()
 	if p.Color == White && p.Type != NoPieceType {
 		// capitalize letter
-		letter = string(byte(letter[0]) &^ 0x20)
+		letter &^= 0x20
 	}
 	return letter
 }
