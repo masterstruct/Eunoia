@@ -72,5 +72,35 @@ func ParseFEN(fen string) (Position, error) {
 
 func (pos Position) FEN() string {
 	// TODO: use Bitboard.PopLSB() to loop faster
-	return ""
+	var sb strings.Builder
+	skip := 0
+
+	for rank := Rank8; rank >= Rank1; rank -= 1 {
+		for i := range 8 {
+			sq := NewSquare(i, rank)
+
+			piece, ok := pos.PieceOn(sq)
+			if ok {
+				// found piece
+				if skip > 0 {
+					sb.WriteString(strconv.Itoa(skip))
+					skip = 0
+				}
+				sb.WriteByte(piece.String())
+				continue
+			}
+			skip += 1
+		}
+
+		// reached end of rank
+		if skip > 0 {
+			sb.WriteString(strconv.Itoa(skip))
+			skip = 0
+		}
+		if rank != Rank1 {
+			sb.WriteByte('/')
+		}
+	}
+
+	return sb.String()
 }
