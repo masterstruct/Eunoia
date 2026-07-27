@@ -143,7 +143,7 @@ func (p Piece) PrettyString() string {
 	case King:
 		symbol = '♔'
 	default:
-		return ""
+		return " "
 	}
 	if p.Color == Black {
 		// convert white ♙ to black ♟
