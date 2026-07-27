@@ -88,8 +88,10 @@ func ParseFEN(fen string) (Position, error) {
 	}
 	pos.SideToMove = sideToMove
 
-	// TODO: handle error
-	rights, _ := ParseCastlingRights(splits[2])
+	rights, err := ParseCastlingRights(splits[2])
+	if err != nil {
+		return pos, err
+	}
 	pos.CastlingRights = rights
 
 	// TODO: handle error

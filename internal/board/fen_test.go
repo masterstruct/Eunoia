@@ -256,6 +256,27 @@ func TestParseFEN_SideToMove(t *testing.T) {
 	}
 }
 
+func TestParseFEN_Castling(t *testing.T) {
+	tests := []struct {
+		name    string
+		fen     string
+		wantErr error
+	}{
+		{"invalid char propagates", "8/8/8/8/8/8/8/8 w X - 0 1", ErrInvalidCastlingChar},
+		{"duplicate propagates", "8/8/8/8/8/8/8/8 w KK - 0 1", ErrDuplicateCastlingChar},
+		{"too long propagates", "8/8/8/8/8/8/8/8 w KQkqK - 0 1", ErrInvalidCastlingLength},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseFEN(tt.fen)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("expected error %v but got %v", tt.wantErr, err)
+			}
+		})
+	}
+}
+
 func TestPlyFullmovesRoundTrip(t *testing.T) {
 	for ply := uint16(0); ply < 600; ply++ {
 		fullmoves, side := PlyToFullmoves(ply)
