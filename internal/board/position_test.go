@@ -503,27 +503,11 @@ func TestRemovePiece(t *testing.T) {
 func BenchmarkRemovePiece(b *testing.B) {
 	InitBitboards()
 
-	pos := NewPosition()
-
-	// TODO: replace with FEN loading
-	setup := []placement{
-		{BlackRook, A8}, {BlackBishop, B8}, {BlackKnight, C8}, {BlackQueen, D8},
-		{BlackKing, E8}, {BlackBishop, F8}, {BlackKnight, G8}, {BlackRook, H8},
-		{BlackPawn, A7}, {BlackPawn, B7}, {BlackPawn, C7}, {BlackPawn, D7},
-		{BlackPawn, E7}, {BlackPawn, F7}, {BlackPawn, G7}, {BlackPawn, H7},
-
-		{WhitePawn, A2}, {WhitePawn, B2}, {WhitePawn, C2}, {WhitePawn, D2},
-		{WhitePawn, E2}, {WhitePawn, F2}, {WhitePawn, G2}, {WhitePawn, H2},
-		{WhiteRook, A1}, {WhiteBishop, B1}, {WhiteKnight, C1}, {WhiteQueen, D1},
-		{WhiteKing, E1}, {WhiteBishop, F1}, {WhiteKnight, G1}, {WhiteRook, H1},
-	}
+	pos := StartingPosition()
 
 	b.ResetTimer()
 
 	for i := 0; b.Loop(); i++ {
-		for _, x := range setup {
-			pos.PlacePiece(x.p, x.sq)
-		}
 
 		for sq := range H8 {
 			pos.RemovePiece(sq)
@@ -565,24 +549,7 @@ func TestPieceOn(t *testing.T) {
 func BenchmarkPieceOn(b *testing.B) {
 	InitBitboards()
 
-	pos := NewPosition()
-
-	// TODO: replace with FEN loading
-	setup := []placement{
-		{BlackRook, A8}, {BlackBishop, B8}, {BlackKnight, C8}, {BlackQueen, D8},
-		{BlackKing, E8}, {BlackBishop, F8}, {BlackKnight, G8}, {BlackRook, H8},
-		{BlackPawn, A7}, {BlackPawn, B7}, {BlackPawn, C7}, {BlackPawn, D7},
-		{BlackPawn, E7}, {BlackPawn, F7}, {BlackPawn, G7}, {BlackPawn, H7},
-
-		{WhitePawn, A2}, {WhitePawn, B2}, {WhitePawn, C2}, {WhitePawn, D2},
-		{WhitePawn, E2}, {WhitePawn, F2}, {WhitePawn, G2}, {WhitePawn, H2},
-		{WhiteRook, A1}, {WhiteBishop, B1}, {WhiteKnight, C1}, {WhiteQueen, D1},
-		{WhiteKing, E1}, {WhiteBishop, F1}, {WhiteKnight, G1}, {WhiteRook, H1},
-	}
-
-	for _, x := range setup {
-		pos.PlacePiece(x.p, x.sq)
-	}
+	pos := StartingPosition()
 
 	var piece Piece
 	var ok bool
