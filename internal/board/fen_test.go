@@ -357,6 +357,26 @@ func TestParseFEN_FullmoveNumber(t *testing.T) {
 	}
 }
 
+func TestParseFEN_KingCount(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+	}{
+		{"two white kings", "k6K/8/8/8/8/8/8/K7 w - - 0 1"},
+		{"two black kings", "K6k/8/8/8/8/8/8/k7 w - - 0 1"},
+		{"no white king", "k7/8/8/8/8/8/8/8 w - - 0 1"},
+		{"no black king", "8/8/8/8/8/8/8/K7 w - - 0 1"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, err := ParseFEN(tt.fen); err == nil {
+				t.Errorf("expected error for %q but got none", tt.fen)
+			}
+		})
+	}
+}
+
 func TestPlyFullmovesRoundTrip(t *testing.T) {
 	for ply := uint16(0); ply < 600; ply++ {
 		fullmoves, side := PlyToFullmoves(ply)

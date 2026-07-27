@@ -19,6 +19,7 @@ var (
 	ErrInvalidSideToMove     = errors.New("fen: side to move must be 'w' or 'b'")
 	ErrInvalidHalfmoveClock  = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 255")
 	ErrInvalidFullmoveNumber = errors.New("fen: fullmove number must be a positive integer starting from 1")
+	ErrInvalidKingCount      = errors.New("fen: each side must have exactly one king")
 )
 
 func ParseFEN(fen string) (Position, error) {
@@ -115,6 +116,10 @@ func ParseFEN(fen string) (Position, error) {
 			return pos, fmt.Errorf("%w: %q", ErrInvalidFullmoveNumber, splits[5])
 		}
 		pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
+	}
+
+	if pos.PieceBB(WhiteKing).CountBits() != 1 || pos.PieceBB(BlackKing).CountBits() != 1 {
+		return pos, fmt.Errorf("%w: %q", ErrInvalidKingCount, fen)
 	}
 
 	return pos, nil
