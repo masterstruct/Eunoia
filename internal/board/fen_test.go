@@ -277,6 +277,32 @@ func TestParseFEN_Castling(t *testing.T) {
 	}
 }
 
+func TestParseFEN_EnPassant(t *testing.T) {
+	tests := []struct {
+		name    string
+		fen     string
+		wantErr bool
+	}{
+		{"no en passant", "8/8/8/8/8/8/8/8 w - - 0 1", false},
+		{"valid en passant square", "8/8/8/8/8/8/8/8 w - e3 0 1", false},
+		{"valid en passant square rank 6", "8/8/8/8/8/8/8/8 b - e6 0 1", false},
+		{"invalid square garbage", "8/8/8/8/8/8/8/8 w - z9 0 1", true},
+		{"invalid square too short", "8/8/8/8/8/8/8/8 w - e 0 1", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseFEN(tt.fen)
+			if tt.wantErr && err == nil {
+				t.Errorf("expected error for %q but got none", tt.fen)
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("unexpected error for %q: %v", tt.fen, err)
+			}
+		})
+	}
+}
+
 func TestParseFEN_HalfmoveClock(t *testing.T) {
 	tests := []struct {
 		name    string

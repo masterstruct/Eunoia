@@ -80,6 +80,10 @@ func (sq Square) String() string {
 }
 
 func ParseSquare(s string) (Square, error) {
+	if s == "-" {
+		return NoSquare, nil
+	}
+
 	if len(s) != 2 {
 		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidSquareLength, s)
 	}

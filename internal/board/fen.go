@@ -95,8 +95,10 @@ func ParseFEN(fen string) (Position, error) {
 	}
 	pos.CastlingRights = rights
 
-	// TODO: handle error
-	sq, _ := ParseSquare(splits[3])
+	sq, err := ParseSquare(splits[3])
+	if err != nil {
+		return pos, fmt.Errorf("%w: %q", err, splits[3])
+	}
 	pos.EnPassant = sq
 
 	if n >= 5 {
