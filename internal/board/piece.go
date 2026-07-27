@@ -131,23 +131,19 @@ func (p Piece) PrettyString() string {
 	var symbol rune
 	switch p.Type {
 	case Pawn:
-		symbol = '♙'
+		symbol = '♟'
 	case Knight:
-		symbol = '♘'
+		symbol = '♞'
 	case Bishop:
-		symbol = '♗'
+		symbol = '♝'
 	case Rook:
-		symbol = '♖'
+		symbol = '♜'
 	case Queen:
-		symbol = '♕'
+		symbol = '♛'
 	case King:
-		symbol = '♔'
+		symbol = '♚'
 	default:
 		return " "
-	}
-	if p.Color == Black {
-		// convert white ♙ to black ♟
-		symbol += 6
 	}
 	return string(symbol)
 }

@@ -143,12 +143,12 @@ func TestPieceString(t *testing.T) {
 		want   string
 		pretty string
 	}{
-		{"white pawn", WhitePawn, "P", "♙"},
-		{"white knight", WhiteKnight, "N", "♘"},
-		{"white bishop", WhiteBishop, "B", "♗"},
-		{"white rook", WhiteRook, "R", "♖"},
-		{"white queen", WhiteQueen, "Q", "♕"},
-		{"white king", WhiteKing, "K", "♔"},
+		{"white pawn", WhitePawn, "P", "♟"},
+		{"white knight", WhiteKnight, "N", "♞"},
+		{"white bishop", WhiteBishop, "B", "♝"},
+		{"white rook", WhiteRook, "R", "♜"},
+		{"white queen", WhiteQueen, "Q", "♛"},
+		{"white king", WhiteKing, "K", "♚"},
 		{"black pawn", BlackPawn, "p", "♟"},
 		{"black knight", BlackKnight, "n", "♞"},
 		{"black bishop", BlackBishop, "b", "♝"},
