@@ -146,3 +146,32 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 		})
 	}
 }
+
+func TestPlyFullmovesRoundTrip(t *testing.T) {
+	for ply := uint16(0); ply < 600; ply++ {
+		fullmoves, side := PlyToFullmoves(ply)
+		gotPly := FullmovesToPly(fullmoves, side)
+
+		if gotPly != ply {
+			t.Fatalf("ply=%d => fullmoves=%d side=%v => gotPly=%d",
+				ply, fullmoves, side, gotPly)
+		}
+	}
+}
+
+func TestFullmovesPlyRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	// fullmoves starts at 1
+	for fm := uint16(1); fm < 300; fm++ {
+		for _, side := range []Color{White, Black} {
+			ply := FullmovesToPly(fm, side)
+			gotFm, gotSide := PlyToFullmoves(ply)
+
+			if gotFm != fm || gotSide != side {
+				t.Fatalf("fullmoves round-trip failed: fullmoves=%d side=%v ply=%d gotFullmoves=%d gotSide=%v",
+					fm, side, ply, gotFm, gotSide)
+			}
+		}
+	}
+}

@@ -63,7 +63,7 @@ func ParseFEN(fen string) (Position, error) {
 	if n >= 6 {
 		fullmoves, err := strconv.Atoi(splits[5])
 		if err == nil {
-			pos.Ply = FullmovesToPly(uint8(fullmoves), pos.SideToMove)
+			pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
 		} // TODO: handle error
 	}
 
@@ -116,16 +116,16 @@ func (pos Position) FEN() string {
 	return sb.String()
 }
 
-func PlyToFullmoves(ply uint16) (fullmoves uint8, sideToMove Color) {
+func PlyToFullmoves(ply uint16) (fullmoves uint16, sideToMove Color) {
 	if ply%2 == 0 {
-		return uint8(ply/2 + 1), White
+		return ply/2 + 1, White
 	}
-	return uint8((ply-1)/2 + 1), Black
+	return (ply-1)/2 + 1, Black
 }
 
-func FullmovesToPly(fullmoves uint8, sideToMove Color) uint16 {
+func FullmovesToPly(fullmoves uint16, sideToMove Color) uint16 {
 	if sideToMove == White {
-		return uint16((fullmoves - 1) * 2)
+		return (fullmoves - 1) * 2
 	}
-	return uint16((fullmoves-1)*2 + 1)
+	return (fullmoves-1)*2 + 1
 }
