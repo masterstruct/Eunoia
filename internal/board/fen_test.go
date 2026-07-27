@@ -1,6 +1,9 @@
 package board
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func wantPosition(placements []placement, sideToMove Color, castling CastlingRights, epSq Square, halfmove uint8, ply uint16) Position {
 	pos := NewPosition()
@@ -185,6 +188,42 @@ func TestParseFEN_FieldCount(t *testing.T) {
 			_, err := ParseFEN(tt.fen)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error for %q but got none", tt.fen)
+			}
+		})
+	}
+}
+
+func TestParseFEN_PiecePlacement(t *testing.T) {
+	tests := []struct {
+		name    string
+		fen     string
+		wantErr error
+	}{
+		{"too few ranks", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP w KQkq - 0 1", ErrInvalidRankCount},
+		{"too many ranks", "rnbqkbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankCount},
+		{"rank too short", "rnbqkbn/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
+		{"rank too long, digit overflow", "rnbqkbn9/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankDigit},
+		{"rank sums over 8 with pieces and digit", "rnbqkbnr1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
+		{"digit zero forbidden", "rnbqkbnr/pppppppp/0/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankDigit},
+		{"digit 9 invalid", "9/8/8/8/8/8/8/8 w - - 0 1", ErrInvalidRankDigit},
+		{"invalid piece letter", "xnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidPieceChar},
+		{"empty rank string", "//8/8/8/8/8/8 w - - 0 1", ErrInvalidRankLength},
+		{"trailing slash", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR/ w KQkq - 0 1", ErrInvalidRankCount},
+		{"leading slash", "/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankCount},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseFEN(tt.fen)
+			if tt.wantErr != nil {
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf("expected error %v but got %v", tt.wantErr, err)
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
 			}
 		})
 	}

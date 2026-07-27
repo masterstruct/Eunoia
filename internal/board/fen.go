@@ -7,7 +7,13 @@ import (
 	"strings"
 )
 
-var ErrInvalidFieldCount = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
+var (
+	ErrInvalidFieldCount = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
+	ErrInvalidRankCount  = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
+	ErrInvalidPieceChar  = errors.New("fen: piece placement contains an unrecognized character")
+	ErrInvalidRankDigit  = errors.New("fen: empty-square digit must be between 1 and 8")
+	ErrInvalidRankLength = errors.New("fen: each rank must total exactly 8 squares")
+)
 
 func ParseFEN(fen string) (Position, error) {
 	splits := strings.Fields(fen)
@@ -129,6 +135,9 @@ func PlyToFullmoves(ply uint16) (fullmoves uint16, sideToMove Color) {
 }
 
 func FullmovesToPly(fullmoves uint16, sideToMove Color) uint16 {
+	if fullmoves == 0 {
+		return 0
+	}
 	if sideToMove == White {
 		return (fullmoves - 1) * 2
 	}
