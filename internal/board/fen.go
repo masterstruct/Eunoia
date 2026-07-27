@@ -69,3 +69,8 @@ func ParseFEN(fen string) (Position, error) {
 
 	return pos, nil
 }
+
+func (pos Position) FEN() string {
+	// TODO: use Bitboard.PopLSB() to loop faster
+	return ""
+}

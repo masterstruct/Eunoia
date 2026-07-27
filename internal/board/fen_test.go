@@ -124,3 +124,25 @@ func TestParseFEN_Valid(t *testing.T) {
 		})
 	}
 }
+
+func TestParseFEN_RoundTrip(t *testing.T) {
+	tests := []string{
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+		"8/8/8/8/8/8/8/8 w - - 0 1",
+		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
+		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
+	}
+
+	for _, fen := range tests {
+		t.Run(fen, func(t *testing.T) {
+			pos, err := ParseFEN(fen)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			got := pos.FEN()
+			if got != fen {
+				t.Fatalf("round-trip mismatch: started %q, got %q", fen, got)
+			}
+		})
+	}
+}
