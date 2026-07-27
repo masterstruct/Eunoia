@@ -69,6 +69,9 @@ func (sq Square) IsValid() bool {
 }
 
 func (sq Square) String() string {
+	if sq == NoSquare {
+		return "-"
+	}
 	f := sq.File()
 	r := sq.Rank()
 	// ascii manipulation

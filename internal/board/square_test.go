@@ -154,6 +154,7 @@ func TestString(t *testing.T) {
 		{D5, "d5"},
 		{B2, "b2"},
 		{G7, "g7"},
+		{NoSquare, "-"},
 	}
 
 	for _, tt := range tests {
