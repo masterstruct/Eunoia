@@ -155,7 +155,7 @@ func (pos Position) FEN() string {
 			continue
 		}
 
-		for file := range 8 {
+		for file := FileA; file <= FileH; file++ {
 			sq := NewSquare(file, rank)
 
 			if !occupied.IsBitSet(sq) {

@@ -20,7 +20,7 @@ const (
 )
 
 const (
-	resetColor = "\033[0m"
+	ResetColor = "\033[0m"
 )
 
 var (
@@ -137,7 +137,7 @@ func (pos Position) String() string {
 	var sb strings.Builder
 	for rank := Rank8; rank >= Rank1; rank-- {
 		// ranks
-		sb.WriteString(fgRGB(235, 160, 172))
+		sb.WriteString(ForegroundRGB(235, 160, 172))
 		sb.WriteString(strconv.Itoa(int(rank + 1)))
 		sb.WriteByte(' ')
 
@@ -156,40 +156,42 @@ func (pos Position) String() string {
 			}
 
 			sb.WriteByte(' ')
-			sb.WriteString(resetColor)
+			sb.WriteString(ResetColor)
 		}
 
 		sb.WriteByte('\n')
 	}
 
 	// files
-	sb.WriteString(fgRGB(116, 199, 236))
+	sb.WriteString(ForegroundRGB(116, 199, 236))
 	sb.WriteString("  a b c d e f g h\n")
-	sb.WriteString(resetColor)
+	sb.WriteString(ResetColor)
 
 	return sb.String()
 }
 
 func squareBG(sqColor Color) string {
-	if sqColor == Black {
-		return bgRGB(152, 124, 180)
-	}
-	return bgRGB(229, 218, 241)
+	// TODO: print colors only if not running in VSCode
+	// if sqColor == Black {
+	// 	return bgRGB(152, 124, 180)
+	// }
+	// return bgRGB(229, 218, 241)
+	return ""
 }
 
 func pieceFG(pieceColor Color, sqColor Color) string {
 	if pieceColor == Black {
-		return fgRGB(49, 50, 68)
+		return ForegroundRGB(49, 50, 68)
 	}
 	if sqColor == Black {
 		// light piece 1
-		return fgRGB(211, 183, 146)
+		return ForegroundRGB(211, 183, 146)
 	}
 	// light piece 2
-	return fgRGB(196, 173, 146)
+	return ForegroundRGB(196, 173, 146)
 }
 
-func fgRGB(r, g, b int) string {
+func ForegroundRGB(r, g, b int) string {
 	// print pretty RGB colors for text foreground
 	return fmt.Sprintf("\033[1;38;2;%d;%d;%dm", r, g, b)
 }

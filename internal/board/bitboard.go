@@ -1,6 +1,10 @@
 package board
 
-import "math/bits"
+import (
+	"math/bits"
+	"strconv"
+	"strings"
+)
 
 type Bitboard uint64
 
@@ -55,4 +59,39 @@ func (bb *Bitboard) PopLSB() Square {
 		bb.ClearBit(bit)
 	}
 	return bit
+}
+
+func (bb Bitboard) String() string {
+	var sb strings.Builder
+	sb.WriteString(strconv.FormatUint(uint64(bb), 10))
+
+	sb.WriteByte('\n')
+
+	for rank := Rank8; rank >= Rank1; rank-- {
+		// ranks
+		sb.WriteString(ForegroundRGB(250, 179, 135))
+		sb.WriteString(strconv.Itoa(int(rank + 1)))
+		sb.WriteByte(' ')
+
+		for file := FileA; file <= FileH; file++ {
+			sq := NewSquare(file, rank)
+			if bb.IsBitSet(sq) {
+				sb.WriteString(ForegroundRGB(166, 227, 161))
+				sb.WriteString("1 ")
+			} else {
+				sb.WriteString(ForegroundRGB(243, 139, 168))
+				sb.WriteString(". ")
+			}
+			sb.WriteString(ResetColor)
+		}
+
+		sb.WriteByte('\n')
+	}
+
+	// files
+	sb.WriteString(ForegroundRGB(116, 199, 236))
+	sb.WriteString("  a b c d e f g h\n")
+	sb.WriteString(ResetColor)
+
+	return sb.String()
 }
