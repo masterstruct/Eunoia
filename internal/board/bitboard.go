@@ -9,7 +9,7 @@ const EmptyBB Bitboard = 0
 
 var SquareBB [64]Bitboard
 
-func InitBitboards() {
+func init() {
 	for sq := range 64 {
 		SquareBB[sq] = Bitboard(1) << sq
 	}

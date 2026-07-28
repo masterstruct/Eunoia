@@ -3,8 +3,6 @@ package board
 import "testing"
 
 func TestSetBit(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name string
 		bb   Bitboard
@@ -35,8 +33,6 @@ func TestSetBit(t *testing.T) {
 }
 
 func TestClearBit(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name string
 		bb   Bitboard
@@ -67,8 +63,6 @@ func TestClearBit(t *testing.T) {
 }
 
 func TestIsBitSet(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name string
 		bb   Bitboard
@@ -99,8 +93,6 @@ func TestIsBitSet(t *testing.T) {
 }
 
 func TestCountBits(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name string
 		bb   Bitboard

@@ -190,8 +190,6 @@ func TestRemove(t *testing.T) {
 }
 
 func TestPieceBB(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name       string
 		placements []placement
@@ -240,8 +238,6 @@ func TestPieceBB(t *testing.T) {
 }
 
 func TestOccupied(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name  string
 		place []placement
@@ -295,8 +291,6 @@ func TestOccupied(t *testing.T) {
 }
 
 func TestPlacePiece(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name       string
 		placements []placement
@@ -434,8 +428,6 @@ func TestPlacePiece(t *testing.T) {
 }
 
 func TestRemovePiece(t *testing.T) {
-	InitBitboards()
-
 	tests := []struct {
 		name   string
 		place  []placement
@@ -501,8 +493,6 @@ func TestRemovePiece(t *testing.T) {
 }
 
 func BenchmarkRemovePiece(b *testing.B) {
-	InitBitboards()
-
 	pos := StartingPosition()
 
 	b.ResetTimer()
@@ -516,8 +506,6 @@ func BenchmarkRemovePiece(b *testing.B) {
 }
 
 func TestPieceOn(t *testing.T) {
-	InitBitboards()
-
 	pos := NewPosition()
 	pos.PlacePiece(WhiteKing, E1)
 	pos.PlacePiece(BlackPawn, E7)
@@ -547,8 +535,6 @@ func TestPieceOn(t *testing.T) {
 }
 
 func BenchmarkPieceOn(b *testing.B) {
-	InitBitboards()
-
 	pos := StartingPosition()
 
 	var piece Piece
