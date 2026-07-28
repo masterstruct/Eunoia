@@ -40,7 +40,7 @@ func (bb Bitboard) LSB() Square {
 
 func (bb *Bitboard) PopLSB() Square {
 	bit := bb.LSB()
-	if bit >= 0 {
+	if bit != NoSquare {
 		bb.ClearBit(bit)
 	}
 	return bit

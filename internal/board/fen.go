@@ -140,22 +140,23 @@ func (pos Position) FEN() string {
 	// TODO: use Bitboard.PopLSB() to loop faster
 	var sb strings.Builder
 	skip := 0
+	occupied := pos.Occupied()
 
 	for rank := Rank8; rank >= Rank1; rank -= 1 {
-		for i := range 8 {
-			sq := NewSquare(i, rank)
+		for file := range 8 {
+			sq := NewSquare(file, rank)
 
-			piece, ok := pos.PieceOn(sq)
-			if ok {
-				// found piece
-				if skip > 0 {
-					sb.WriteString(strconv.Itoa(skip))
-					skip = 0
-				}
-				sb.WriteByte(piece.String())
+			if !occupied.IsBitSet(sq) {
+				skip++
 				continue
 			}
-			skip += 1
+			if skip > 0 {
+				sb.WriteString(strconv.Itoa(skip))
+				skip = 0
+			}
+
+			piece, _ := pos.PieceOn(sq)
+			sb.WriteByte(piece.String())
 		}
 
 		// reached end of rank
