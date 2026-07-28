@@ -147,7 +147,10 @@ func (pos Position) FEN() string {
 		rankBB = occupied & RankBB[rank]
 		if rankBB == EmptyBB {
 			// skip empty rank
-			sb.WriteString("8/")
+			sb.WriteString("8")
+			if rank != Rank1 {
+				sb.WriteByte('/')
+			}
 			skip = 0
 			continue
 		}
@@ -185,10 +188,10 @@ func (pos Position) FEN() string {
 	sb.WriteByte(' ')
 	sb.WriteString(pos.EnPassant.String())
 	sb.WriteByte(' ')
-	sb.WriteByte(byte('0' + pos.HalfmoveClock))
+	sb.WriteString(strconv.Itoa(int(pos.HalfmoveClock)))
 	sb.WriteByte(' ')
 	fullmoves, _ := PlyToFullmoves(pos.Ply)
-	sb.WriteByte(byte('0' + fullmoves))
+	sb.WriteString(strconv.Itoa(int(fullmoves)))
 	return sb.String()
 }
 

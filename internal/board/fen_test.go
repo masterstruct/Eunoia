@@ -129,7 +129,26 @@ func TestParseFEN_Valid(t *testing.T) {
 			},
 			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
-		// TODO: Add more tests
+		{
+			name: "No pieces on Rank1 or Rank8",
+			fen:  "8/2p3p1/2p1ppp1/rk4P1/3P1K1P/R1P5/2P2P2/8 w - - 0 32",
+			placements: []placement{
+				{BlackPawn, C7}, {BlackPawn, G7}, {BlackPawn, C6}, {BlackPawn, E6},
+				{BlackPawn, F6}, {BlackPawn, G6}, {BlackRook, A5}, {BlackKing, B5},
+				{WhitePawn, G5}, {WhitePawn, D4}, {WhiteKing, F4}, {WhitePawn, H4},
+				{WhiteRook, A3}, {WhitePawn, C3}, {WhitePawn, C2}, {WhitePawn, F2},
+			},
+			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 62,
+		},
+		{
+			name: "long endgame",
+			fen:  "8/8/6K1/5B2/7p/6b1/3k4/4q3 b - - 17 121",
+			placements: []placement{
+				{WhiteKing, G6}, {WhiteBishop, F5}, {BlackPawn, H4},
+				{BlackBishop, G3}, {BlackKing, D2}, {BlackQueen, E1},
+			},
+			sideToMove: Black, castling: NoCastling, epSq: NoSquare, halfmove: 17, ply: 241,
+		},
 	}
 
 	for _, tt := range tests {
@@ -149,8 +168,10 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 		startingFEN,
 		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
-		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
+		"K6k/8/8/8/8/8/8/n6B w - - 15 70",
 		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+		"8/2p3p1/2p1ppp1/rk4P1/3P1K1P/R1P5/2P2P2/8 w - - 0 32",
+		"8/8/6K1/5B2/7p/6b1/3k4/4q3 b - - 17 121",
 	}
 
 	for _, fen := range tests {
