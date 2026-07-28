@@ -2,6 +2,7 @@ package board
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 )
 
@@ -161,6 +162,37 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 			got := pos.FEN()
 			if got != fen {
 				t.Fatalf("round-trip mismatch: started %q, got %q", fen, got)
+			}
+		})
+	}
+}
+
+func BenchmarkFEN(b *testing.B) {
+	fens := []string{
+		startingFEN,
+		"k7/8/8/8/8/8/8/7K w - - 0 1",
+		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
+		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
+		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+	}
+
+	// parse once so the benchmark measures only Position.FEN()
+	positions := make([]Position, 0, len(fens))
+	for _, fen := range fens {
+		pos, err := ParseFEN(fen)
+		if err != nil {
+			b.Fatalf("ParseFEN(%q) failed: %v", fen, err)
+		}
+		positions = append(positions, pos)
+	}
+
+	b.ReportAllocs()
+
+	for i, pos := range positions {
+		name := "case_" + strconv.Itoa(i)
+		b.Run(name, func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				_ = pos.FEN()
 			}
 		})
 	}
