@@ -137,19 +137,21 @@ func ParseFEN(fen string) (Position, error) {
 }
 
 func (pos Position) FEN() string {
-	// TODO: use Bitboard.PopLSB() to loop faster
 	var sb strings.Builder
-	skip := 0
+	var rankBB Bitboard
+	var skip int
+
 	occupied := pos.Occupied()
 
-	for rank := Rank8; rank >= Rank1; rank -= 1 {
-		rankBB := occupied & RankBB[rank]
+	for rank := Rank8; rank >= Rank1; rank-- {
+		rankBB = occupied & RankBB[rank]
 		if rankBB == EmptyBB {
 			// skip empty rank
 			sb.WriteString("8/")
 			skip = 0
 			continue
 		}
+
 		for file := range 8 {
 			sq := NewSquare(file, rank)
 
@@ -158,7 +160,7 @@ func (pos Position) FEN() string {
 				continue
 			}
 			if skip > 0 {
-				sb.WriteString(strconv.Itoa(skip))
+				sb.WriteByte(byte('0' + skip))
 				skip = 0
 			}
 
@@ -168,7 +170,7 @@ func (pos Position) FEN() string {
 
 		// reached end of rank
 		if skip > 0 {
-			sb.WriteString(strconv.Itoa(skip))
+			sb.WriteByte(byte('0' + skip))
 			skip = 0
 		}
 		if rank != Rank1 {
@@ -183,10 +185,10 @@ func (pos Position) FEN() string {
 	sb.WriteByte(' ')
 	sb.WriteString(pos.EnPassant.String())
 	sb.WriteByte(' ')
-	sb.WriteString(strconv.Itoa(int(pos.HalfmoveClock)))
+	sb.WriteByte(byte('0' + pos.HalfmoveClock))
 	sb.WriteByte(' ')
 	fullmoves, _ := PlyToFullmoves(pos.Ply)
-	sb.WriteString(strconv.Itoa(int(fullmoves)))
+	sb.WriteByte(byte('0' + fullmoves))
 	return sb.String()
 }
 
