@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 const startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -36,7 +35,7 @@ func ParseFEN(fen string) (Position, error) {
 		return pos, fmt.Errorf("%w: %q", ErrInvalidRankCount, fen)
 	}
 	for _, r := range ranks {
-		if isWhitespaceOnly(r) || strings.ContainsRune(r, ' ') || len(r) > 8 {
+		if len(r) > 8 {
 			return pos, fmt.Errorf("%w: %q", ErrInvalidRankLength, fen)
 		}
 	}
@@ -57,6 +56,8 @@ func ParseFEN(fen string) (Position, error) {
 			rank -= 1
 			continue
 		}
+
+		// detect numbers and skip that many squares
 		skip, err := strconv.Atoi(string(char))
 		if err == nil {
 			// number
@@ -72,37 +73,44 @@ func ParseFEN(fen string) (Position, error) {
 		if pt != NoPieceType {
 			// char is a chess piece
 			if char&0x20 != 0 {
-				// uppercase => Black
+				// lowercase => Black
 				color = Black
 			} else {
 				color = White
 			}
+
+			// place piece on the board
 			pos.PlacePiece(NewPiece(pt, color), NewSquare(file, rank))
+
 			file += 1
 			continue
-		} else {
-			return pos, fmt.Errorf("%w: %q", ErrInvalidPieceChar, fen)
 		}
+		// character isn't a number or a valid piece
+		return pos, fmt.Errorf("%w: %q", ErrInvalidPieceChar, fen)
 	}
 
+	// side to move
 	sideToMove := ParseColor(splits[1][0])
 	if sideToMove == NoColor {
 		return pos, fmt.Errorf("%w: %q", ErrInvalidSideToMove, splits[1][0])
 	}
 	pos.SideToMove = sideToMove
 
+	// castling rights
 	rights, err := ParseCastlingRights(splits[2])
 	if err != nil {
 		return pos, err
 	}
 	pos.CastlingRights = rights
 
+	// en passant
 	sq, err := ParseSquare(splits[3])
 	if err != nil {
 		return pos, fmt.Errorf("%w: %q", err, splits[3])
 	}
 	pos.EnPassant = sq
 
+	// halfmove clock
 	if n >= 5 {
 		halfMove, err := strconv.Atoi(splits[4])
 		if err != nil || halfMove < 0 || halfMove > 100 {
@@ -110,6 +118,8 @@ func ParseFEN(fen string) (Position, error) {
 		}
 		pos.HalfmoveClock = uint8(halfMove)
 	}
+
+	// fullmove counter
 	if n >= 6 {
 		fullmoves, err := strconv.Atoi(splits[5])
 		if err != nil || fullmoves <= 0 || fullmoves > 10000 {
@@ -118,6 +128,7 @@ func ParseFEN(fen string) (Position, error) {
 		pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
 	}
 
+	// king count
 	if pos.PieceBB(WhiteKing).CountBits() != 1 || pos.PieceBB(BlackKing).CountBits() != 1 {
 		return pos, fmt.Errorf("%w: %q", ErrInvalidKingCount, fen)
 	}
@@ -186,18 +197,6 @@ func FullmovesToPly(fullmoves uint16, sideToMove Color) uint16 {
 		return (fullmoves - 1) * 2
 	}
 	return (fullmoves-1)*2 + 1
-}
-
-func isWhitespaceOnly(s string) bool {
-	if len(s) == 0 {
-		return true
-	}
-	for _, r := range s {
-		if !unicode.IsSpace(r) {
-			return false
-		}
-	}
-	return true
 }
 
 func StartingPosition() Position {

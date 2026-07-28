@@ -174,6 +174,7 @@ func TestParseFEN_FieldCount(t *testing.T) {
 	}{
 		{"empty string", "", true},
 		{"only whitespace", "   ", true},
+		{"newline character", "k7/8/8/7\n/8/8/8/7K w - - 0 1", true},
 		{"missing all fields but placement", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", true},
 		{"missing halfmove and fullmove", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -", false},
 		{"missing fullmove only", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0", false},
