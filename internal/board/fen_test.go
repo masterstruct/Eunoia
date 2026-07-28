@@ -79,9 +79,9 @@ func TestParseFEN_Valid(t *testing.T) {
 			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
-			name:       "empty board",
-			fen:        "8/8/8/8/8/8/8/8 w - - 0 1",
-			placements: nil,
+			name:       "two kings",
+			fen:        "k7/8/8/8/8/8/8/7K w - - 0 1",
+			placements: []placement{{BlackKing, A8}, {WhiteKing, H1}},
 			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
@@ -146,7 +146,7 @@ func TestParseFEN_Valid(t *testing.T) {
 func TestParseFEN_RoundTrip(t *testing.T) {
 	tests := []string{
 		startingFEN,
-		"8/8/8/8/8/8/8/8 w - - 0 1",
+		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
 		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
@@ -236,11 +236,11 @@ func TestParseFEN_SideToMove(t *testing.T) {
 		fen     string
 		wantErr bool
 	}{
-		{"lowercase w valid", "8/8/8/8/8/8/8/8 w - - 0 1", false},
-		{"lowercase b valid", "8/8/8/8/8/8/8/8 b - - 0 1", false},
-		{"uppercase W valid", "8/8/8/8/8/8/8/8 W - - 0 1", false},
-		{"invalid letter", "8/8/8/8/8/8/8/8 x - - 0 1", true},
-		{"empty side field", "8/8/8/8/8/8/8/8  - - 0 1", true},
+		{"lowercase w valid", "k7/8/8/8/8/8/8/7K w - - 0 1", false},
+		{"lowercase b valid", "k7/8/8/8/8/8/8/7K b - - 0 1", false},
+		{"uppercase W valid", "k7/8/8/8/8/8/8/7K W - - 0 1", false},
+		{"invalid letter", "k7/8/8/8/8/8/8/7K x - - 0 1", true},
+		{"empty side field", "k7/8/8/8/8/8/8/7K  - - 0 1", true},
 	}
 
 	for _, tt := range tests {
@@ -262,9 +262,9 @@ func TestParseFEN_Castling(t *testing.T) {
 		fen     string
 		wantErr error
 	}{
-		{"invalid char propagates", "8/8/8/8/8/8/8/8 w X - 0 1", ErrInvalidCastlingChar},
-		{"duplicate propagates", "8/8/8/8/8/8/8/8 w KK - 0 1", ErrDuplicateCastlingChar},
-		{"too long propagates", "8/8/8/8/8/8/8/8 w KQkqK - 0 1", ErrInvalidCastlingLength},
+		{"invalid char propagates", "k7/8/8/8/8/8/8/7K w X - 0 1", ErrInvalidCastlingChar},
+		{"duplicate propagates", "k7/8/8/8/8/8/8/7K w KK - 0 1", ErrDuplicateCastlingChar},
+		{"too long propagates", "k7/8/8/8/8/8/8/7K w KQkqK - 0 1", ErrInvalidCastlingLength},
 	}
 
 	for _, tt := range tests {
@@ -283,11 +283,11 @@ func TestParseFEN_EnPassant(t *testing.T) {
 		fen     string
 		wantErr bool
 	}{
-		{"no en passant", "8/8/8/8/8/8/8/8 w - - 0 1", false},
-		{"valid en passant square", "8/8/8/8/8/8/8/8 w - e3 0 1", false},
-		{"valid en passant square rank 6", "8/8/8/8/8/8/8/8 b - e6 0 1", false},
-		{"invalid square garbage", "8/8/8/8/8/8/8/8 w - z9 0 1", true},
-		{"invalid square too short", "8/8/8/8/8/8/8/8 w - e 0 1", true},
+		{"no en passant", "k7/8/8/8/8/8/8/7K w - - 0 1", false},
+		{"valid en passant square", "k7/8/8/8/8/8/8/7K w - e3 0 1", false},
+		{"valid en passant square rank 6", "k7/8/8/8/8/8/8/7K b - e6 0 1", false},
+		{"invalid square garbage", "k7/8/8/8/8/8/8/7K w - z9 0 1", true},
+		{"invalid square too short", "k7/8/8/8/8/8/8/7K w - e 0 1", true},
 	}
 
 	for _, tt := range tests {
@@ -309,12 +309,12 @@ func TestParseFEN_HalfmoveClock(t *testing.T) {
 		fen     string
 		wantErr bool
 	}{
-		{"valid zero", "8/8/8/8/8/8/8/8 w - - 0 1", false},
-		{"more than 100 ply", "8/8/8/8/8/8/8/8 w - - 125 1", true},
-		{"non numeric", "8/8/8/8/8/8/8/8 w - - abc 1", true},
-		{"negative", "8/8/8/8/8/8/8/8 w - - -1 1", true},
-		{"overflow uint8", "8/8/8/8/8/8/8/8 w - - 256 1", true},
-		{"empty field", "8/8/8/8/8/8/8/8 w - - - 1", true},
+		{"valid zero", "k7/8/8/8/8/8/8/7K w - - 0 1", false},
+		{"more than 100 ply", "k7/8/8/8/8/8/8/7K w - - 125 1", true},
+		{"non numeric", "k7/8/8/8/8/8/8/7K w - - abc 1", true},
+		{"negative", "k7/8/8/8/8/8/8/7K w - - -1 1", true},
+		{"overflow uint8", "k7/8/8/8/8/8/8/7K w - - 256 1", true},
+		{"empty field", "k7/8/8/8/8/8/8/7K w - - - 1", true},
 	}
 
 	for _, tt := range tests {
@@ -336,12 +336,12 @@ func TestParseFEN_FullmoveNumber(t *testing.T) {
 		fen     string
 		wantErr bool
 	}{
-		{"valid one", "8/8/8/8/8/8/8/8 w - - 0 1", false},
-		{"valid large", "8/8/8/8/8/8/8/8 w - - 0 9999", false},
-		{"zero invalid", "8/8/8/8/8/8/8/8 w - - 0 0", true},
-		{"non numeric", "8/8/8/8/8/8/8/8 w - - 0 abc", true},
-		{"negative", "8/8/8/8/8/8/8/8 w - - 0 -1", true},
-		{"overflow uint16", "8/8/8/8/8/8/8/8 w - - 0 70000", true},
+		{"valid one", "k7/8/8/8/8/8/8/7K w - - 0 1", false},
+		{"valid large", "k7/8/8/8/8/8/8/7K w - - 0 9999", false},
+		{"zero invalid", "k7/8/8/8/8/8/8/7K w - - 0 0", true},
+		{"non numeric", "k7/8/8/8/8/8/8/7K w - - 0 abc", true},
+		{"negative", "k7/8/8/8/8/8/8/7K w - - 0 -1", true},
+		{"overflow uint16", "k7/8/8/8/8/8/8/7K w - - 0 70000", true},
 	}
 
 	for _, tt := range tests {
