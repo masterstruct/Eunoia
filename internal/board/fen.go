@@ -143,6 +143,13 @@ func (pos Position) FEN() string {
 	occupied := pos.Occupied()
 
 	for rank := Rank8; rank >= Rank1; rank -= 1 {
+		rankBB := occupied & RankBB[rank]
+		if rankBB == EmptyBB {
+			// skip empty rank
+			sb.WriteString("8/")
+			skip = 0
+			continue
+		}
 		for file := range 8 {
 			sq := NewSquare(file, rank)
 
