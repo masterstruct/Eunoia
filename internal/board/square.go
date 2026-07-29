@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type Square int
+type Square uint8
 
 const (
 	A8, B8, C8, D8, E8, F8, G8, H8 Square = 56, 57, 58, 59, 60, 61, 62, 63
@@ -18,7 +18,7 @@ const (
 	A2, B2, C2, D2, E2, F2, G2, H2 Square = 8, 9, 10, 11, 12, 13, 14, 15
 	A1, B1, C1, D1, E1, F1, G1, H1 Square = 0, 1, 2, 3, 4, 5, 6, 7
 
-	NoSquare Square = -1
+	NoSquare Square = 64
 )
 
 const (

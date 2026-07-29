@@ -93,6 +93,7 @@ func TestColor(t *testing.T) {
 }
 
 func TestIsValid(t *testing.T) {
+	negativeInvalid := -5
 	tests := []struct {
 		name string
 		sq   Square
@@ -102,7 +103,7 @@ func TestIsValid(t *testing.T) {
 		{"H8 valid", H8, true},
 		{"E4 valid", E4, true},
 		{"NoSquare invalid", NoSquare, false},
-		{"negative invalid", Square(-5), false},
+		{"negative invalid", Square(negativeInvalid), false},
 		{"out of range high invalid", Square(64), false},
 	}
 
