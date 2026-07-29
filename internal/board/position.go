@@ -134,6 +134,11 @@ func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 }
 
 func (pos Position) String() string {
+	// If using VSCode, go to settings
+	// and set this setting:
+	// "terminal.integrated.minimumContrastRatio": 1,
+	// this will fix the colors of the pretty board
+
 	var sb strings.Builder
 	for rank := Rank8; rank >= Rank1; rank-- {
 		// ranks
@@ -171,12 +176,10 @@ func (pos Position) String() string {
 }
 
 func squareBG(sqColor Color) string {
-	// TODO: print colors only if not running in VSCode
-	// if sqColor == Black {
-	// 	return bgRGB(152, 124, 180)
-	// }
-	// return bgRGB(229, 218, 241)
-	return ""
+	if sqColor == Black {
+		return bgRGB(152, 124, 180)
+	}
+	return bgRGB(229, 218, 241)
 }
 
 func pieceFG(pieceColor Color, sqColor Color) string {
