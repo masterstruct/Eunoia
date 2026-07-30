@@ -130,7 +130,7 @@ func TestParseFEN_Valid(t *testing.T) {
 			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
-			name: "No pieces on Rank1 or Rank8",
+			name: "no pieces on Rank1 or Rank8",
 			fen:  "8/2p3p1/2p1ppp1/rk4P1/3P1K1P/R1P5/2P2P2/8 w - - 0 32",
 			placements: []placement{
 				{BlackPawn, C7}, {BlackPawn, G7}, {BlackPawn, C6}, {BlackPawn, E6},
