@@ -62,6 +62,10 @@ func NewDoublePush(from, to Square) Move {
 	return newMove(from, to, flagDoublePush)
 }
 
+func NewCastle(from, to Square, kingside bool) Move {
+	return NullMove
+}
+
 func (m Move) From() Square {
 	return Square(m & squareMask)
 }
