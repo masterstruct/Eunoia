@@ -69,6 +69,10 @@ func NewCastle(from, to Square, kingside bool) Move {
 	return newMove(from, to, flagCastleQueenside)
 }
 
+func NewCapture(from, to Square) Move {
+	return newMove(from, to, flagCapture)
+}
+
 func (m Move) From() Square {
 	return Square(m & squareMask)
 }
@@ -76,7 +80,8 @@ func (m Move) To() Square {
 	return Square((m >> toShift) & squareMask)
 }
 func (m Move) IsCapture() bool {
-	return false
+	// TODO: make this nicer
+	return (m & 0x8000) != 0
 }
 func (m Move) IsPromo() bool {
 	return false

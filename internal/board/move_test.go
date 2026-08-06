@@ -16,11 +16,8 @@ func TestNewMove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewMove(tt.from, tt.to)
-			if m.From() != tt.from {
-				t.Errorf("expected From %v but got %v", tt.from, m.From())
-			}
-			if m.To() != tt.to {
-				t.Errorf("expected To %v but got %v", tt.to, m.To())
+			if m.From() != tt.from || m.To() != tt.to {
+				t.Errorf("expected %v->%v but got %v->%v", tt.from, tt.to, m.From(), m.To())
 			}
 			if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
 				t.Errorf("expected quiet move but got flags set: %v", m)
@@ -32,7 +29,7 @@ func TestNewMove(t *testing.T) {
 func TestNewDoublePush(t *testing.T) {
 	m := NewDoublePush(E2, E4)
 	if m.From() != E2 || m.To() != E4 {
-		t.Errorf("expected e2e4 but got %v%v", m.From(), m.To())
+		t.Errorf("expected e2->e4 but got %v->%v", m.From(), m.To())
 	}
 	if !m.IsDoublePush() {
 		t.Errorf("expected IsDoublePush true")
@@ -67,5 +64,18 @@ func TestNewCastle(t *testing.T) {
 				t.Errorf("expected only castle flag set, got: %v", m)
 			}
 		})
+	}
+}
+
+func TestNewCapture(t *testing.T) {
+	m := NewCapture(D4, E5)
+	if m.From() != D4 || m.To() != E5 {
+		t.Errorf("expected d4->e5 but got %v->%v", m.From(), m.To())
+	}
+	if !m.IsCapture() {
+		t.Errorf("expected IsCapture true")
+	}
+	if m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
+		t.Errorf("expected only capture flag set, got: %v", m)
 	}
 }
