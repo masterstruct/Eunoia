@@ -41,3 +41,7 @@ func promoFlag(pt PieceType) uint8 {
 		return flagQuiet
 	}
 }
+
+func NewMove(from, to Square) Move {
+	return NullMove
+}
