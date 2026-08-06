@@ -4,7 +4,19 @@ package board
 // your chess move flag scheme
 // https://87flowers.com/chess-moveflags/
 
+// [ flags ][  to  ][ from ]
+// [ 15-12 ][ 11-6 ][ 5-0  ]
 type Move uint16
+
+const (
+	squareBits        = 6
+	squareMask uint16 = (1 << squareBits) - 1 // 0b111111
+	flagMask   uint16 = 0b1111
+
+	fromShift = 0
+	toShift   = squareBits     // 6
+	flagShift = squareBits * 2 // 12
+)
 
 const (
 	flagQuiet           uint8 = 0b0000
