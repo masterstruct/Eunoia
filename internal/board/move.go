@@ -45,3 +45,31 @@ func promoFlag(pt PieceType) uint8 {
 func NewMove(from, to Square) Move {
 	return NullMove
 }
+
+func (m Move) From() Square {
+	return NoSquare
+}
+func (m Move) To() Square {
+	return NoSquare
+}
+func (m Move) IsCapture() bool {
+	return false
+}
+func (m Move) IsPromo() bool {
+	return false
+}
+func (m Move) Promo() PieceType {
+	return NoPieceType
+}
+func (m Move) IsCastle() bool {
+	return false
+}
+func (m Move) IsEnPassant() bool {
+	return false
+}
+func (m Move) IsDoublePush() bool {
+	return false
+}
+func (m Move) IsQuiet() bool {
+	return false
+}
