@@ -62,7 +62,7 @@ func (m Move) From() Square {
 	return Square(m & Move(squareMask))
 }
 func (m Move) To() Square {
-	return NoSquare
+	return Square((m >> toShift) & squareMask)
 }
 func (m Move) IsCapture() bool {
 	return false
