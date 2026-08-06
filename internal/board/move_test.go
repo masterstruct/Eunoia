@@ -79,3 +79,19 @@ func TestNewCapture(t *testing.T) {
 		t.Errorf("expected only capture flag set, got: %v", m)
 	}
 }
+
+func TestNewEnPassant(t *testing.T) {
+	m := NewEnPassant(D5, E6)
+	if m.From() != D5 || m.To() != E6 {
+		t.Errorf("expected d5->e6 but got %v->%v", m.From(), m.To())
+	}
+	if !m.IsEnPassant() {
+		t.Errorf("expected IsEnPassant true")
+	}
+	if !m.IsCapture() {
+		t.Errorf("expected IsCapture true (en passant is a capture)")
+	}
+	if m.IsPromo() || m.IsCastle() || m.IsDoublePush() {
+		t.Errorf("expected only en-passant+capture flags set, got: %v", m)
+	}
+}

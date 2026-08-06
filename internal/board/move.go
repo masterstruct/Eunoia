@@ -73,6 +73,10 @@ func NewCapture(from, to Square) Move {
 	return newMove(from, to, flagCapture)
 }
 
+func NewEnPassant(from, to Square) Move {
+	return newMove(from, to, flagEnPassant)
+}
+
 func (m Move) From() Square {
 	return Square(m & squareMask)
 }
@@ -94,7 +98,7 @@ func (m Move) IsCastle() bool {
 	return (m & 0xE000) == 0x2000
 }
 func (m Move) IsEnPassant() bool {
-	return false
+	return (m >> flagShift) == flagEnPassant
 }
 func (m Move) IsDoublePush() bool {
 	return (m >> flagShift) == flagDoublePush
