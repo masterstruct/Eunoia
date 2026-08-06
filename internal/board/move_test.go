@@ -95,3 +95,33 @@ func TestNewEnPassant(t *testing.T) {
 		t.Errorf("expected only en-passant+capture flags set, got: %v", m)
 	}
 }
+
+func TestNewPromo(t *testing.T) {
+	tests := []struct {
+		name string
+		pt   PieceType
+	}{
+		{"knight", Knight},
+		{"bishop", Bishop},
+		{"rook", Rook},
+		{"queen", Queen},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewPromo(E7, E8, tt.pt)
+			if m.From() != E7 || m.To() != E8 {
+				t.Errorf("expected e7->e8 but got %v->%v", m.From(), m.To())
+			}
+			if !m.IsPromo() {
+				t.Errorf("expected IsPromo true")
+			}
+			if m.Promo() != tt.pt {
+				t.Errorf("expected promo type %v but got %v", tt.pt, m.Promo())
+			}
+			if m.IsCapture() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
+				t.Errorf("expected only promo flags set, got: %v", m)
+			}
+		})
+	}
+}

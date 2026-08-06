@@ -77,6 +77,10 @@ func NewEnPassant(from, to Square) Move {
 	return newMove(from, to, flagEnPassant)
 }
 
+func NewPromo(from, to Square, pt PieceType) Move {
+	return newMove(from, to, promoFlag(pt))
+}
+
 func (m Move) From() Square {
 	return Square(m & squareMask)
 }
@@ -88,10 +92,23 @@ func (m Move) IsCapture() bool {
 	return (m & 0x8000) != 0
 }
 func (m Move) IsPromo() bool {
-	return false
+	// TODO: make this nicer
+	return (m & 0x4000) != 0
 }
 func (m Move) Promo() PieceType {
-	return NoPieceType
+	// TODO: stop writing shit code
+	switch (m >> flagShift) & 0b11 {
+	case 0b00:
+		return Knight
+	case 0b01:
+		return Bishop
+	case 0b10:
+		return Rook
+	case 0b11:
+		return Queen
+	default:
+		return NoPieceType
+	}
 }
 func (m Move) IsCastle() bool {
 	// TODO: make this nicer
