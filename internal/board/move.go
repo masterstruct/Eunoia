@@ -9,9 +9,9 @@ package board
 type Move uint16
 
 const (
-	squareBits        = 6
-	squareMask uint16 = (1 << squareBits) - 1 // 0b111111
-	flagMask   uint16 = 0b1111
+	squareBits      = 6
+	squareMask Move = (1 << squareBits) - 1 // 0b111111
+	flagMask   Move = 0b1111
 
 	fromShift = 0
 	toShift   = squareBits     // 6
@@ -55,11 +55,11 @@ func promoFlag(pt PieceType) uint8 {
 }
 
 func NewMove(from, to Square) Move {
-	return NullMove
+	return newMove(from, to, flagQuiet)
 }
 
 func (m Move) From() Square {
-	return NoSquare
+	return Square(m & Move(squareMask))
 }
 func (m Move) To() Square {
 	return NoSquare
