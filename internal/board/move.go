@@ -63,7 +63,10 @@ func NewDoublePush(from, to Square) Move {
 }
 
 func NewCastle(from, to Square, kingside bool) Move {
-	return NullMove
+	if kingside {
+		return newMove(from, to, flagCastleKingside)
+	}
+	return newMove(from, to, flagCastleQueenside)
 }
 
 func (m Move) From() Square {
@@ -82,7 +85,8 @@ func (m Move) Promo() PieceType {
 	return NoPieceType
 }
 func (m Move) IsCastle() bool {
-	return false
+	// TODO: make this nicer
+	return (m & 0xE000) == 0x2000
 }
 func (m Move) IsEnPassant() bool {
 	return false
