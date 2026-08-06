@@ -26,3 +26,18 @@ const NullMove = 0 // from A1 to A1 - impossible!
 func newMove(from, to Square, flags uint8) Move {
 	return Move(uint16(flags)<<12 | uint16(to)<<6 | uint16(from))
 }
+
+func promoFlag(pt PieceType) uint8 {
+	switch pt {
+	case Knight:
+		return flagPromoKnight
+	case Bishop:
+		return flagPromoBishop
+	case Rook:
+		return flagPromoRook
+	case Queen:
+		return flagPromoQueen
+	default:
+		return flagQuiet
+	}
+}
