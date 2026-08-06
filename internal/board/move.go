@@ -58,6 +58,10 @@ func NewMove(from, to Square) Move {
 	return newMove(from, to, flagQuiet)
 }
 
+func NewDoublePush(from, to Square) Move {
+	return newMove(from, to, flagDoublePush)
+}
+
 func (m Move) From() Square {
 	return Square(m & Move(squareMask))
 }
@@ -80,7 +84,7 @@ func (m Move) IsEnPassant() bool {
 	return false
 }
 func (m Move) IsDoublePush() bool {
-	return false
+	return (m >> flagShift) == Move(flagDoublePush)
 }
 func (m Move) IsQuiet() bool {
 	return false

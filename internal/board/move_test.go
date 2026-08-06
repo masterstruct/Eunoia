@@ -28,3 +28,16 @@ func TestNewMove(t *testing.T) {
 		})
 	}
 }
+
+func TestNewDoublePush(t *testing.T) {
+	m := NewDoublePush(E2, E4)
+	if m.From() != E2 || m.To() != E4 {
+		t.Errorf("expected e2e4 but got %v%v", m.From(), m.To())
+	}
+	if !m.IsDoublePush() {
+		t.Errorf("expected IsDoublePush true")
+	}
+	if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() {
+		t.Errorf("expected only double-push flag set, got: %v", m)
+	}
+}
