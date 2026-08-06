@@ -19,27 +19,27 @@ const (
 )
 
 const (
-	flagQuiet           uint8 = 0b0000
-	flagDoublePush      uint8 = 0b0001
-	flagCastleQueenside uint8 = 0b0010
-	flagCastleKingside  uint8 = 0b0011
+	flagQuiet           Move = 0b0000
+	flagDoublePush      Move = 0b0001
+	flagCastleQueenside Move = 0b0010
+	flagCastleKingside  Move = 0b0011
 
-	flagCapture   uint8 = 0b1000
-	flagEnPassant uint8 = 0b1001
+	flagCapture   Move = 0b1000
+	flagEnPassant Move = 0b1001
 
-	flagPromoKnight uint8 = 0b0100
-	flagPromoBishop uint8 = 0b0101
-	flagPromoRook   uint8 = 0b0110
-	flagPromoQueen  uint8 = 0b0111
+	flagPromoKnight Move = 0b0100
+	flagPromoBishop Move = 0b0101
+	flagPromoRook   Move = 0b0110
+	flagPromoQueen  Move = 0b0111
 )
 
 const NullMove = 0 // from A1 to A1 - impossible!
 
-func newMove(from, to Square, flags uint8) Move {
-	return Move(uint16(flags)<<12 | uint16(to)<<6 | uint16(from))
+func newMove(from, to Square, flags Move) Move {
+	return flags<<flagShift | Move(to)<<toShift | Move(from)
 }
 
-func promoFlag(pt PieceType) uint8 {
+func promoFlag(pt PieceType) Move {
 	switch pt {
 	case Knight:
 		return flagPromoKnight
@@ -63,7 +63,7 @@ func NewDoublePush(from, to Square) Move {
 }
 
 func (m Move) From() Square {
-	return Square(m & Move(squareMask))
+	return Square(m & squareMask)
 }
 func (m Move) To() Square {
 	return Square((m >> toShift) & squareMask)
@@ -84,7 +84,7 @@ func (m Move) IsEnPassant() bool {
 	return false
 }
 func (m Move) IsDoublePush() bool {
-	return (m >> flagShift) == Move(flagDoublePush)
+	return (m >> flagShift) == flagDoublePush
 }
 func (m Move) IsQuiet() bool {
 	return false
