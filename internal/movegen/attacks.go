@@ -8,6 +8,11 @@ var (
 	PawnAttacks   [2][64]board.Bitboard // indexed by board.Color
 )
 
+var knightOffsets = [8][2]int{
+	{1, 2}, {2, 1}, {2, -1}, {1, -2},
+	{-1, -2}, {-2, -1}, {-2, 1}, {-1, 2},
+}
+
 func init() {
 	InitAttackTables()
 }
@@ -22,7 +27,17 @@ func InitAttackTables() {
 }
 
 func knightAttacksFrom(sq board.Square) board.Bitboard {
-	return board.EmptyBB
+	bb := board.EmptyBB
+	for _, offset := range knightOffsets {
+		newFile := sq.File() + offset[0]
+		newRank := sq.Rank() + offset[1]
+
+		targetSq := board.NewSquare(newFile, newRank)
+		if targetSq.IsValid() {
+			bb.SetBit(targetSq)
+		}
+	}
+	return bb
 }
 
 func kingAttacksFrom(sq board.Square) board.Bitboard {

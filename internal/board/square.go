@@ -103,5 +103,8 @@ func ParseSquare(s string) (Square, error) {
 }
 
 func NewSquare(file, rank int) Square {
+	if file < FileA || file > FileH || rank < Rank1 || rank > Rank8 {
+		return NoSquare
+	}
 	return Square(rank*8 + file)
 }
