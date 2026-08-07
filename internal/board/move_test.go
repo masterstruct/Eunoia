@@ -236,6 +236,16 @@ func TestNewCapturePromo(t *testing.T) {
 	}
 }
 
+func TestNewCapturePromoInvalidPieceType(t *testing.T) {
+	m := NewCapturePromo(E7, E8, Pawn)
+	if m.IsPromo() {
+		t.Errorf("expected invalid promo piece type to NOT set promo flag, got: %v", m)
+	}
+	if !m.IsCapture() {
+		t.Errorf("expected IsCapture to remain true even with invalid promo type")
+	}
+}
+
 func TestNullMove(t *testing.T) {
 	var m Move // zero value
 	if m != NullMove {
