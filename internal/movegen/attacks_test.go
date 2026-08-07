@@ -51,3 +51,30 @@ func TestKnightAttacksFrom(t *testing.T) {
 		})
 	}
 }
+
+func TestKingAttacksFrom(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   board.Square
+		want board.Bitboard
+	}{
+		{"corner a1", board.A1, bbFrom(board.A2, board.B1, board.B2)},
+		{"corner h8", board.H8, bbFrom(board.G8, board.G7, board.H7)},
+		{"edge a4", board.A4, bbFrom(board.A3, board.A5, board.B3, board.B4, board.B5)},
+		{"edge h4", board.H4, bbFrom(board.H3, board.G3, board.G4, board.G5, board.H5)},
+		{"center d4", board.D4, bbFrom(
+			board.C3, board.C4, board.C5,
+			board.D3, board.D5,
+			board.E3, board.E4, board.E5,
+		)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := kingAttacksFrom(tt.sq)
+			if got != tt.want {
+				t.Errorf("kingAttacksFrom(%v):\ngot:\n%v\nwant:\n%v", tt.sq, got, tt.want)
+			}
+		})
+	}
+}

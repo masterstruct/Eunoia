@@ -13,6 +13,12 @@ var knightOffsets = [8][2]int{
 	{-1, -2}, {-2, -1}, {-2, 1}, {-1, 2},
 }
 
+var kingOffsets = [8][2]int{
+	{1, 1}, {1, 0}, {1, -1},
+	{0, -1}, {-1, -1}, {-1, 0},
+	{-1, 1}, {0, 1},
+}
+
 func init() {
 	InitAttackTables()
 }
@@ -41,7 +47,17 @@ func knightAttacksFrom(sq board.Square) board.Bitboard {
 }
 
 func kingAttacksFrom(sq board.Square) board.Bitboard {
-	return board.EmptyBB
+	bb := board.EmptyBB
+	for _, offset := range kingOffsets {
+		newFile := sq.File() + offset[0]
+		newRank := sq.Rank() + offset[1]
+
+		targetSq := board.NewSquare(newFile, newRank)
+		if targetSq.IsValid() {
+			bb.SetBit(targetSq)
+		}
+	}
+	return bb
 }
 
 func pawnAttacksFrom(sq board.Square, c board.Color) board.Bitboard {
