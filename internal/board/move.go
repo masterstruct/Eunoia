@@ -18,8 +18,12 @@ const (
 )
 
 const (
-	flagQuiet           Move = 0x0000
-	flagDoublePush      Move = 0x1000
+	NullMove       Move = 0 // from A1 to A1 - impossible!
+	flagQuiet      Move = 0x0000
+	flagDoublePush Move = 0x1000
+
+	castleMask          Move = 0xE000
+	flagCastlePattern   Move = 0x2000
 	flagCastleQueenside Move = 0x2000
 	flagCastleKingside  Move = 0x3000
 
@@ -32,8 +36,6 @@ const (
 	flagPromoRook   Move = 0x6000
 	flagPromoQueen  Move = 0x7000
 )
-
-const NullMove = 0 // from A1 to A1 - impossible!
 
 func newMove(from, to Square, flags Move) Move {
 	return flags | Move(to)<<toShift | Move(from)
@@ -113,7 +115,7 @@ func (m Move) Promo() PieceType {
 }
 func (m Move) IsCastle() bool {
 	// grab last 3 bits and compare them to 001
-	return (m & 0xE000) == 0x2000
+	return (m & castleMask) == flagCastlePattern
 }
 func (m Move) IsEnPassant() bool {
 	return (m & flagMask) == flagEnPassant
