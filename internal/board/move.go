@@ -147,3 +147,11 @@ func (m Move) String() string {
 	}
 	return s
 }
+
+func (m Move) Raw() uint16 {
+	return uint16(m)
+}
+
+func (m Move) RawFlags() uint16 {
+	return m.Raw() >> flagShift
+}

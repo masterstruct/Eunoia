@@ -26,7 +26,7 @@ func TestNewMove(t *testing.T) {
 				t.Errorf("expected IsQuiet true")
 			}
 			if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
-				t.Errorf("expected quiet move but got flags set: %v", m)
+				t.Errorf("expected quiet move but got flags set: %04b", m.RawFlags())
 			}
 		})
 	}
@@ -58,7 +58,7 @@ func TestNewDoublePush(t *testing.T) {
 				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() {
-				t.Errorf("expected only double push flag set, got: %v", m)
+				t.Errorf("expected only double push flag set, got: %04b", m.RawFlags())
 			}
 		})
 	}
@@ -90,7 +90,7 @@ func TestNewCastle(t *testing.T) {
 				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsCapture() || m.IsPromo() || m.IsEnPassant() || m.IsDoublePush() {
-				t.Errorf("expected only castle flag set, got: %v", m)
+				t.Errorf("expected only castle flag set, got: %04b", m.RawFlags())
 			}
 			if gotKingside != tt.kingside {
 				t.Errorf("expected IsKingsideCastle %v, got %v", tt.kingside, gotKingside)
@@ -125,7 +125,7 @@ func TestNewCapture(t *testing.T) {
 				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
-				t.Errorf("expected only capture flag set, got: %v", m)
+				t.Errorf("expected only capture flag set, got: %04b", m.RawFlags())
 			}
 		})
 	}
@@ -160,7 +160,7 @@ func TestNewEnPassant(t *testing.T) {
 				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsPromo() || m.IsCastle() || m.IsDoublePush() {
-				t.Errorf("expected only en passant flag set, got: %v", m)
+				t.Errorf("expected only en passant flag set, got: %04b", m.RawFlags())
 			}
 		})
 	}
@@ -193,7 +193,7 @@ func TestNewPromo(t *testing.T) {
 				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsCapture() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
-				t.Errorf("expected only promo flag set, got: %v", m)
+				t.Errorf("expected only promo flag set, got: %04b", m.RawFlags())
 			}
 		})
 	}
@@ -203,7 +203,7 @@ func TestNewPromoInvalidPieceType(t *testing.T) {
 	// edge case: bogus PieceType input falls through promoFlag's default branch
 	m := NewPromo(E7, E8, Pawn)
 	if m.IsPromo() {
-		t.Errorf("expected invalid promo piece type to NOT set promo flag, got: %v", m)
+		t.Errorf("expected invalid promo piece type to NOT set promo flag, got: %04b", m.RawFlags())
 	}
 }
 
@@ -243,7 +243,7 @@ func TestNewCapturePromo(t *testing.T) {
 func TestNewCapturePromoInvalidPieceType(t *testing.T) {
 	m := NewCapturePromo(E7, E8, Pawn)
 	if m.IsPromo() {
-		t.Errorf("expected invalid promo piece type to NOT set promo flag, got: %v", m)
+		t.Errorf("expected invalid promo piece type to NOT set promo flag, got: %04b", m.RawFlags())
 	}
 	if !m.IsCapture() {
 		t.Errorf("expected IsCapture to remain true even with invalid promo type")
