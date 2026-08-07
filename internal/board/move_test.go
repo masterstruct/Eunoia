@@ -163,3 +163,13 @@ func TestNewCapturePromo(t *testing.T) {
 		})
 	}
 }
+
+func TestNullMove(t *testing.T) {
+	var m Move // zero value
+	if m != NullMove {
+		t.Errorf("expected zero-value Move to equal NullMove")
+	}
+	if m.From() != A1 || m.To() != A1 {
+		t.Errorf("expected NullMove to decode as a1->a1, got %v->%v", m.From(), m.To())
+	}
+}
