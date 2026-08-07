@@ -9,34 +9,34 @@ package board
 type Move uint16
 
 const (
-	squareBits      = 6
-	squareMask Move = (1 << squareBits) - 1 // 0b111111
-	flagMask   Move = 0b1111
+	squareMask Move = 0x3F   // bits 0-5
+	flagMask   Move = 0xF000 // bits 12-15
 
-	fromShift = 0
-	toShift   = squareBits     // 6
-	flagShift = squareBits * 2 // 12
+	squareBits = 6
+	toShift    = squareBits     // 6
+	flagShift  = squareBits * 2 // 12
 )
 
 const (
-	flagQuiet           Move = 0b0000
-	flagDoublePush      Move = 0b0001
-	flagCastleQueenside Move = 0b0010
-	flagCastleKingside  Move = 0b0011
+	flagQuiet           Move = 0x0000
+	flagDoublePush      Move = 0x1000
+	flagCastleQueenside Move = 0x2000
+	flagCastleKingside  Move = 0x3000
 
-	flagCapture   Move = 0b1000
-	flagEnPassant Move = 0b1001
+	flagCapture   Move = 0x8000
+	flagEnPassant Move = 0x9000
 
-	flagPromoKnight Move = 0b0100
-	flagPromoBishop Move = 0b0101
-	flagPromoRook   Move = 0b0110
-	flagPromoQueen  Move = 0b0111
+	flagPromo       Move = 0x4000
+	flagPromoKnight Move = 0x4000
+	flagPromoBishop Move = 0x5000
+	flagPromoRook   Move = 0x6000
+	flagPromoQueen  Move = 0x7000
 )
 
 const NullMove = 0 // from A1 to A1 - impossible!
 
 func newMove(from, to Square, flags Move) Move {
-	return flags<<flagShift | Move(to)<<toShift | Move(from)
+	return flags | Move(to)<<toShift | Move(from)
 }
 
 func promoFlag(pt PieceType) Move {
@@ -92,38 +92,35 @@ func (m Move) To() Square {
 	return Square((m >> toShift) & squareMask)
 }
 func (m Move) IsCapture() bool {
-	// TODO: make this nicer
-	return (m & 0x8000) != 0
+	return (m & flagCapture) != 0
 }
 func (m Move) IsPromo() bool {
-	// TODO: make this nicer
-	return (m & 0x4000) != 0
+	return (m & flagPromo) != 0
 }
 func (m Move) Promo() PieceType {
-	// TODO: stop writing shit code
-	switch (m >> flagShift) & 0b11 {
-	case 0b00:
+	switch (m & flagMask) &^ flagCapture {
+	case flagPromoKnight:
 		return Knight
-	case 0b01:
+	case flagPromoBishop:
 		return Bishop
-	case 0b10:
+	case flagPromoRook:
 		return Rook
-	case 0b11:
+	case flagPromoQueen:
 		return Queen
 	default:
 		return NoPieceType
 	}
 }
 func (m Move) IsCastle() bool {
-	// TODO: make this nicer
+	// grab last 3 bits and compare them to 001
 	return (m & 0xE000) == 0x2000
 }
 func (m Move) IsEnPassant() bool {
-	return (m >> flagShift) == flagEnPassant
+	return (m & flagMask) == flagEnPassant
 }
 func (m Move) IsDoublePush() bool {
-	return (m >> flagShift) == flagDoublePush
+	return (m & flagMask) == flagDoublePush
 }
 func (m Move) IsQuiet() bool {
-	return false
+	return (m & flagMask) == flagQuiet
 }
