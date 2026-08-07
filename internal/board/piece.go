@@ -8,8 +8,8 @@ const (
 	NoColor
 )
 
-func (c Color) String() string {
-	switch c {
+func (color Color) String() string {
+	switch color {
 	case Black:
 		return "b"
 	case White:
@@ -30,8 +30,8 @@ func ParseColor(b byte) Color {
 	}
 }
 
-func (c Color) Opponent() Color {
-	switch c {
+func (color Color) Opponent() Color {
+	switch color {
 	case Black:
 		return White
 	case White:

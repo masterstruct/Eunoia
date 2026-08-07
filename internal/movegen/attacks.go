@@ -45,8 +45,8 @@ func kingAttacksFrom(sq board.Square) board.Bitboard {
 	return attacksFromOffsets(sq, kingOffsets[:])
 }
 
-func pawnAttacksFrom(sq board.Square, c board.Color) board.Bitboard {
-	return attacksFromOffsets(sq, pawnOffsets[c][:])
+func pawnAttacksFrom(sq board.Square, color board.Color) board.Bitboard {
+	return attacksFromOffsets(sq, pawnOffsets[color][:])
 }
 
 func attacksFromOffsets(sq board.Square, offsets [][2]int) board.Bitboard {
