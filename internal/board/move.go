@@ -8,6 +8,8 @@ package board
 // [ 15-12 ][ 11-6 ][ 5-0  ]
 type Move uint16
 
+const NullMove Move = 0 // from A1 to A1 - impossible!
+
 const (
 	squareMask Move = 0x3F   // bits 0-5
 	flagMask   Move = 0xF000 // bits 12-15
@@ -18,7 +20,6 @@ const (
 )
 
 const (
-	NullMove       Move = 0 // from A1 to A1 - impossible!
 	flagQuiet      Move = 0x0000
 	flagDoublePush Move = 0x1000
 
@@ -90,15 +91,19 @@ func NewCapturePromo(from, to Square, pt PieceType) Move {
 func (m Move) From() Square {
 	return Square(m & squareMask)
 }
+
 func (m Move) To() Square {
 	return Square((m >> toShift) & squareMask)
 }
+
 func (m Move) IsCapture() bool {
 	return (m & flagCapture) != 0
 }
+
 func (m Move) IsPromo() bool {
 	return (m & flagPromo) != 0
 }
+
 func (m Move) Promo() PieceType {
 	switch (m & flagMask) &^ flagCapture {
 	case flagPromoKnight:
@@ -113,6 +118,7 @@ func (m Move) Promo() PieceType {
 		return NoPieceType
 	}
 }
+
 func (m Move) IsCastle() bool {
 	// grab last 3 bits and compare them to 001
 	return (m & castleMask) == flagCastlePattern
@@ -125,13 +131,19 @@ func (m Move) IsKingsideCastle() bool {
 func (m Move) IsEnPassant() bool {
 	return (m & flagMask) == flagEnPassant
 }
+
 func (m Move) IsDoublePush() bool {
 	return (m & flagMask) == flagDoublePush
 }
+
 func (m Move) IsQuiet() bool {
 	return (m & flagMask) == flagQuiet
 }
 
 func (m Move) String() string {
-	return "a1a1"
+	s := m.From().String() + m.To().String()
+	if m.IsPromo() {
+		s += string(m.Promo().String())
+	}
+	return s
 }
