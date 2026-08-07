@@ -25,6 +25,10 @@ var RankBB = [8]Bitboard{
 var SquareBB [64]Bitboard
 
 func init() {
+	InitBitboards()
+}
+
+func InitBitboards() {
 	for sq := range 64 {
 		SquareBB[sq] = Bitboard(1) << sq
 	}
