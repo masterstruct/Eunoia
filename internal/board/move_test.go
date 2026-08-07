@@ -133,3 +133,33 @@ func TestNewPromoInvalidPieceType(t *testing.T) {
 		t.Errorf("expected invalid promo piece type to NOT set promo flag, got: %v", m)
 	}
 }
+
+func TestNewCapturePromo(t *testing.T) {
+	tests := []struct {
+		name string
+		pt   PieceType
+	}{
+		{"knight", Knight},
+		{"bishop", Bishop},
+		{"rook", Rook},
+		{"queen", Queen},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewCapturePromo(D7, C8, tt.pt)
+			if m.From() != D7 || m.To() != C8 {
+				t.Errorf("expected d7->c8 but got %v->%v", m.From(), m.To())
+			}
+			if !m.IsCapture() {
+				t.Errorf("expected IsCapture true")
+			}
+			if !m.IsPromo() {
+				t.Errorf("expected IsPromo true")
+			}
+			if m.Promo() != tt.pt {
+				t.Errorf("expected promo type %v but got %v", tt.pt, m.Promo())
+			}
+		})
+	}
+}

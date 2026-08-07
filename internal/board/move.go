@@ -81,6 +81,10 @@ func NewPromo(from, to Square, pt PieceType) Move {
 	return newMove(from, to, promoFlag(pt))
 }
 
+func NewCapturePromo(from, to Square, pt PieceType) Move {
+	return newMove(from, to, promoFlag(pt)|flagCapture)
+}
+
 func (m Move) From() Square {
 	return Square(m & squareMask)
 }
