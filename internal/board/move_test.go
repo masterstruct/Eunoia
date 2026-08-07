@@ -8,9 +8,12 @@ func TestNewMove(t *testing.T) {
 		from Square
 		to   Square
 	}{
-		{"e2e4", E2, E4},
+		{"e2e3", E2, E3},
 		{"a1h8", A1, H8},
 		{"g1f3", G1, F3},
+		{"d7d6", D7, D6},
+		{"g8f6", G8, F6},
+		{"c8g4", C8, G4},
 	}
 
 	for _, tt := range tests {
@@ -27,15 +30,31 @@ func TestNewMove(t *testing.T) {
 }
 
 func TestNewDoublePush(t *testing.T) {
-	m := NewDoublePush(E2, E4)
-	if m.From() != E2 || m.To() != E4 {
-		t.Errorf("expected e2->e4 but got %v->%v", m.From(), m.To())
+	tests := []struct {
+		name string
+		from Square
+		to   Square
+	}{
+		{"e2e4", E2, E4},
+		{"a2a4", A2, A4},
+		{"h2h4", H2, H4},
+		{"e7e5", E7, E5},
+		{"a7a5", A7, A5},
+		{"h7h5", H7, H5},
 	}
-	if !m.IsDoublePush() {
-		t.Errorf("expected IsDoublePush true")
-	}
-	if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() {
-		t.Errorf("expected only double-push flag set, got: %v", m)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewDoublePush(tt.from, tt.to)
+			if m.From() != tt.from || m.To() != tt.to {
+				t.Errorf("expected %v->%v but got %v->%v", tt.from, tt.to, m.From(), m.To())
+			}
+			if !m.IsDoublePush() {
+				t.Errorf("expected IsDoublePush true")
+			}
+			if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() {
+				t.Errorf("expected only double push flag set, got: %v", m)
+			}
+		})
 	}
 }
 
@@ -68,31 +87,63 @@ func TestNewCastle(t *testing.T) {
 }
 
 func TestNewCapture(t *testing.T) {
-	m := NewCapture(D4, E5)
-	if m.From() != D4 || m.To() != E5 {
-		t.Errorf("expected d4->e5 but got %v->%v", m.From(), m.To())
+	tests := []struct {
+		name string
+		from Square
+		to   Square
+	}{
+		{"d4e5", D4, E5},
+		{"b4c3", B4, C3},
+		{"e2a6", E2, A6},
+		{"f6e4", F6, E4},
+		{"e5g6", E5, G6},
+		{"f3f6", F3, F6},
 	}
-	if !m.IsCapture() {
-		t.Errorf("expected IsCapture true")
-	}
-	if m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
-		t.Errorf("expected only capture flag set, got: %v", m)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewCapture(tt.from, tt.to)
+			if m.From() != tt.from || m.To() != tt.to {
+				t.Errorf("expected %v->%v but got %v->%v", tt.from, tt.to, m.From(), m.To())
+			}
+			if !m.IsCapture() {
+				t.Errorf("expected IsCapture true")
+			}
+			if m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
+				t.Errorf("expected only capture flag set, got: %v", m)
+			}
+		})
 	}
 }
 
 func TestNewEnPassant(t *testing.T) {
-	m := NewEnPassant(D5, E6)
-	if m.From() != D5 || m.To() != E6 {
-		t.Errorf("expected d5->e6 but got %v->%v", m.From(), m.To())
+	tests := []struct {
+		name string
+		from Square
+		to   Square
+	}{
+		{"d5c6", D5, C6},
+		{"e5d6", E5, D6},
+		{"a5b6", A5, B6},
+		{"d4c3", D4, C3},
+		{"e4d3", E4, D3},
+		{"a4b3", A4, B3},
 	}
-	if !m.IsEnPassant() {
-		t.Errorf("expected IsEnPassant true")
-	}
-	if !m.IsCapture() {
-		t.Errorf("expected IsCapture true (en passant is a capture)")
-	}
-	if m.IsPromo() || m.IsCastle() || m.IsDoublePush() {
-		t.Errorf("expected only en-passant+capture flags set, got: %v", m)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := NewEnPassant(tt.from, tt.to)
+			if m.From() != tt.from || m.To() != tt.to {
+				t.Errorf("expected %v->%v but got %v->%v", tt.from, tt.to, m.From(), m.To())
+			}
+			if !m.IsEnPassant() {
+				t.Errorf("expected IsEnPassant true")
+			}
+			if !m.IsCapture() {
+				t.Errorf("expected IsCapture true (en passant is a capture)")
+			}
+			if m.IsPromo() || m.IsCastle() || m.IsDoublePush() {
+				t.Errorf("expected only en passant flag set, got: %v", m)
+			}
+		})
 	}
 }
 
@@ -120,7 +171,7 @@ func TestNewPromo(t *testing.T) {
 				t.Errorf("expected promo type %v but got %v", tt.pt, m.Promo())
 			}
 			if m.IsCapture() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
-				t.Errorf("expected only promo flags set, got: %v", m)
+				t.Errorf("expected only promo flag set, got: %v", m)
 			}
 		})
 	}
@@ -167,7 +218,7 @@ func TestNewCapturePromo(t *testing.T) {
 func TestNullMove(t *testing.T) {
 	var m Move // zero value
 	if m != NullMove {
-		t.Errorf("expected zero-value Move to equal NullMove")
+		t.Errorf("expected zero value Move to equal NullMove")
 	}
 	if m.From() != A1 || m.To() != A1 {
 		t.Errorf("expected NullMove to decode as a1->a1, got %v->%v", m.From(), m.To())
