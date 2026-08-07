@@ -22,6 +22,9 @@ func TestNewMove(t *testing.T) {
 			if m.From() != tt.from || m.To() != tt.to {
 				t.Errorf("expected %v->%v but got %v->%v", tt.from, tt.to, m.From(), m.To())
 			}
+			if !m.IsQuiet() {
+				t.Errorf("expected IsQuiet true")
+			}
 			if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
 				t.Errorf("expected quiet move but got flags set: %v", m)
 			}
@@ -51,6 +54,9 @@ func TestNewDoublePush(t *testing.T) {
 			if !m.IsDoublePush() {
 				t.Errorf("expected IsDoublePush true")
 			}
+			if m.IsQuiet() {
+				t.Errorf("expected IsQuiet false")
+			}
 			if m.IsCapture() || m.IsPromo() || m.IsCastle() || m.IsEnPassant() {
 				t.Errorf("expected only double push flag set, got: %v", m)
 			}
@@ -78,6 +84,9 @@ func TestNewCastle(t *testing.T) {
 			}
 			if !m.IsCastle() {
 				t.Errorf("expected IsCastle true")
+			}
+			if m.IsQuiet() {
+				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsCapture() || m.IsPromo() || m.IsEnPassant() || m.IsDoublePush() {
 				t.Errorf("expected only castle flag set, got: %v", m)
@@ -107,6 +116,9 @@ func TestNewCapture(t *testing.T) {
 			}
 			if !m.IsCapture() {
 				t.Errorf("expected IsCapture true")
+			}
+			if m.IsQuiet() {
+				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsPromo() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
 				t.Errorf("expected only capture flag set, got: %v", m)
@@ -140,6 +152,9 @@ func TestNewEnPassant(t *testing.T) {
 			if !m.IsCapture() {
 				t.Errorf("expected IsCapture true (en passant is a capture)")
 			}
+			if m.IsQuiet() {
+				t.Errorf("expected IsQuiet false")
+			}
 			if m.IsPromo() || m.IsCastle() || m.IsDoublePush() {
 				t.Errorf("expected only en passant flag set, got: %v", m)
 			}
@@ -169,6 +184,9 @@ func TestNewPromo(t *testing.T) {
 			}
 			if m.Promo() != tt.pt {
 				t.Errorf("expected promo type %v but got %v", tt.pt, m.Promo())
+			}
+			if m.IsQuiet() {
+				t.Errorf("expected IsQuiet false")
 			}
 			if m.IsCapture() || m.IsCastle() || m.IsEnPassant() || m.IsDoublePush() {
 				t.Errorf("expected only promo flag set, got: %v", m)
@@ -207,6 +225,9 @@ func TestNewCapturePromo(t *testing.T) {
 			}
 			if !m.IsPromo() {
 				t.Errorf("expected IsPromo true")
+			}
+			if m.IsQuiet() {
+				t.Errorf("expected IsQuiet false")
 			}
 			if m.Promo() != tt.pt {
 				t.Errorf("expected promo type %v but got %v", tt.pt, m.Promo())
