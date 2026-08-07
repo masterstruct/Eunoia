@@ -125,3 +125,11 @@ func TestNewPromo(t *testing.T) {
 		})
 	}
 }
+
+func TestNewPromoInvalidPieceType(t *testing.T) {
+	// edge case: bogus PieceType input falls through promoFlag's default branch
+	m := NewPromo(E7, E8, Pawn)
+	if m.IsPromo() {
+		t.Errorf("expected invalid promo piece type to NOT set promo flag, got: %v", m)
+	}
+}
