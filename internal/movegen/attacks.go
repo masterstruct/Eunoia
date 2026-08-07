@@ -33,33 +33,27 @@ func InitAttackTables() {
 }
 
 func knightAttacksFrom(sq board.Square) board.Bitboard {
-	bb := board.EmptyBB
-	for _, offset := range knightOffsets {
-		newFile := sq.File() + offset[0]
-		newRank := sq.Rank() + offset[1]
-
-		targetSq := board.NewSquare(newFile, newRank)
-		if targetSq.IsValid() {
-			bb.SetBit(targetSq)
-		}
-	}
-	return bb
+	return attacksFromOffsets(sq, knightOffsets[:])
 }
 
 func kingAttacksFrom(sq board.Square) board.Bitboard {
-	bb := board.EmptyBB
-	for _, offset := range kingOffsets {
-		newFile := sq.File() + offset[0]
-		newRank := sq.Rank() + offset[1]
-
-		targetSq := board.NewSquare(newFile, newRank)
-		if targetSq.IsValid() {
-			bb.SetBit(targetSq)
-		}
-	}
-	return bb
+	return attacksFromOffsets(sq, kingOffsets[:])
 }
 
 func pawnAttacksFrom(sq board.Square, c board.Color) board.Bitboard {
 	return board.EmptyBB
+}
+
+func attacksFromOffsets(sq board.Square, offsets [][2]int) board.Bitboard {
+	bb := board.EmptyBB
+	for _, offset := range offsets {
+		newFile := sq.File() + offset[0]
+		newRank := sq.Rank() + offset[1]
+
+		targetSq := board.NewSquare(newFile, newRank)
+		if targetSq.IsValid() {
+			bb.SetBit(targetSq)
+		}
+	}
+	return bb
 }
