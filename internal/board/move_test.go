@@ -259,3 +259,142 @@ func TestNullMove(t *testing.T) {
 		t.Errorf("expected NullMove to decode as a1->a1, got %v->%v", m.From(), m.To())
 	}
 }
+
+func TestMove_String(t *testing.T) {
+	t.Run("quiet move", func(t *testing.T) {
+		tests := []struct {
+			from, to Square
+			want     string
+		}{
+			{E2, E3, "e2e3"},
+			{G1, F3, "g1f3"},
+			{D7, D6, "d7d6"},
+			{C8, G4, "c8g4"},
+		}
+
+		for _, tt := range tests {
+			m := NewMove(tt.from, tt.to)
+			got := m.String()
+			if got != tt.want {
+				t.Fatalf("expected %q, got %q", tt.want, got)
+			}
+		}
+	})
+
+	t.Run("double push", func(t *testing.T) {
+		tests := []struct {
+			from, to Square
+			want     string
+		}{
+			{E2, E4, "e2e4"},
+			{A2, A4, "a2a4"},
+			{H2, H4, "h2h4"},
+			{D7, D5, "d7d5"},
+			{A7, A5, "a7a5"},
+			{H7, H5, "h7h5"},
+		}
+
+		for _, tt := range tests {
+			m := NewDoublePush(tt.from, tt.to)
+			got := m.String()
+			if got != tt.want {
+				t.Fatalf("expected %q, got %q", tt.want, got)
+			}
+		}
+	})
+
+	t.Run("castling", func(t *testing.T) {
+		tests := []struct {
+			from, to Square
+			kingside bool
+			want     string
+		}{
+			{E1, G1, true, "e1g1"},
+			{E1, C1, false, "e1c1"},
+			{E8, G8, true, "e8g8"},
+			{E8, C8, false, "e8c8"},
+		}
+
+		for _, tt := range tests {
+			m := NewCastle(tt.from, tt.to, tt.kingside)
+			got := m.String()
+			if got != tt.want {
+				t.Fatalf("expected %q, got %q", tt.want, got)
+			}
+		}
+	})
+
+	t.Run("en passant", func(t *testing.T) {
+		tests := []struct {
+			from, to Square
+			want     string
+		}{
+			{D5, C6, "d5c6"},
+			{E5, D6, "e5d6"},
+			{A5, B6, "a5b6"},
+			{D4, C3, "d4c3"},
+			{E4, D3, "e4d3"},
+			{A4, B3, "a4b3"},
+		}
+
+		for _, tt := range tests {
+			m := NewEnPassant(tt.from, tt.to)
+			got := m.String()
+			if got != tt.want {
+				t.Fatalf("expected %q, got %q", tt.want, got)
+			}
+		}
+	})
+
+	t.Run("regular promotion", func(t *testing.T) {
+		tests := []struct {
+			from, to Square
+			pt       PieceType
+			want     string
+		}{
+			{D7, D8, Knight, "d7d8n"},
+			{C7, C8, Bishop, "c7c8b"},
+			{B7, B8, Rook, "b7b8r"},
+			{A7, A8, Queen, "a7a8q"},
+
+			{D2, D1, Knight, "d2d1n"},
+			{C2, C1, Bishop, "c2c1b"},
+			{B2, B1, Rook, "b2b1r"},
+			{H2, H1, Queen, "h2h1q"},
+		}
+
+		for _, tt := range tests {
+			m := NewPromo(tt.from, tt.to, tt.pt)
+			got := m.String()
+			if got != tt.want {
+				t.Fatalf("expected %q, got %q", tt.want, got)
+			}
+		}
+	})
+
+	t.Run("capture promotion", func(t *testing.T) {
+		tests := []struct {
+			from, to Square
+			pt       PieceType
+			want     string
+		}{
+			{H7, H8, Knight, "h7h8n"},
+			{C7, D8, Bishop, "c7d8b"},
+			{B7, A8, Rook, "b7a8r"},
+			{A7, B8, Queen, "a7b8q"},
+
+			{D2, E1, Knight, "d2e1n"},
+			{C2, D1, Bishop, "c2d1b"},
+			{B2, A1, Rook, "b2a1r"},
+			{H2, G1, Queen, "h2g1q"},
+		}
+
+		for _, tt := range tests {
+			m := NewCapturePromo(tt.from, tt.to, tt.pt)
+			got := m.String()
+			if got != tt.want {
+				t.Fatalf("expected %q, got %q", tt.want, got)
+			}
+		}
+	})
+}

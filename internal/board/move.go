@@ -131,3 +131,7 @@ func (m Move) IsDoublePush() bool {
 func (m Move) IsQuiet() bool {
 	return (m & flagMask) == flagQuiet
 }
+
+func (m Move) String() string {
+	return "a1a1"
+}
