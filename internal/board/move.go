@@ -117,6 +117,11 @@ func (m Move) IsCastle() bool {
 	// grab last 3 bits and compare them to 001
 	return (m & castleMask) == flagCastlePattern
 }
+
+func (m Move) IsKingsideCastle() bool {
+	return (m & flagMask) == flagCastleKingside
+}
+
 func (m Move) IsEnPassant() bool {
 	return (m & flagMask) == flagEnPassant
 }

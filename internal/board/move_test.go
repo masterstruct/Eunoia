@@ -79,6 +79,7 @@ func TestNewCastle(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			m := NewCastle(tt.from, tt.to, tt.kingside)
+			gotKingside := m.IsKingsideCastle()
 			if m.From() != tt.from || m.To() != tt.to {
 				t.Errorf("expected %v->%v but got %v->%v", tt.from, tt.to, m.From(), m.To())
 			}
@@ -90,6 +91,9 @@ func TestNewCastle(t *testing.T) {
 			}
 			if m.IsCapture() || m.IsPromo() || m.IsEnPassant() || m.IsDoublePush() {
 				t.Errorf("expected only castle flag set, got: %v", m)
+			}
+			if gotKingside != tt.kingside {
+				t.Errorf("expected IsKingsideCastle %v, got %v", tt.kingside, gotKingside)
 			}
 		})
 	}
