@@ -78,3 +78,33 @@ func TestKingAttacksFrom(t *testing.T) {
 		})
 	}
 }
+
+func TestPawnAttacksFrom(t *testing.T) {
+	tests := []struct {
+		name  string
+		sq    board.Square
+		color board.Color
+		want  board.Bitboard
+	}{
+		{"white corner a1", board.A1, board.White, bbFrom(board.B2)},
+		{"white corner h1", board.H1, board.White, bbFrom(board.G2)},
+		{"white edge a4", board.A4, board.White, bbFrom(board.B5)},
+		{"white edge h4", board.H4, board.White, bbFrom(board.G5)},
+		{"white center d4", board.D4, board.White, bbFrom(board.C5, board.E5)},
+
+		{"black corner a8", board.A8, board.Black, bbFrom(board.B7)},
+		{"black corner h8", board.H8, board.Black, bbFrom(board.G7)},
+		{"black edge a5", board.A5, board.Black, bbFrom(board.B4)},
+		{"black edge h5", board.H5, board.Black, bbFrom(board.G4)},
+		{"black center d5", board.D5, board.Black, bbFrom(board.C4, board.E4)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := pawnAttacksFrom(tt.sq, tt.color)
+			if got != tt.want {
+				t.Errorf("pawnAttacksFrom(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.color, got, tt.want)
+			}
+		})
+	}
+}

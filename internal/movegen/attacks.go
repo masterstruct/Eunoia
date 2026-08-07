@@ -19,6 +19,11 @@ var kingOffsets = [8][2]int{
 	{-1, 1}, {0, 1},
 }
 
+var pawnOffsets = [2][2][2]int{
+	{{-1, -1}, {1, -1}}, // Black
+	{{-1, 1}, {1, 1}},   // White
+}
+
 func init() {
 	InitAttackTables()
 }
@@ -41,7 +46,7 @@ func kingAttacksFrom(sq board.Square) board.Bitboard {
 }
 
 func pawnAttacksFrom(sq board.Square, c board.Color) board.Bitboard {
-	return board.EmptyBB
+	return attacksFromOffsets(sq, pawnOffsets[c][:])
 }
 
 func attacksFromOffsets(sq board.Square, offsets [][2]int) board.Bitboard {
