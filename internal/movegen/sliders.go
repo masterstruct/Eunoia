@@ -8,5 +8,25 @@ var (
 )
 
 func RookAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
-	return board.EmptyBB
+	return rayAttacks(sq, rookDirs, occupied)
+}
+
+func rayAttacks(sq board.Square, dirs [][2]int, occupied board.Bitboard) board.Bitboard {
+	bb := board.EmptyBB
+
+	for _, dir := range dirs {
+		df, dr := dir[0], dir[1]
+		currSq := sq
+
+		for currSq.IsValid() && !occupied.IsBitSet(currSq) {
+			newFile := currSq.File() + df
+			newRank := currSq.Rank() + dr
+
+			currSq = board.NewSquare(newFile, newRank)
+			if currSq.IsValid() {
+				bb.SetBit(currSq)
+			}
+		}
+	}
+	return bb
 }
