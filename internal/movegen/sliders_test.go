@@ -87,3 +87,66 @@ func TestRookAttacks(t *testing.T) {
 		})
 	}
 }
+
+func TestBishopAttacks(t *testing.T) {
+	tests := []struct {
+		name     string
+		sq       board.Square
+		occupied board.Bitboard
+		want     board.Bitboard
+	}{
+		{
+			"empty board center d4",
+			board.D4, board.EmptyBB,
+			bbFrom(
+				board.A1, board.B2, board.C3, board.E5, board.F6, board.G7, board.H8,
+				board.A7, board.B6, board.C5, board.E3, board.F2, board.G1,
+			),
+		},
+		{
+			"empty board corner a1",
+			board.A1, board.EmptyBB,
+			bbFrom(board.B2, board.C3, board.D4, board.E5, board.F6, board.G7, board.H8),
+		},
+		{
+			"empty board corner h1",
+			board.H1, board.EmptyBB,
+			bbFrom(board.G2, board.F3, board.E4, board.D5, board.C6, board.B7, board.A8),
+		},
+		{
+			"single blocker northeast",
+			board.D4, bbFrom(board.F6),
+			bbFrom(
+				board.A1, board.B2, board.C3, board.E5, board.F6,
+				board.A7, board.B6, board.C5, board.E3, board.F2, board.G1,
+			),
+		},
+		{
+			"blockers on all four diagonals",
+			board.D4, bbFrom(board.F6, board.B2, board.F2, board.B6),
+			bbFrom(
+				board.C3, board.B2,
+				board.E5, board.F6,
+				board.C5, board.B6,
+				board.E3, board.F2,
+			),
+		},
+		{
+			"bishop on edge a4, half-diagonals only",
+			board.A4, board.EmptyBB,
+			bbFrom(
+				board.B5, board.C6, board.D7, board.E8,
+				board.B3, board.C2, board.D1,
+			),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := BishopAttacks(tt.sq, tt.occupied)
+			if got != tt.want {
+				t.Errorf("BishopAttacks(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.occupied, got, tt.want)
+			}
+		})
+	}
+}
