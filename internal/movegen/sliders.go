@@ -11,6 +11,10 @@ func RookAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
 	return rayAttacks(sq, rookDirs, occupied)
 }
 
+func BishopAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
+	return rayAttacks(sq, bishopDirs, occupied)
+}
+
 func rayAttacks(sq board.Square, dirs [][2]int, occupied board.Bitboard) board.Bitboard {
 	bb := board.EmptyBB
 
