@@ -16,16 +16,22 @@ func TestMakeMove(t *testing.T) {
 			wantFEN: "rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
 		},
 		{
-			name:    "quiet pawn move clears en passant",
+			name:    "quiet move clears en passant",
 			fen:     "rnbqkb1r/pp1ppppp/5n2/2pP4/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3",
-			move:    NewMove(E2, E3),
-			wantFEN: "rnbqkb1r/pp1ppppp/5n2/2pP4/2P5/8/PP2PPPP/RNBQKBNR b KQkq - 0 3",
+			move:    NewMove(G1, F3),
+			wantFEN: "rnbqkb1r/pp1ppppp/5n2/2pP4/8/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 3",
 		},
 		{
-			name:    "double push sets en passant unconditionally",
+			name:    "white double push sets en passant",
 			fen:     startingFEN,
 			move:    NewDoublePush(E2, E4),
 			wantFEN: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+		},
+		{
+			name:    "black double push sets en passant",
+			fen:     "rnbqkb1r/pppppppp/5n2/3P4/8/8/PPP1PPPP/RNBQKBNR b KQkq - 0 2",
+			move:    NewDoublePush(C7, C5),
+			wantFEN: "rnbqkb1r/pp1ppppp/5n2/2pP4/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3",
 		},
 		{
 			name:    "en passant sets ep square even though pinned pawn can't capture",
@@ -94,6 +100,12 @@ func TestMakeMove(t *testing.T) {
 			wantFEN: "R3k2r/8/8/8/8/8/8/4K2R b Kk - 0 1",
 		},
 		{
+			name:    "moving a rook from its home square forfeits castling right",
+			fen:     "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+			move:    NewMove(A1, A3),
+			wantFEN: "r3k2r/8/8/8/8/R7/8/4K2R b Kkq - 1 1",
+		},
+		{
 			name:    "promotion places promoted piece not pawn",
 			fen:     "8/4P3/8/8/8/8/8/4K2k w - - 0 1",
 			move:    NewPromo(E7, E8, Queen),
@@ -137,7 +149,7 @@ func makemove_assertPositionEqual(t *testing.T, got, want Position) {
 	t.Helper()
 
 	if got.FEN() != want.FEN() {
-		t.Errorf("FEN mismatch\ngot: %s\nwant: %s", got.FEN(), want.FEN())
+		t.Errorf("FEN mismatch\ngot: %s\n%v\nwant: %s\n%v", got.FEN(), got, want.FEN(), want)
 	}
 	if got.SideToMove != want.SideToMove {
 		t.Errorf("SideToMove mismatch\ngot: %v\nwant: %v", got.SideToMove, want.SideToMove)
