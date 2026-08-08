@@ -66,6 +66,7 @@ func (pos Position) MakeMove(move Move) Position {
 		} else {
 			newPos.CastlingRights.Remove(WhiteKingside)
 			newPos.CastlingRights.Remove(WhiteQueenside)
+			newPos.PlacePiece(piece, to)
 			if move.IsKingsideCastle() {
 				newPos.RemovePiece(H1)
 				newPos.PlacePiece(WhiteRook, F1)
@@ -76,7 +77,13 @@ func (pos Position) MakeMove(move Move) Position {
 		}
 	} else {
 		if piece.Type == King {
-			newPos.CastlingRights = NoCastling
+			if piece.Color == Black {
+				newPos.CastlingRights.Remove(BlackKingside)
+				newPos.CastlingRights.Remove(BlackQueenside)
+			} else {
+				newPos.CastlingRights.Remove(WhiteKingside)
+				newPos.CastlingRights.Remove(WhiteQueenside)
+			}
 		}
 	}
 
