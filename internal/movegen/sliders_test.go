@@ -150,3 +150,29 @@ func TestBishopAttacks(t *testing.T) {
 		})
 	}
 }
+
+func TestQueenAttacks(t *testing.T) {
+	tests := []struct {
+		name     string
+		sq       board.Square
+		occupied board.Bitboard
+	}{
+		{"empty board center d4", board.D4, board.EmptyBB},
+		{"empty board corner a1", board.A1, board.EmptyBB},
+		{"with blockers", board.D4, bbFrom(board.D6, board.F6, board.B4, board.C3)},
+		{"fully surrounded", board.D4, bbFrom(
+			board.D5, board.D3, board.C4, board.E4,
+			board.C5, board.E5, board.C3, board.E3,
+		)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			want := RookAttacks(tt.sq, tt.occupied) | BishopAttacks(tt.sq, tt.occupied)
+			got := QueenAttacks(tt.sq, tt.occupied)
+			if got != want {
+				t.Errorf("QueenAttacks(%v, %v):\ngot:\n%v\nwant (rook|bishop):\n%v", tt.sq, tt.occupied, got, want)
+			}
+		})
+	}
+}
