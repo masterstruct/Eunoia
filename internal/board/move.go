@@ -155,3 +155,7 @@ func (m Move) Raw() uint16 {
 func (m Move) RawFlags() uint16 {
 	return m.Raw() >> flagShift
 }
+
+func (m Move) IsNullMove() bool {
+	return m.From() == m.To()
+}

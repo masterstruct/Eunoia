@@ -252,11 +252,39 @@ func TestNewCapturePromoInvalidPieceType(t *testing.T) {
 
 func TestNullMove(t *testing.T) {
 	var m Move // zero value
-	if m != NullMove {
+	if !m.IsNullMove() {
 		t.Errorf("expected zero value Move to equal NullMove")
 	}
 	if m.From() != A1 || m.To() != A1 {
 		t.Errorf("expected NullMove to decode as a1->a1, got %v->%v", m.From(), m.To())
+	}
+}
+
+func TestIsNullMove(t *testing.T) {
+	tests := []struct {
+		name string
+		m    Move
+		want bool
+	}{
+		{"null move", NullMove, true},
+		{"quiet move", NewMove(E2, E3), false},
+		{"double push", NewDoublePush(E2, E4), false},
+		{"capture", NewCapture(E4, D5), false},
+		{"en passant", NewEnPassant(E5, D6), false},
+		{"kingside castle", NewCastle(E1, G1, true), false},
+		{"queenside castle", NewCastle(E1, C1, false), false},
+		{"promotion", NewPromo(E7, E8, Queen), false},
+		{"capture promotion", NewCapturePromo(E7, D8, Queen), false},
+		{"same square constructed manually", NewMove(A1, A1), true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.m.IsNullMove()
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
 	}
 }
 
