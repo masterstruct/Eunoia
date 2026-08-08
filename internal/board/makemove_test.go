@@ -10,10 +10,16 @@ func TestMakeMove(t *testing.T) {
 		wantFEN string // resulting position, roundtrip through FEN for readability
 	}{
 		{
-			name:    "quiet pawn push clears en passant",
+			name:    "quiet move",
 			fen:     startingFEN,
 			move:    NewMove(E2, E3),
 			wantFEN: "rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+		},
+		{
+			name:    "quiet pawn move clears en passant",
+			fen:     "rnbqkb1r/pp1ppppp/5n2/2pP4/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3",
+			move:    NewMove(E2, E3),
+			wantFEN: "rnbqkb1r/pp1ppppp/5n2/2pP4/2P5/8/PP2PPPP/RNBQKBNR b KQkq - 0 3",
 		},
 		{
 			name:    "double push sets en passant unconditionally",
@@ -122,9 +128,33 @@ func TestMakeMove(t *testing.T) {
 				t.Fatalf("failed to generate FEN: %v", err)
 			}
 
-			if got != want {
-				t.Errorf("MakeMove(%v) on %q\ngot %v:\n%v\nwant: %v\n%v", tt.move, tt.fen, got.FEN(), got, want.FEN(), want)
-			}
+			makemove_assertPositionEqual(t, got, want)
 		})
+	}
+}
+
+func makemove_assertPositionEqual(t *testing.T, got, want Position) {
+	t.Helper()
+
+	if got.FEN() != want.FEN() {
+		t.Errorf("FEN mismatch\ngot: %s\nwant: %s", got.FEN(), want.FEN())
+	}
+	if got.SideToMove != want.SideToMove {
+		t.Errorf("SideToMove mismatch\ngot: %v\nwant: %v", got.SideToMove, want.SideToMove)
+	}
+	if got.CastlingRights != want.CastlingRights {
+		t.Errorf("CastlingRights mismatch\ngot: %v\nwant: %v", got.CastlingRights, want.CastlingRights)
+	}
+	if got.EnPassant != want.EnPassant {
+		t.Errorf("EnPassant mismatch\ngot: %v\nwant: %v", got.EnPassant, want.EnPassant)
+	}
+	if got.HalfmoveClock != want.HalfmoveClock {
+		t.Errorf("HalfmoveClock mismatch\ngot: %v\nwant: %v", got.HalfmoveClock, want.HalfmoveClock)
+	}
+	if got.Ply != want.Ply {
+		t.Errorf("Ply mismatch\ngot: %v\nwant: %v", got.Ply, want.Ply)
+	}
+	if got.Hash != want.Hash {
+		t.Errorf("Hash mismatch\ngot: %v\nwant: %v", got.Hash, want.Hash)
 	}
 }
