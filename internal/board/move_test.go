@@ -2,6 +2,13 @@ package board
 
 import "testing"
 
+// TODO: move to an approprate file
+func withChess960(t *testing.T) {
+	t.Helper()
+	SetChess960(true)
+	t.Cleanup(func() { SetChess960(false) })
+}
+
 func TestNewMove(t *testing.T) {
 	tests := []struct {
 		name string
@@ -331,7 +338,7 @@ func TestMove_String(t *testing.T) {
 		}
 	})
 
-	t.Run("castling", func(t *testing.T) {
+	t.Run("castling", func(t *testing.T) { // NOT chess960
 		tests := []struct {
 			from, to Square
 			want     string
@@ -424,4 +431,26 @@ func TestMove_String(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestMoveString_Chess960Castle(t *testing.T) {
+	withChess960(t)
+
+	tests := []struct {
+		name string
+		move Move
+		want string
+	}{
+		{"white kingside", NewCastle(E1, H1), "e1h1"},
+		{"white queenside", NewCastle(E1, A1), "e1a1"},
+		{"white kingside, rook on f", NewCastle(E1, F1), "e1f1"},
+		{"white kingside, rook on c", NewCastle(E1, C1), "e1c1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.move.String(); got != tt.want {
+				t.Errorf("got %q want %q", got, tt.want)
+			}
+		})
+	}
 }
