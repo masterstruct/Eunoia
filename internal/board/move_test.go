@@ -445,6 +445,10 @@ func TestMoveString_Chess960Castle(t *testing.T) {
 		{"white queenside", NewCastle(E1, A1), "e1a1"},
 		{"white kingside, rook on f", NewCastle(E1, F1), "e1f1"},
 		{"white kingside, rook on c", NewCastle(E1, C1), "e1c1"},
+		{"black kingside", NewCastle(E8, H8), "e8h8"},
+		{"black queenside", NewCastle(E8, A8), "e8a8"},
+		{"black kingside, rook on f", NewCastle(E8, F8), "e8f8"},
+		{"black kingside, rook on c", NewCastle(E8, C8), "e8c8"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
