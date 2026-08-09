@@ -53,26 +53,26 @@ func (pos Position) MakeMove(move Move) Position {
 
 	if move.IsCastle() {
 		if piece.Color == Black {
-			newPos.CastlingRights.Remove(BlackKingside)
-			newPos.CastlingRights.Remove(BlackQueenside)
-			newPos.PlacePiece(piece, to)
+			newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
 			if move.IsKingsideCastle() {
-				newPos.RemovePiece(H8)
+				newPos.PlacePiece(BlackKing, G8)
 				newPos.PlacePiece(BlackRook, F8)
+				newPos.RemovePiece(H8)
 			} else {
-				newPos.RemovePiece(A8)
+				newPos.PlacePiece(BlackKing, C8)
 				newPos.PlacePiece(BlackRook, D8)
+				newPos.RemovePiece(A8)
 			}
 		} else {
-			newPos.CastlingRights.Remove(WhiteKingside)
-			newPos.CastlingRights.Remove(WhiteQueenside)
-			newPos.PlacePiece(piece, to)
+			newPos.CastlingRights.Remove(WhiteKingside | WhiteQueenside)
 			if move.IsKingsideCastle() {
-				newPos.RemovePiece(H1)
+				newPos.PlacePiece(WhiteKing, G1)
 				newPos.PlacePiece(WhiteRook, F1)
+				newPos.RemovePiece(H1)
 			} else {
-				newPos.RemovePiece(A1)
+				newPos.PlacePiece(WhiteKing, C1)
 				newPos.PlacePiece(WhiteRook, D1)
+				newPos.RemovePiece(A1)
 			}
 		}
 	} else {
