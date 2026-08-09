@@ -1,5 +1,20 @@
 package board
 
+import (
+	"sync/atomic"
+)
+
+// TODO: move to an approprate file
+var chess960 atomic.Bool
+
+func SetChess960(v bool) {
+	chess960.Store(v)
+}
+
+func IsChess960() bool {
+	return chess960.Load()
+}
+
 // Thank you, 87flowers, for
 // your chess move flag scheme
 // https://87flowers.com/chess-moveflags/
@@ -141,11 +156,37 @@ func (m Move) IsQuiet() bool {
 }
 
 func (m Move) String() string {
-	s := m.From().String() + m.To().String()
-	if m.IsPromo() {
-		s += string(m.Promo().String())
+	from, to := m.From(), m.To()
+	if m.IsCastle() && !IsChess960() {
+		to = FischerRandomToStandardCastling(m)
 	}
-	return s
+	return from.String() + to.String() + promoSuffix(m)
+}
+
+func promoSuffix(m Move) string {
+	if !m.IsPromo() {
+		return ""
+	}
+	return string(m.Promo().String())
+}
+
+func FischerRandomToStandardCastling(move Move) Square {
+	switch move.From().Rank() {
+	case Rank8:
+		if move.IsKingsideCastle() {
+			return G8
+		} else {
+			return C8
+		}
+	case Rank1:
+		if move.IsKingsideCastle() {
+			return G1
+		} else {
+			return C1
+		}
+	default:
+		return NoSquare
+	}
 }
 
 func (m Move) Raw() uint16 {
