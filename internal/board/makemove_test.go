@@ -72,13 +72,13 @@ func TestMakeMove(t *testing.T) {
 		{
 			name:    "kingside castle moves rook too",
 			fen:     "4k3/8/8/8/8/8/8/4K2R w K - 0 1",
-			move:    NewCastle(E1, G1, true),
+			move:    NewCastle(E1, H1),
 			wantFEN: "4k3/8/8/8/8/8/8/5RK1 b - - 1 1",
 		},
 		{
 			name:    "queenside castle moves rook too",
 			fen:     "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1",
-			move:    NewCastle(E1, C1, false),
+			move:    NewCastle(E1, A1),
 			wantFEN: "4k3/8/8/8/8/8/8/2KR4 b - - 1 1",
 		},
 		{
@@ -144,13 +144,13 @@ func TestMakeMove(t *testing.T) {
 		{
 			name:    "black kingside castle moves rook too",
 			fen:     "4k2r/8/8/8/8/8/8/4K3 b k - 0 1",
-			move:    NewCastle(E8, G8, true),
+			move:    NewCastle(E8, H8),
 			wantFEN: "5rk1/8/8/8/8/8/8/4K3 w - - 1 2",
 		},
 		{
 			name:    "black queenside castle moves rook too",
 			fen:     "r3k3/8/8/8/8/8/8/4K3 b q - 0 1",
-			move:    NewCastle(E8, C8, false),
+			move:    NewCastle(E8, A8),
 			wantFEN: "2kr4/8/8/8/8/8/8/4K3 w - - 1 2",
 		},
 		{

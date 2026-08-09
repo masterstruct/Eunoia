@@ -65,8 +65,8 @@ func NewDoublePush(from, to Square) Move {
 	return newMove(from, to, flagDoublePush)
 }
 
-func NewCastle(from, to Square, kingside bool) Move {
-	if kingside {
+func NewCastle(from, to Square) Move {
+	if to > from { // kingside
 		return newMove(from, to, flagCastleKingside)
 	}
 	return newMove(from, to, flagCastleQueenside)

@@ -70,15 +70,15 @@ func TestNewCastle(t *testing.T) {
 		from, to Square
 		kingside bool
 	}{
-		{"white kingside", E1, G1, true},
-		{"white queenside", E1, C1, false},
-		{"black kingside", E8, G8, true},
-		{"black queenside", E8, C8, false},
+		{"white kingside", E1, H1, true},
+		{"white queenside", E1, A1, false},
+		{"black kingside", E8, H8, true},
+		{"black queenside", E8, A8, false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := NewCastle(tt.from, tt.to, tt.kingside)
+			m := NewCastle(tt.from, tt.to)
 			gotKingside := m.IsKingsideCastle()
 			if m.From() != tt.from || m.To() != tt.to {
 				t.Errorf("expected %v->%v but got %v->%v", tt.from, tt.to, m.From(), m.To())
@@ -271,8 +271,8 @@ func TestIsNullMove(t *testing.T) {
 		{"double push", NewDoublePush(E2, E4), false},
 		{"capture", NewCapture(E4, D5), false},
 		{"en passant", NewEnPassant(E5, D6), false},
-		{"kingside castle", NewCastle(E1, G1, true), false},
-		{"queenside castle", NewCastle(E1, C1, false), false},
+		{"kingside castle", NewCastle(E1, H1), false},
+		{"queenside castle", NewCastle(E1, A1), false},
 		{"promotion", NewPromo(E7, E8, Queen), false},
 		{"capture promotion", NewCapturePromo(E7, D8, Queen), false},
 		{"same square constructed manually", NewMove(A1, A1), true},
@@ -334,17 +334,16 @@ func TestMove_String(t *testing.T) {
 	t.Run("castling", func(t *testing.T) {
 		tests := []struct {
 			from, to Square
-			kingside bool
 			want     string
 		}{
-			{E1, G1, true, "e1g1"},
-			{E1, C1, false, "e1c1"},
-			{E8, G8, true, "e8g8"},
-			{E8, C8, false, "e8c8"},
+			{E1, H1, "e1g1"},
+			{E1, A1, "e1c1"},
+			{E8, H8, "e8g8"},
+			{E8, A8, "e8c8"},
 		}
 
 		for _, tt := range tests {
-			m := NewCastle(tt.from, tt.to, tt.kingside)
+			m := NewCastle(tt.from, tt.to)
 			got := m.String()
 			if got != tt.want {
 				t.Fatalf("expected %q, got %q", tt.want, got)
