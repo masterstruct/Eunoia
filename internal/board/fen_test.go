@@ -473,7 +473,7 @@ func TestStartingPosition(t *testing.T) {
 }
 
 func TestParseFEN_Chess960(t *testing.T) {
-	SetChess960(true)
+	withChess960(t)
 
 	tests := []struct {
 		name string

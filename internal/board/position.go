@@ -76,7 +76,7 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 		if strings.ContainsRune(allowedStandard, char) {
 			if mode != 1 {
 				mode = 0
-				allowedStandard = strings.Replace(allowedStandard, string(char), "", 1)
+				// allowedStandard = strings.Replace(allowedStandard, string(char), "", 1)
 			} else {
 				// error: mixing standard and shredder notation
 				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
@@ -84,7 +84,7 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 		} else if strings.ContainsRune(allowedShredder, char) {
 			if mode != 0 {
 				mode = 1
-				allowedShredder = strings.Replace(allowedShredder, string(char), "", 1)
+				// allowedShredder = strings.Replace(allowedShredder, string(char), "", 1)
 			} else {
 				// error: mixing standard and shredder notation
 				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
@@ -118,6 +118,7 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 	}
 	if mode == 1 {
 		for _, char := range s {
+			last := cr
 			isBlack := char&0x20 != 0
 			rank := Rank1
 			if isBlack {
@@ -147,6 +148,9 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 				} else {
 					cr |= WhiteKingside
 				}
+			}
+			if last == cr {
+				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
 			}
 		}
 	}
