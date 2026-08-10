@@ -9,6 +9,42 @@ import (
 
 type CastlingRights uint8
 
+type CastlingRookSquares struct {
+	WhiteKingside  Square
+	WhiteQueenside Square
+	BlackKingside  Square
+	BlackQueenside Square
+}
+
+func (pos Position) CastlingRooks() CastlingRookSquares {
+	rs := CastlingRookSquares{NoSquare, NoSquare, NoSquare, NoSquare}
+
+	if pos.CastlingRights.Has(WhiteKingside) {
+		rs.WhiteKingside = scanRook(pos.PieceBB(WhiteRook), pos.PieceBB(WhiteKing).LSB(), +1)
+	}
+	if pos.CastlingRights.Has(WhiteQueenside) {
+		rs.WhiteQueenside = scanRook(pos.PieceBB(WhiteRook), pos.PieceBB(WhiteKing).LSB(), -1)
+	}
+	if pos.CastlingRights.Has(BlackKingside) {
+		rs.BlackKingside = scanRook(pos.PieceBB(BlackRook), pos.PieceBB(BlackKing).LSB(), +1)
+	}
+	if pos.CastlingRights.Has(BlackQueenside) {
+		rs.BlackQueenside = scanRook(pos.PieceBB(BlackRook), pos.PieceBB(BlackKing).LSB(), -1)
+	}
+	return rs
+}
+
+func scanRook(rookBB Bitboard, kingSq Square, dir int) Square {
+	rank := kingSq.Rank()
+	for file := kingSq.File() + dir; file >= 0 && file <= 7; file += dir {
+		sq := NewSquare(file, rank)
+		if rookBB.IsBitSet(sq) {
+			return sq
+		}
+	}
+	return NoSquare
+}
+
 const (
 	BlackKingside CastlingRights = 1 << iota
 	BlackQueenside
