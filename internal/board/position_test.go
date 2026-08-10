@@ -641,3 +641,96 @@ func TestNewBoard(t *testing.T) {
 		}
 	}
 }
+
+func TestCastlingRooks(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+		want CastlingRookSquares
+	}{
+		{
+			name: "standard starting position, all four rights",
+			fen:  startingFEN,
+			want: CastlingRookSquares{
+				WhiteKingside:  H1,
+				WhiteQueenside: A1,
+				BlackKingside:  H8,
+				BlackQueenside: A8,
+			},
+		},
+		{
+			name: "no rights at all",
+			fen:  "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1",
+			want: CastlingRookSquares{
+				WhiteKingside:  NoSquare,
+				WhiteQueenside: NoSquare,
+				BlackKingside:  NoSquare,
+				BlackQueenside: NoSquare,
+			},
+		},
+		{
+			name: "only white kingside right, other rooks present but irrelevant",
+			fen:  "r3k2r/8/8/8/8/8/8/R3K2R w K - 0 1",
+			want: CastlingRookSquares{
+				WhiteKingside:  H1,
+				WhiteQueenside: NoSquare,
+				BlackKingside:  NoSquare,
+				BlackQueenside: NoSquare,
+			},
+		},
+		{
+			name: "only black queenside right",
+			fen:  "r3k2r/8/8/8/8/8/8/R3K2R b q - 0 1",
+			want: CastlingRookSquares{
+				WhiteKingside:  NoSquare,
+				WhiteQueenside: NoSquare,
+				BlackKingside:  NoSquare,
+				BlackQueenside: A8,
+			},
+		},
+		{
+			name: "960 white king on b file, white rooks on a and g, black king on d file, black rooks on c and f",
+			fen:  "2rk1r2/8/8/8/8/8/8/RK4R1 w AGcf - 0 1",
+			want: CastlingRookSquares{
+				WhiteKingside:  G1,
+				WhiteQueenside: A1,
+				BlackKingside:  F8,
+				BlackQueenside: C8,
+			},
+		},
+		{
+			name: "960 king on g-file, rooks on d and h",
+			fen:  "3r2kr/8/8/8/8/8/8/3R2KR w HDhd - 0 1",
+			want: CastlingRookSquares{
+				WhiteKingside:  H1,
+				WhiteQueenside: D1,
+				BlackKingside:  H8,
+				BlackQueenside: D8,
+			},
+		},
+		{
+			name: "right held but no matching rook on board (malformed/edge state) returns NoSquare",
+			fen:  "4k3/8/8/8/8/8/8/4K3 w KQkq - 0 1",
+			want: CastlingRookSquares{
+				WhiteKingside:  NoSquare,
+				WhiteQueenside: NoSquare,
+				BlackKingside:  NoSquare,
+				BlackQueenside: NoSquare,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad test FEN: %v", err)
+			}
+
+			got := pos.CastlingRooks()
+			if got != tt.want {
+				t.Errorf("\n%v got %v want %v", pos, got, tt.want)
+			}
+		})
+	}
+}
