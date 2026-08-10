@@ -88,18 +88,18 @@ func ParseSquare(s string) (Square, error) {
 		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidSquareLength, s)
 	}
 
-	f := s[0] | 0x20 // fast lowercase conversion
+	file := s[0] | 0x20 // fast lowercase conversion
 
-	if f < 'a' || f > 'h' {
+	if file < 'a' || file > 'h' {
 		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidFile, s)
 	}
 
-	r, err := strconv.Atoi(string(s[1]))
-	if err != nil || r < 1 || r > 8 {
+	rank, err := strconv.Atoi(string(s[1]))
+	if err != nil || rank < 1 || rank > 8 {
 		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidRank, s)
 	}
 
-	return NewSquare(int(f-'a'), r-1), nil
+	return NewSquare(int(file-'a'), rank-1), nil
 }
 
 func NewSquare(file, rank int) Square {

@@ -67,25 +67,80 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 		return NoCastling, nil
 	}
 
-	cr := NoCastling
+	// check if string only has valid chars
+	allowedStandard := "KkQq"
+	allowedShredder := "ABCDEFGHabcdefgh"
+	mode := -1 // -1 = none, 0 = standard, 1 = shredder
 	for _, char := range s {
-		last := cr
-		switch char {
-		case 'k':
-			cr |= BlackKingside
-		case 'q':
-			cr |= BlackQueenside
-		case 'K':
-			cr |= WhiteKingside
-		case 'Q':
-			cr |= WhiteQueenside
-		default:
+		if strings.ContainsRune(allowedStandard, char) {
+			if mode != 1 {
+				mode = 0
+			} else {
+				// error: mixing standard and shredder notation
+				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
+			}
+		} else if strings.ContainsRune(allowedShredder, char) {
+			if mode != 0 {
+				mode = 1
+			} else {
+				// error: mixing standard and shredder notation
+				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
+			}
+		} else {
+			// error: invalid char
 			return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
 		}
-		if last == cr {
-			return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
+	}
+
+	cr := NoCastling
+	if mode == 0 {
+		for _, char := range s {
+			last := cr
+			switch char {
+			case 'k':
+				cr |= BlackKingside
+			case 'q':
+				cr |= BlackQueenside
+			case 'K':
+				cr |= WhiteKingside
+			case 'Q':
+				cr |= WhiteQueenside
+			default:
+				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
+			}
+			if last == cr {
+				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
+			}
 		}
 	}
+	if mode == 1 {
+		for _, char := range s {
+			isBlack := char&0x20 != 0
+			rank := Rank1
+			if isBlack {
+				rank = Rank8
+			}
+
+			file := char | 0x20 // fast lowercase conversion
+
+			rookSq := NewSquare(int(file-'a'), rank) // TODO: add to rookSquares
+
+			if isBlack {
+				if rookSq < blackKingSq {
+					cr |= BlackQueenside
+				} else {
+					cr |= BlackKingside
+				}
+			} else {
+				if rookSq < whiteKingSq {
+					cr |= WhiteQueenside
+				} else {
+					cr |= WhiteKingside
+				}
+			}
+		}
+	}
+
 	return cr, nil
 }
 
