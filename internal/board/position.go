@@ -70,11 +70,13 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 	// check if string only has valid chars
 	allowedStandard := "KkQq"
 	allowedShredder := "ABCDEFGHabcdefgh"
+
 	mode := -1 // -1 = none, 0 = standard, 1 = shredder
 	for _, char := range s {
 		if strings.ContainsRune(allowedStandard, char) {
 			if mode != 1 {
 				mode = 0
+				allowedStandard = strings.Replace(allowedStandard, string(char), "", 1)
 			} else {
 				// error: mixing standard and shredder notation
 				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
@@ -82,6 +84,7 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 		} else if strings.ContainsRune(allowedShredder, char) {
 			if mode != 0 {
 				mode = 1
+				allowedShredder = strings.Replace(allowedShredder, string(char), "", 1)
 			} else {
 				// error: mixing standard and shredder notation
 				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
@@ -126,12 +129,19 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 			rookSq := NewSquare(int(file-'a'), rank) // TODO: add to rookSquares
 
 			if isBlack {
+				if rookSq == blackKingSq {
+					// TODO: add more explicit error message
+					return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
+				}
 				if rookSq < blackKingSq {
 					cr |= BlackQueenside
 				} else {
 					cr |= BlackKingside
 				}
 			} else {
+				if rookSq == whiteKingSq {
+					return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
+				}
 				if rookSq < whiteKingSq {
 					cr |= WhiteQueenside
 				} else {
