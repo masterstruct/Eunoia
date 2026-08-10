@@ -142,6 +142,19 @@ func TestParseCastlingRights_Shredder(t *testing.T) {
 		{"960 king on g file, rooks on h and d", "HDhd", G1, G8, AllCastling},
 		{"mixed case single rights", "Ab", E1, E8, WhiteQueenside | BlackQueenside},
 		{"none", "-", E1, E8, NoCastling},
+
+		{"white both sides", "BD", C1, C8, WhiteKingside | WhiteQueenside},
+		{"black both sides", "bd", C1, C8, BlackKingside | BlackQueenside},
+		{"white kingside + black kingside", "Hh", E1, E8, WhiteKingside | BlackKingside},
+		{"white queenside + black queenside", "Aa", E1, E8, WhiteQueenside | BlackQueenside},
+		{"white kingside + black queenside", "Ha", E1, E8, WhiteKingside | BlackQueenside},
+		{"white queenside + black kingside", "Ah", E1, E8, WhiteQueenside | BlackKingside},
+		{"all four, mixed order", "haHA", E1, E8, AllCastling},
+		{"all four 960", "CHcf", G1, D8, AllCastling},
+		{"white both + black kingside", "AHh", E1, E8, WhiteKingside | WhiteQueenside | BlackKingside},
+		{"white both + black queenside", "AHa", E1, E8, WhiteKingside | WhiteQueenside | BlackQueenside},
+		{"black both + white kingside", "ahH", E1, E8, BlackKingside | BlackQueenside | WhiteKingside},
+		{"black both + white queenside", "ahA", E1, E8, BlackKingside | BlackQueenside | WhiteQueenside},
 	}
 
 	for _, tt := range tests {
