@@ -219,6 +219,33 @@ func BenchmarkFEN(b *testing.B) {
 	}
 }
 
+func BenchmarkParseFEN(b *testing.B) {
+	fens := []string{
+		startingFEN,
+		"k7/8/8/8/8/8/8/7K w - - 0 1",
+		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
+		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
+		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w AHah - 0 1",
+		"4krbb/p2ppp2/1nr4p/1Q3Np1/2p1qP2/2P3P1/P1NP3P/1R1K1RB1 w f - 2 15",
+		"1r2krbb/p2ppp1p/8/2n3p1/nNp1P3/2P1N1P1/P2P1P1P/2R1KRBB w CFf - 0 11",
+	}
+
+	b.ReportAllocs()
+
+	for i, fen := range fens {
+		name := "case_" + strconv.Itoa(i)
+		b.Run(name, func(b *testing.B) {
+			for j := 0; j < b.N; j++ {
+				_, err := ParseFEN(fen)
+				if err != nil {
+					b.Fatalf("ParseFEN(%q) failed: %v", fen, err)
+				}
+			}
+		})
+	}
+}
+
 func TestParseFEN_FieldCount(t *testing.T) {
 	tests := []struct {
 		name    string

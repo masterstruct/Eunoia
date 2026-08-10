@@ -67,71 +67,62 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 		return NoCastling, nil
 	}
 
-	// check if string only has valid chars
-	allowedStandard := "KkQq"
-	allowedShredder := "ABCDEFGHabcdefgh"
-
-	mode := -1 // -1 = none, 0 = standard, 1 = shredder
-	for _, char := range s {
-		if strings.ContainsRune(allowedStandard, char) {
-			if mode != 1 {
-				mode = 0
-				// allowedStandard = strings.Replace(allowedStandard, string(char), "", 1)
-			} else {
-				// error: mixing standard and shredder notation
-				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
-			}
-		} else if strings.ContainsRune(allowedShredder, char) {
-			if mode != 0 {
-				mode = 1
-				// allowedShredder = strings.Replace(allowedShredder, string(char), "", 1)
-			} else {
-				// error: mixing standard and shredder notation
-				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
-			}
-		} else {
-			// error: invalid char
-			return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
-		}
-	}
-
 	cr := NoCastling
-	if mode == 0 {
-		for _, char := range s {
-			last := cr
-			switch char {
+
+	switch s[0] {
+	case 'k', 'q', 'K', 'Q':
+		for i := range s {
+			switch s[i] {
 			case 'k':
+				if cr&BlackKingside != 0 {
+					return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
+				}
 				cr |= BlackKingside
 			case 'q':
+				if cr&BlackQueenside != 0 {
+					return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
+				}
 				cr |= BlackQueenside
 			case 'K':
+				if cr&WhiteKingside != 0 {
+					return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
+				}
 				cr |= WhiteKingside
 			case 'Q':
+				if cr&WhiteQueenside != 0 {
+					return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
+				}
 				cr |= WhiteQueenside
 			default:
 				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
 			}
-			if last == cr {
-				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
-			}
 		}
-	}
-	if mode == 1 {
-		for _, char := range s {
+		return cr, nil
+
+	default:
+		for i := range s {
+			char := s[i]
+
+			switch char {
+			case 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+				'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h':
+			default:
+				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
+			}
+
 			last := cr
+
 			isBlack := char&0x20 != 0
 			rank := Rank1
 			if isBlack {
 				rank = Rank8
 			}
 
-			file := char | 0x20 // fast lowercase conversion
-
-			rookSq := NewSquare(int(file-'a'), rank) // TODO: add to rookSquares
+			file := char | 0x20
+			rookSq := NewSquare(int(file-'a'), rank)
 
 			if isBlack {
 				if rookSq == blackKingSq {
-					// TODO: add more explicit error message
 					return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
 				}
 				if rookSq < blackKingSq {
@@ -149,13 +140,13 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 					cr |= WhiteKingside
 				}
 			}
+
 			if last == cr {
 				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
 			}
 		}
+		return cr, nil
 	}
-
-	return cr, nil
 }
 
 type Bitboards struct {
