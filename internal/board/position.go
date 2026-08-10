@@ -34,9 +34,9 @@ func (pos Position) CastlingRooks() CastlingRookSquares {
 	return rs
 }
 
-func scanRook(rookBB Bitboard, kingSq Square, dir int) Square {
+func scanRook(rookBB Bitboard, kingSq Square, dir File) Square {
 	rank := kingSq.Rank()
-	for file := kingSq.File() + dir; file >= 0 && file <= 7; file += dir {
+	for file := kingSq.File() + dir; file >= FileA && file <= FileH; file += dir {
 		sq := NewSquare(file, rank)
 		if rookBB.IsBitSet(sq) {
 			return sq
@@ -140,10 +140,10 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 		char := s[i]
 
 		// validate and normalize file
-		var file int
+		var file File
 		switch {
 		case 'A' <= char && char <= 'H':
-			file = int(char - 'A')
+			file = File(char - 'A')
 			kingFile := whiteKingSq.File()
 
 			if file == kingFile {
@@ -161,7 +161,7 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
 			}
 		case 'a' <= char && char <= 'h':
-			file = int(char - 'a')
+			file = File(char - 'a')
 			kingFile := blackKingSq.File()
 
 			if file == kingFile {

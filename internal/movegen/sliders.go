@@ -31,7 +31,7 @@ func rayAttacks(sq board.Square, dirs [][2]int, occupied board.Bitboard) board.B
 	bb := board.EmptyBB
 
 	for _, dir := range dirs {
-		df, dr := dir[0], dir[1]
+		df, dr := board.File(dir[0]), board.Rank(dir[1])
 		currSq := sq
 
 		for currSq.IsValid() && !occupied.IsBitSet(currSq) {

@@ -58,8 +58,10 @@ func pawnAttacksFrom(sq board.Square, color board.Color) board.Bitboard {
 func attacksFromOffsets(sq board.Square, offsets [][2]int) board.Bitboard {
 	bb := board.EmptyBB
 	for _, offset := range offsets {
-		newFile := sq.File() + offset[0]
-		newRank := sq.Rank() + offset[1]
+		df, dr := board.File(offset[0]), board.Rank(offset[1])
+
+		newFile := board.File(sq.File() + df)
+		newRank := board.Rank(sq.Rank() + dr)
 
 		targetSq := board.NewSquare(newFile, newRank)
 		if targetSq.IsValid() {

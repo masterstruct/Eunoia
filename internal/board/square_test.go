@@ -31,7 +31,7 @@ func TestFile(t *testing.T) {
 	tests := []struct {
 		name string
 		sq   Square
-		want int
+		want File
 	}{
 		{"A1 file is FileA", A1, FileA},
 		{"H1 file is FileH", H1, FileH},
@@ -48,11 +48,63 @@ func TestFile(t *testing.T) {
 	}
 }
 
+func TestFileString(t *testing.T) {
+	tests := []struct {
+		name string
+		f    File
+		want string
+	}{
+		{"file a", FileA, "a"},
+		{"file b", FileB, "b"},
+		{"file c", FileC, "c"},
+		{"file d", FileD, "d"},
+		{"file e", FileE, "e"},
+		{"file f", FileF, "f"},
+		{"file g", FileG, "g"},
+		{"file h", FileH, "h"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.f.String()
+			if got != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestRankString(t *testing.T) {
+	tests := []struct {
+		name string
+		r    Rank
+		want string
+	}{
+		{"rank 1", Rank1, "1"},
+		{"rank 2", Rank2, "2"},
+		{"rank 3", Rank3, "3"},
+		{"rank 4", Rank4, "4"},
+		{"rank 5", Rank5, "5"},
+		{"rank 6", Rank6, "6"},
+		{"rank 7", Rank7, "7"},
+		{"rank 8", Rank8, "8"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.r.String()
+			if got != tt.want {
+				t.Errorf("expected %q but got %q", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestRank(t *testing.T) {
 	tests := []struct {
 		name string
 		sq   Square
-		want int
+		want Rank
 	}{
 		{"A1 rank is Rank1", A1, Rank1},
 		{"H1 rank is Rank1", H1, Rank1},
@@ -120,8 +172,8 @@ func TestIsValid(t *testing.T) {
 func TestNewSquare(t *testing.T) {
 	tests := []struct {
 		name string
-		file int
-		rank int
+		file File
+		rank Rank
 		want Square
 	}{
 		{"a1", FileA, Rank1, A1},

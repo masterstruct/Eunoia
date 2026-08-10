@@ -8,6 +8,9 @@ import (
 
 type Square uint8
 
+type File int
+type Rank int
+
 const (
 	A8, B8, C8, D8, E8, F8, G8, H8 Square = 56, 57, 58, 59, 60, 61, 62, 63
 	A7, B7, C7, D7, E7, F7, G7, H7 Square = 48, 49, 50, 51, 52, 53, 54, 55
@@ -22,7 +25,7 @@ const (
 )
 
 const (
-	FileA = iota
+	FileA File = iota
 	FileB
 	FileC
 	FileD
@@ -33,7 +36,7 @@ const (
 )
 
 const (
-	Rank1 = iota
+	Rank1 Rank = iota
 	Rank2
 	Rank3
 	Rank4
@@ -49,16 +52,24 @@ var (
 	ErrInvalidRank         = errors.New("square: rank must be a digit between '1' and '8'")
 )
 
-func (sq Square) File() int {
-	return int(sq) % 8
+func (f File) String() string {
+	return string('a' + byte(f))
 }
 
-func (sq Square) Rank() int {
-	return int(sq) / 8
+func (r Rank) String() string {
+	return string('1' + byte(r))
+}
+
+func (sq Square) File() File {
+	return File(sq) % 8
+}
+
+func (sq Square) Rank() Rank {
+	return Rank(sq) / 8
 }
 
 func (sq Square) Color() Color {
-	if (sq.File()+sq.Rank())%2 == 0 {
+	if (int(sq.File())+int(sq.Rank()))%2 == 0 {
 		return Black
 	}
 	return White
@@ -75,8 +86,7 @@ func (sq Square) String() string {
 	f := sq.File()
 	r := sq.Rank()
 	// ascii manipulation
-	letter := string('a' + byte(f))
-	return fmt.Sprintf("%s%d", letter, r+1)
+	return fmt.Sprintf("%s%d", f.String(), r+1)
 }
 
 func ParseSquare(s string) (Square, error) {
@@ -88,23 +98,24 @@ func ParseSquare(s string) (Square, error) {
 		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidSquareLength, s)
 	}
 
-	file := s[0] | 0x20 // fast lowercase conversion
+	file := File(s[0]) | 0x20 // fast lowercase conversion
 
 	if file < 'a' || file > 'h' {
 		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidFile, s)
 	}
 
-	rank, err := strconv.Atoi(string(s[1]))
+	r, err := strconv.Atoi(string(s[1]))
+	rank := Rank(r)
 	if err != nil || rank < 1 || rank > 8 {
 		return NoSquare, fmt.Errorf("%w: %q", ErrInvalidRank, s)
 	}
 
-	return NewSquare(int(file-'a'), rank-1), nil
+	return NewSquare(File(file-'a'), rank-1), nil
 }
 
-func NewSquare(file, rank int) Square {
+func NewSquare(file File, rank Rank) Square {
 	if file < FileA || file > FileH || rank < Rank1 || rank > Rank8 {
 		return NoSquare
 	}
-	return Square(rank*8 + file)
+	return Square(int(rank*8) + int(file))
 }
