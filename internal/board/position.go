@@ -25,8 +25,9 @@ const (
 
 var (
 	ErrInvalidCastlingLength = errors.New("castling: string must be 1 to 4 characters, or \"-\" for none")
-	ErrInvalidCastlingChar   = errors.New("castling: character must be one of 'K', 'Q', 'k', 'q'")
+	ErrInvalidCastlingChar   = errors.New("castling: character must be one of 'K', 'Q', 'k', 'q' or rook file letters")
 	ErrDuplicateCastlingChar = errors.New("castling: character appears more than once")
+	ErrMixedCastlingNotation = errors.New("castling: cannot mix standard (KQkq) and Shredder-FEN (file letter) notation")
 )
 
 func (cr CastlingRights) Has(right CastlingRights) bool {
@@ -72,6 +73,11 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 	}
 	if n == 1 && s[0] == '-' {
 		return NoCastling, nil
+	}
+	hasStandard := strings.ContainsAny(s, "KQkq")
+	hasShredder := strings.ContainsAny(s, "ABCDEFGHabcdefgh")
+	if hasStandard && hasShredder {
+		return NoCastling, fmt.Errorf("%w: %q", ErrMixedCastlingNotation, s)
 	}
 
 	var cr CastlingRights
