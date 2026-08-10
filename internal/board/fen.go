@@ -48,17 +48,18 @@ func ParseFEN(fen string) (Position, error) {
 			// end of rank
 			// check how many files were processed
 			// in this rank -- must be exactly 8
-			if file != 8 {
+			if file-1 != FileH {
 				return pos, fmt.Errorf("%w: %q", ErrInvalidRankLength, fen)
 			}
 
-			file = 0
+			file = FileA
 			rank -= 1
 			continue
 		}
 
 		// detect numbers and skip that many squares
-		skip, err := strconv.Atoi(string(char))
+		s, err := strconv.Atoi(string(char))
+		skip := File(s)
 		if err == nil {
 			// number
 			if skip < 1 || skip > 8 {
@@ -186,7 +187,11 @@ func (pos Position) FEN() string {
 	sb.WriteByte(' ')
 	sb.WriteString(pos.SideToMove.String())
 	sb.WriteByte(' ')
-	sb.WriteString(pos.CastlingRights.String())
+	if IsChess960() {
+		sb.WriteString(pos.shredderCastlingString())
+	} else {
+		sb.WriteString(pos.CastlingRights.String())
+	}
 	sb.WriteByte(' ')
 	sb.WriteString(pos.EnPassant.String())
 	sb.WriteByte(' ')
@@ -195,6 +200,27 @@ func (pos Position) FEN() string {
 	fullmoves, _ := PlyToFullmoves(pos.Ply)
 	sb.WriteString(strconv.Itoa(int(fullmoves)))
 	return sb.String()
+}
+
+func (pos Position) shredderCastlingString() string {
+	if pos.CastlingRights == NoCastling {
+		return "-"
+	}
+	rooks := pos.CastlingRooks()
+	s := ""
+	if pos.CastlingRights.Has(WhiteQueenside) {
+		s += strings.ToUpper(rooks.WhiteQueenside.File().String())
+	}
+	if pos.CastlingRights.Has(WhiteKingside) {
+		s += strings.ToUpper(rooks.WhiteKingside.File().String())
+	}
+	if pos.CastlingRights.Has(BlackQueenside) {
+		s += rooks.BlackQueenside.File().String()
+	}
+	if pos.CastlingRights.Has(BlackKingside) {
+		s += rooks.BlackKingside.File().String()
+	}
+	return s
 }
 
 func PlyToFullmoves(ply uint16) (fullmoves uint16, sideToMove Color) {
