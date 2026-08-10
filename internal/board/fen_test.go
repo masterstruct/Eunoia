@@ -471,3 +471,46 @@ func TestStartingPosition(t *testing.T) {
 		t.Fatalf("StartingPosition mismatch.\nwant:\n%v\ngot:\n%v", want, got)
 	}
 }
+
+func TestParseFEN_Chess960(t *testing.T) {
+	SetChess960(true)
+
+	tests := []struct {
+		name string
+		fen  string
+		want string
+	}{
+		{
+			name: "starting position",
+			fen:  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w AHah - 0 1",
+			want: startingFEN,
+		},
+		{
+			name: "chess960 position #105",
+			fen:  "qnrbbnkr/pppppppp/8/8/8/8/PPPPPPPP/QNRBBNKR w CHch - 0 1",
+			want: "qnrbbnkr/pppppppp/8/8/8/8/PPPPPPPP/QNRBBNKR w KQkq - 0 1"},
+		{
+			name: "dfrc position",
+			fen:  "qnbrkbrn/pppppppp/8/8/8/8/PPPPPPPP/NRKBNRBQ w BFdg - 0 1",
+			want: "qnbrkbrn/pppppppp/8/8/8/8/PPPPPPPP/NRKBNRBQ w KQkq - 0 1",
+		},
+		{
+			name: "asymmetric castling rights",
+			fen:  "qrnknbb1/pppppppp/8/8/8/8/PPPPPPPP/Q1NKNBBR w Hb - 0 1",
+			want: "qrnknbb1/pppppppp/8/8/8/8/PPPPPPPP/Q1NKNBBR w Kq - 0 1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("ParseFEN failed: %v", err)
+			}
+			got := pos.FEN()
+			if got != tt.want {
+				t.Errorf("round trip mismatch\n got: %s\nwant: %s", got, tt.want)
+			}
+		})
+	}
+}
