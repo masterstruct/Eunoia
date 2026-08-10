@@ -170,6 +170,29 @@ func TestParseCastlingRights_Shredder(t *testing.T) {
 	}
 }
 
+func TestParseCastlingRights_ShredderErrors(t *testing.T) {
+	tests := []struct {
+		name     string
+		from, to Square
+		s        string
+	}{
+		{"empty string", E1, E8, ""},
+		{"too long", D1, E8, "AHahb"},
+		{"duplicate file letter", C1, H8, "AA"},
+		{"file letter equal to white king's file", E1, A8, "E"},
+		{"file letter equal to black king's file", H1, F8, "Dbf"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := ParseCastlingRights(tt.s, tt.from, tt.to)
+			if err == nil {
+				t.Error("expected an error, got none")
+			}
+		})
+	}
+}
+
 func TestCastlingRightsRoundTrip(t *testing.T) {
 	tests := []CastlingRights{
 		NoCastling,
