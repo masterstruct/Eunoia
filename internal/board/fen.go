@@ -96,8 +96,15 @@ func ParseFEN(fen string) (Position, error) {
 	}
 	pos.SideToMove = sideToMove
 
+	// king count
+	whiteKingBB := pos.PieceBB(WhiteKing)
+	blackKingBB := pos.PieceBB(BlackKing)
+	if whiteKingBB.CountBits() != 1 || blackKingBB.CountBits() != 1 {
+		return pos, fmt.Errorf("%w: %q", ErrInvalidKingCount, fen)
+	}
+
 	// castling rights
-	rights, err := ParseCastlingRights(splits[2], E1, E8)
+	rights, err := ParseCastlingRights(splits[2], whiteKingBB.LSB(), blackKingBB.LSB())
 	if err != nil {
 		return pos, err
 	}
@@ -126,11 +133,6 @@ func ParseFEN(fen string) (Position, error) {
 			return pos, fmt.Errorf("%w: %q", ErrInvalidFullmoveNumber, splits[5])
 		}
 		pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
-	}
-
-	// king count
-	if pos.PieceBB(WhiteKing).CountBits() != 1 || pos.PieceBB(BlackKing).CountBits() != 1 {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidKingCount, fen)
 	}
 
 	return pos, nil
