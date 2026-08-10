@@ -103,7 +103,7 @@ func TestParseCastlingRights(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseCastlingRights(tt.input)
+			got, err := ParseCastlingRights(tt.input, E1, E8)
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) {
@@ -120,6 +120,38 @@ func TestParseCastlingRights(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestParseCastlingRights_Shredder(t *testing.T) {
+	tests := []struct {
+		name        string
+		s           string
+		whiteKingSq Square
+		blackKingSq Square
+		want        CastlingRights
+	}{
+		{"standard start via file letters", "AHah", E1, E8, AllCastling},
+		{"white kingside only, rook on h", "H", E1, E8, WhiteKingside},
+		{"white queenside only, rook on a", "A", E1, E8, WhiteQueenside},
+		{"black kingside only, rook on h", "h", E1, E8, BlackKingside},
+		{"black queenside only, rook on a", "a", E1, E8, BlackQueenside},
+		{"960 king on b file, rooks on a and g", "GAga", B1, B8, AllCastling},
+		{"960 king on g file, rooks on h and d", "HDhd", G1, G8, AllCastling},
+		{"mixed case single rights", "Ab", E1, E8, WhiteQueenside | BlackQueenside},
+		{"none", "-", E1, E8, NoCastling},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseCastlingRights(tt.s, tt.whiteKingSq, tt.blackKingSq)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("got %v want %v", got, tt.want)
 			}
 		})
 	}
@@ -149,7 +181,7 @@ func TestCastlingRightsRoundTrip(t *testing.T) {
 		t.Run(cr.String(), func(t *testing.T) {
 			s := cr.String()
 
-			got, err := ParseCastlingRights(s)
+			got, err := ParseCastlingRights(s, E1, E8)
 			if err != nil {
 				t.Fatalf("unexpected error parsing %q: %v", s, err)
 			}

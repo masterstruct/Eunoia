@@ -58,7 +58,7 @@ func (cr CastlingRights) String() string {
 	return s
 }
 
-func ParseCastlingRights(s string) (CastlingRights, error) {
+func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRights, error) {
 	n := len(s)
 	if n < 1 || n > 4 {
 		return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingLength, s)
