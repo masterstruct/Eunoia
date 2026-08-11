@@ -257,8 +257,8 @@ func TestMakeMove(t *testing.T) {
 		},
 		{
 			name:    "rook move from non-home square doesn't touch castling rights",
-			fen:     "4k3/8/8/8/8/8/8/R2RK2R w KQ - 0 1",
-			move:    NewMove(D1, D5),
+			fen:     "4k3/8/8/8/8/8/3R4/R3K2R w KQ - 0 1",
+			move:    NewMove(D2, D5),
 			wantFEN: "4k3/8/8/3R4/8/8/8/R3K2R b KQ - 1 1",
 		},
 		{
@@ -381,5 +381,88 @@ func BenchmarkMakeMove(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		f := fixtures[i%len(fixtures)]
 		_ = f.pos.MakeMove(f.move)
+	}
+}
+
+func TestMakeMove_Chess960(t *testing.T) {
+	withChess960(t)
+	tests := []struct {
+		name    string
+		fen     string
+		move    Move
+		wantFEN string // resulting position, roundtrip through FEN for readability
+	}{
+		{
+			name:    "White castle, king already on destination square",
+			fen:     "qb3rk1/pp3rp1/2p1p2p/2P4P/3PQ1P1/1PN5/P4P2/3R1K1R w DH - 1 19",
+			move:    NewCastle(F1, H1),
+			wantFEN: "qb3rk1/pp3rp1/2p1p2p/2P4P/3PQ1P1/1PN5/P4P2/3R1RK1 b - - 2 19",
+		},
+		{
+			name:    "White king moves, clear castling rights",
+			fen:     "bqrbkrR1/4pp1Q/8/1pp2N2/8/2PnP3/1P5P/B1RBKN2 w Ccf - 2 15",
+			move:    NewMove(E1, D2),
+			wantFEN: "bqrbkrR1/4pp1Q/8/1pp2N2/8/2PnP3/1P1K3P/B1RB1N2 b cf - 3 15",
+		},
+		{
+			name:    "En passant",
+			fen:     "2rb1R2/2k1ppN1/2b5/8/1Pp5/2P1P3/7P/B1KB1N2 b - b3 0 22",
+			move:    NewEnPassant(C4, B3),
+			wantFEN: "2rb1R2/2k1ppN1/2b5/8/8/1pP1P3/7P/B1KB1N2 w - - 0 23",
+		},
+		{
+			name:    "Black rook moves, clear castling right",
+			fen:     "rkr1q1b1/pp1p1ppp/2p3n1/4p3/4P3/2P1NPN1/PP1P2PP/R1KB1Q2 b ac - 0 10",
+			move:    NewMove(C8, C7),
+			wantFEN: "rk2q1b1/pprp1ppp/2p3n1/4p3/4P3/2P1NPN1/PP1P2PP/R1KB1Q2 w a - 1 11",
+		},
+		{
+			name:    "Black castle",
+			fen:     "rk2q1b1/pprp1ppp/2p3n1/4p3/4P3/2P1NPN1/PP1P2PP/R1KB1Q2 b a - 2 12",
+			move:    NewCastle(B8, A8),
+			wantFEN: "2krq1b1/pprp1ppp/2p3n1/4p3/4P3/2P1NPN1/PP1P2PP/R1KB1Q2 w - - 3 13",
+		},
+		{
+			name:    "White castle, king and rook swap, queen in corner",
+			fen:     "4k3/8/8/8/8/8/8/5KRQ w G - 0 1",
+			move:    NewCastle(F1, G1),
+			wantFEN: "4k3/8/8/8/8/8/8/5RKQ b - - 1 1",
+		},
+		{
+			name:    "Black castle, edge of board",
+			fen:     "2r3kr/8/8/8/8/8/8/RK1R4 b hc - 1 1",
+			move:    NewCastle(G8, H8),
+			wantFEN: "2r2rk1/8/8/8/8/8/8/RK1R4 w - - 2 2",
+		},
+		{
+			name:    "White castle, edge of board",
+			fen:     "3r2kr/8/8/8/8/8/8/RK3R2 w AF - 0 1",
+			move:    NewCastle(B1, A1),
+			wantFEN: "3r2kr/8/8/8/8/8/8/2KR1R2 b - - 1 1",
+		},
+		{
+			name:    "Capturing black rook clears correct castling right",
+			fen:     "1r1kr3/8/8/8/8/4R3/2K1R3/8 w bf - 0 1",
+			move:    NewCapture(E3, E8),
+			wantFEN: "1r1kR3/8/8/8/8/8/2K1R3/8 b b - 0 1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad test FEN: %v", err)
+			}
+
+			got := pos.MakeMove(tt.move)
+
+			want, err := ParseFEN(tt.wantFEN)
+			if err != nil {
+				t.Fatalf("failed to generate FEN: %v", err)
+			}
+
+			makemove_assertPositionEqual(t, got, want)
+		})
 	}
 }
