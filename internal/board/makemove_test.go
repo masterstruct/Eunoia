@@ -464,6 +464,12 @@ func TestMakeMove_Chess960(t *testing.T) {
 			move:    NewCapture(E3, E8),
 			wantFEN: "1r1kR3/8/8/8/8/8/2K1R3/8 b b - 0 1",
 		},
+		{
+			name:    "Capturing black rook clears correct white AND black castling right",
+			fen:     "1r1k2r1/8/8/8/8/8/8/1R1K2R1 w BGbg - 1 1",
+			move:    NewCapture(B1, B8),
+			wantFEN: "1R1k2r1/8/8/8/8/8/8/3K2R1 b Gg - 0 1",
+		},
 	}
 
 	for _, tt := range tests {

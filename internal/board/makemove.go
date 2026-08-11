@@ -1,9 +1,14 @@
 package board
 
 func (pos Position) MakeMove(move Move) Position {
+	// To optimize this further, you can add 2 helper
+	// functions: MakeBlackMove and MakeWhiteMove.
+	// currently color checks add 3 code branches.
+
 	newPos := pos
 	from, to := move.From(), move.To()
 	piece, _ := pos.PieceOn(from)
+	pieceType := piece.Type
 	capturedPiece, _ := pos.PieceOn(to)
 	color := pos.SideToMove
 
@@ -18,104 +23,99 @@ func (pos Position) MakeMove(move Move) Position {
 	}
 	epSquare := Square(int(to) - pawnMoveDir)
 
-	// move/capture/promote piece
+	newPos.HalfmoveClock++
+	newPos.EnPassant = NoSquare
+
 	newPos.RemovePiece(from)
 	if !isCastle {
-		newPos.RemovePiece(to)
-	}
-	if isPromo {
-		newPos.PlacePiece(NewPiece(move.Promo(), color), to)
-	} else if !isCastle {
-		newPos.PlacePiece(piece, to)
-	}
+		// PlacePiece(sq) overrides the square, therefore if
+		// I've done everything correctly, this is unnecessary:
+		// newPos.RemovePiece(to)
 
-	if isEnPassant {
-		newPos.RemovePiece(epSquare)
-	}
-
-	// castling rights from rook moves/captures
-	if piece.Type == Rook {
-		rooks := pos.CastlingRooks()
-		switch from {
-		case rooks.WhiteQueenside:
-			newPos.CastlingRights.Remove(WhiteQueenside)
-		case rooks.WhiteKingside:
-			newPos.CastlingRights.Remove(WhiteKingside)
-		case rooks.BlackQueenside:
-			newPos.CastlingRights.Remove(BlackQueenside)
-		case rooks.BlackKingside:
-			newPos.CastlingRights.Remove(BlackKingside)
+		if isPromo {
+			newPos.PlacePiece(NewPiece(move.Promo(), color), to)
+		} else {
+			newPos.PlacePiece(piece, to)
 		}
-	}
 
-	if isCapture && capturedPiece.Type == Rook {
-		rooks := pos.CastlingRooks()
-		switch to {
-		case rooks.WhiteQueenside:
-			newPos.CastlingRights.Remove(WhiteQueenside)
-		case rooks.WhiteKingside:
-			newPos.CastlingRights.Remove(WhiteKingside)
-		case rooks.BlackQueenside:
-			newPos.CastlingRights.Remove(BlackQueenside)
-		case rooks.BlackKingside:
-			newPos.CastlingRights.Remove(BlackKingside)
+		if isEnPassant {
+			newPos.RemovePiece(epSquare)
 		}
-	}
 
-	if isCastle {
-		if isCastle {
+		// rook move - remove castling rights
+		if pieceType == Rook {
 			rooks := pos.CastlingRooks()
-
-			if color == Black {
-				newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
-
-				if move.IsKingsideCastle() {
-					newPos.RemovePiece(rooks.BlackKingside)
-					newPos.PlacePiece(BlackKing, G8)
-					newPos.PlacePiece(BlackRook, F8)
-				} else {
-					newPos.RemovePiece(rooks.BlackQueenside)
-					newPos.PlacePiece(BlackKing, C8)
-					newPos.PlacePiece(BlackRook, D8)
-				}
-			} else {
-				newPos.CastlingRights.Remove(WhiteKingside | WhiteQueenside)
-
-				if move.IsKingsideCastle() {
-					newPos.RemovePiece(rooks.WhiteKingside)
-					newPos.PlacePiece(WhiteKing, G1)
-					newPos.PlacePiece(WhiteRook, F1)
-				} else {
-					newPos.RemovePiece(rooks.WhiteQueenside)
-					newPos.PlacePiece(WhiteKing, C1)
-					newPos.PlacePiece(WhiteRook, D1)
-				}
+			switch from {
+			case rooks.WhiteQueenside:
+				newPos.CastlingRights.Remove(WhiteQueenside)
+			case rooks.WhiteKingside:
+				newPos.CastlingRights.Remove(WhiteKingside)
+			case rooks.BlackQueenside:
+				newPos.CastlingRights.Remove(BlackQueenside)
+			case rooks.BlackKingside:
+				newPos.CastlingRights.Remove(BlackKingside)
 			}
 		}
 
-	} else if piece.Type == King {
+		// rook captured - remove castling rights
+		if isCapture && capturedPiece.Type == Rook {
+			rooks := pos.CastlingRooks()
+			switch to {
+			case rooks.WhiteQueenside:
+				newPos.CastlingRights.Remove(WhiteQueenside)
+			case rooks.WhiteKingside:
+				newPos.CastlingRights.Remove(WhiteKingside)
+			case rooks.BlackQueenside:
+				newPos.CastlingRights.Remove(BlackQueenside)
+			case rooks.BlackKingside:
+				newPos.CastlingRights.Remove(BlackKingside)
+			}
+		}
+
+		if isCapture || pieceType == Pawn {
+			newPos.HalfmoveClock = 0
+		}
+		if move.IsDoublePush() {
+			newPos.EnPassant = epSquare
+		}
+	} else {
+		// castle - move pieces
+		rooks := pos.CastlingRooks()
+
 		if color == Black {
-			newPos.CastlingRights.Remove(BlackKingside)
-			newPos.CastlingRights.Remove(BlackQueenside)
+			if move.IsKingsideCastle() {
+				newPos.RemovePiece(rooks.BlackKingside)
+				newPos.PlacePiece(BlackKing, G8)
+				newPos.PlacePiece(BlackRook, F8)
+			} else {
+				newPos.RemovePiece(rooks.BlackQueenside)
+				newPos.PlacePiece(BlackKing, C8)
+				newPos.PlacePiece(BlackRook, D8)
+			}
 		} else {
-			newPos.CastlingRights.Remove(WhiteKingside)
-			newPos.CastlingRights.Remove(WhiteQueenside)
+			if move.IsKingsideCastle() {
+				newPos.RemovePiece(rooks.WhiteKingside)
+				newPos.PlacePiece(WhiteKing, G1)
+				newPos.PlacePiece(WhiteRook, F1)
+			} else {
+				newPos.RemovePiece(rooks.WhiteQueenside)
+				newPos.PlacePiece(WhiteKing, C1)
+				newPos.PlacePiece(WhiteRook, D1)
+			}
 		}
 	}
 
-	// update state
-	newPos.SideToMove = color.Opponent()
-	newPos.Ply++
-	if isCapture || piece.Type == Pawn {
-		newPos.HalfmoveClock = 0
-	} else {
-		newPos.HalfmoveClock++
+	// king moved - remove castling rights
+	if pieceType == King {
+		if color == Black {
+			newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
+		} else {
+			newPos.CastlingRights.Remove(WhiteKingside | WhiteQueenside)
+		}
 	}
 
-	newPos.EnPassant = NoSquare
-	if move.IsDoublePush() {
-		newPos.EnPassant = epSquare
-	}
+	newPos.SideToMove = color.Opponent()
+	newPos.Ply++
 
 	return newPos
 }
