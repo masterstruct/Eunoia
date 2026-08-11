@@ -193,6 +193,44 @@ func TestParseCastlingRights_ShredderErrors(t *testing.T) {
 	}
 }
 
+func TestParseCastlingRights_UsesRealKingSquare(t *testing.T) {
+	got, err := ParseCastlingRights("D", B1, B8)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got != WhiteKingside {
+		t.Errorf("king on B1: got %v, want WhiteKingside", got)
+	}
+
+	got, err = ParseCastlingRights("D", E1, E8)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got != WhiteQueenside {
+		t.Errorf("king on E1: got %v, want WhiteQueenside", got)
+	}
+}
+
+func TestParseFEN_Chess960_NonEFileKing(t *testing.T) {
+	withChess960(t)
+	tests := []string{
+		"1qrkrbbn/pppppppp/8/8/8/8/PPPPPPPP/1QRKRBBN w CEce - 0 1",
+		"qnnbbrkr/pppppppp/8/8/8/8/PPPPPPPP/QNNBBRKR w FHfh - 0 1",
+	}
+
+	for _, fen := range tests {
+		t.Run(fen, func(t *testing.T) {
+			pos, err := ParseFEN(fen)
+			if err != nil {
+				t.Fatalf("ParseFEN failed: %v", err)
+			}
+			if got := pos.FEN(); got != fen {
+				t.Errorf("got %s want %s", got, fen)
+			}
+		})
+	}
+}
+
 func TestCastlingRightsRoundTrip(t *testing.T) {
 	tests := []CastlingRights{
 		NoCastling,
