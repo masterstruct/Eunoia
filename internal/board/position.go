@@ -95,13 +95,6 @@ func (cr CastlingRights) String() string {
 	return s
 }
 
-var castlingStdMask = [256]CastlingRights{
-	'K': WhiteKingside,
-	'Q': WhiteQueenside,
-	'k': BlackKingside,
-	'q': BlackQueenside,
-}
-
 func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRights, error) {
 	n := len(s)
 	if n == 0 || n > 4 {
@@ -121,12 +114,21 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 	// standard KQkq form
 	switch s[0] {
 	case 'K', 'Q', 'k', 'q':
-		for i := range n {
-			char := s[i]
-			castling := castlingStdMask[char]
-			if castling == NoCastling {
+		for _, char := range s {
+			var castling CastlingRights
+			switch char {
+			case 'k':
+				castling = BlackKingside
+			case 'q':
+				castling = BlackQueenside
+			case 'K':
+				castling = WhiteKingside
+			case 'Q':
+				castling = WhiteQueenside
+			default:
 				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
 			}
+
 			if cr&castling != 0 {
 				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
 			}
@@ -136,9 +138,7 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 	}
 
 	// shredder form
-	for i := range n {
-		char := s[i]
-
+	for _, char := range s {
 		// validate and normalize file
 		var file File
 		switch {
