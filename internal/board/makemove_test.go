@@ -316,71 +316,89 @@ func makemove_assertPositionEqual(t *testing.T, got, want Position) {
 
 func BenchmarkMakeMove(b *testing.B) {
 	tests := []struct {
-		fen  string
-		move Move
+		fen      string
+		move     Move
+		chess960 bool
 	}{
-		{startingFEN, NewMove(E2, E3)},
-		{"rnbqkb1r/pp1ppppp/5n2/2pP4/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3", NewMove(G1, F3)},
-		{startingFEN, NewDoublePush(E2, E4)},
-		{"rnbqkb1r/pppppppp/5n2/3P4/8/8/PPP1PPPP/RNBQKBNR b KQkq - 0 2", NewDoublePush(C7, C5)},
-		{"8/2p5/3p4/KP5r/1R3p1k/8/6P1/8 w - - 0 1", NewDoublePush(G2, G4)},
-		{"k7/8/8/3p4/4P3/8/8/K7 b - - 0 1", NewCapture(D5, E4)},
-		{"k7/8/8/3p4/4P3/8/8/K7 w - - 17 5", NewCapture(E4, D5)},
-		{"4k3/8/8/8/8/8/8/R3K3 w - - 3 5", NewMove(A1, A5)},
-		{"4k3/8/8/8/8/8/4P3/4K3 w - - 9 5", NewMove(E2, E3)},
-		{"4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1", NewEnPassant(E5, D6)},
-		{"4k3/8/8/8/8/8/8/4K2R w K - 0 1", NewCastle(E1, H1)},
-		{"4k3/8/8/8/8/8/8/R3K3 w Q - 0 1", NewCastle(E1, A1)},
-		{"4k2r/8/8/8/8/8/8/4K3 b k - 1 1", NewCastle(E8, H8)},
-		{"r3k3/8/8/8/8/8/8/4K3 b q - 16 160", NewCastle(E8, A8)},
-		{"4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1", NewMove(E1, E2)},
-		{"4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1", NewMove(H1, H2)},
-		{"r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", NewCapture(A1, A8)},
-		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewCapture(H8, H1)},
-		{"r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", NewMove(A1, D1)},
-		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Knight)},
-		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Bishop)},
-		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Rook)},
-		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Queen)},
-		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Knight)},
-		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Bishop)},
-		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Rook)},
-		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Queen)},
-		{"3r4/4P3/8/8/8/8/8/4K2k w - - 0 1", NewCapturePromo(E7, D8, Queen)},
-		{"3r4/4P3/8/8/8/8/8/4K2k w - - 0 1", NewCapturePromo(E7, D8, Knight)},
-		{"4K2k/8/8/8/8/8/4p3/3N4 b - - 0 1", NewCapturePromo(E2, D1, Bishop)},
-		{"4K2k/8/8/8/8/8/4p3/3N4 b - - 0 1", NewCapturePromo(E2, D1, Rook)},
-		{"8/8/8/8/8/8/8/4K2k b - - 0 7", NewMove(H1, H2)},
-		{"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", NewMove(G8, F6)},
-		{"4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1", NewEnPassant(D4, E3)},
-		{"4k3/8/8/2Pp4/8/8/8/4K3 w - d6 0 1", NewMove(E1, E2)},
-		{"4k2r/8/8/8/8/8/8/4K3 b k - 0 1", NewCastle(E8, H8)},
-		{"r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", NewMove(E1, E2)},
-		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(E8, E7)},
-		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(H8, H7)},
-		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(A8, A6)},
-		{"4k3/8/8/8/7r/8/8/R3K2R b KQkq - 0 1", NewCapture(H4, H1)},
-		{"4k3/8/8/8/8/8/8/R2RK2R w KQ - 0 1", NewMove(D1, D5)},
-		{"4k3/8/8/3r4/1N6/8/8/R3K2R w KQ - 0 1", NewCapture(B4, D5)},
+		{startingFEN, NewMove(E2, E3), false},
+		{"rnbqkb1r/pp1ppppp/5n2/2pP4/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3", NewMove(G1, F3), false},
+		{startingFEN, NewDoublePush(E2, E4), false},
+		{"rnbqkb1r/pppppppp/5n2/3P4/8/8/PPP1PPPP/RNBQKBNR b KQkq - 0 2", NewDoublePush(C7, C5), false},
+		{"8/2p5/3p4/KP5r/1R3p1k/8/6P1/8 w - - 0 1", NewDoublePush(G2, G4), false},
+		{"k7/8/8/3p4/4P3/8/8/K7 b - - 0 1", NewCapture(D5, E4), false},
+		{"k7/8/8/3p4/4P3/8/8/K7 w - - 17 5", NewCapture(E4, D5), false},
+		{"4k3/8/8/8/8/8/8/R3K3 w - - 3 5", NewMove(A1, A5), false},
+		{"4k3/8/8/8/8/8/4P3/4K3 w - - 9 5", NewMove(E2, E3), false},
+		{"4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1", NewEnPassant(E5, D6), false},
+		{"4k3/8/8/8/8/8/8/4K2R w K - 0 1", NewCastle(E1, H1), false},
+		{"4k3/8/8/8/8/8/8/R3K3 w Q - 0 1", NewCastle(E1, A1), false},
+		{"4k2r/8/8/8/8/8/8/4K3 b k - 1 1", NewCastle(E8, H8), false},
+		{"r3k3/8/8/8/8/8/8/4K3 b q - 16 160", NewCastle(E8, A8), false},
+		{"4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1", NewMove(E1, E2), false},
+		{"4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1", NewMove(H1, H2), false},
+		{"r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", NewCapture(A1, A8), false},
+		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewCapture(H8, H1), false},
+		{"r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", NewMove(A1, D1), false},
+		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Knight), false},
+		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Bishop), false},
+		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Rook), false},
+		{"8/4P3/8/8/8/8/8/4K2k w - - 0 1", NewPromo(E7, E8, Queen), false},
+		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Knight), false},
+		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Bishop), false},
+		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Rook), false},
+		{"8/2K5/8/6k1/8/8/2p5/8 b - - 0 1", NewPromo(C2, C1, Queen), false},
+		{"3r4/4P3/8/8/8/8/8/4K2k w - - 0 1", NewCapturePromo(E7, D8, Queen), false},
+		{"3r4/4P3/8/8/8/8/8/4K2k w - - 0 1", NewCapturePromo(E7, D8, Knight), false},
+		{"4K2k/8/8/8/8/8/4p3/3N4 b - - 0 1", NewCapturePromo(E2, D1, Bishop), false},
+		{"4K2k/8/8/8/8/8/4p3/3N4 b - - 0 1", NewCapturePromo(E2, D1, Rook), false},
+		{"8/8/8/8/8/8/8/4K2k b - - 0 7", NewMove(H1, H2), false},
+		{"rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1", NewMove(G8, F6), false},
+		{"4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1", NewEnPassant(D4, E3), false},
+		{"4k3/8/8/2Pp4/8/8/8/4K3 w - d6 0 1", NewMove(E1, E2), false},
+		{"4k2r/8/8/8/8/8/8/4K3 b k - 0 1", NewCastle(E8, H8), false},
+		{"r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", NewMove(E1, E2), false},
+		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(E8, E7), false},
+		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(H8, H7), false},
+		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(A8, A6), false},
+		{"4k3/8/8/8/7r/8/8/R3K2R b KQkq - 0 1", NewCapture(H4, H1), false},
+		{"4k3/8/8/8/8/8/8/R2RK2R w KQ - 0 1", NewMove(D1, D5), false},
+		{"4k3/8/8/3r4/1N6/8/8/R3K2R w KQ - 0 1", NewCapture(B4, D5), false},
+
+		{"qb3rk1/pp3rp1/2p1p2p/2P4P/3PQ1P1/1PN5/P4P2/3R1K1R w DH - 1 19", NewCastle(F1, H1), true},
+		{"bqrbkrR1/4pp1Q/8/1pp2N2/8/2PnP3/1P5P/B1RBKN2 w Ccf - 2 15", NewMove(E1, D2), true},
+		{"2rb1R2/2k1ppN1/2b5/8/1Pp5/2P1P3/7P/B1KB1N2 b - b3 0 22", NewEnPassant(C4, B3), true},
+		{"rkr1q1b1/pp1p1ppp/2p3n1/4p3/4P3/2P1NPN1/PP1P2PP/R1KB1Q2 b ac - 0 10", NewMove(C8, C7), true},
+		{"rk2q1b1/pprp1ppp/2p3n1/4p3/4P3/2P1NPN1/PP1P2PP/R1KB1Q2 b a - 2 12", NewCastle(B8, A8), true},
+		{"4k3/8/8/8/8/8/8/5KRQ w G - 0 1", NewCastle(F1, G1), true},
+		{"2r3kr/8/8/8/8/8/8/RK1R4 b hc - 1 1", NewCastle(G8, H8), true},
+		{"3r2kr/8/8/8/8/8/8/RK3R2 w AF - 0 1", NewCastle(B1, A1), true},
+		{"1r1kr3/8/8/8/8/4R3/2K1R3/8 w bf - 0 1", NewCapture(E3, E8), true},
 	}
 
-	// parse every fixture once up front - outside the benchmark
 	type fixture struct {
-		pos  Position
-		move Move
+		pos      Position
+		move     Move
+		chess960 bool
 	}
+
 	fixtures := make([]fixture, len(tests))
 	for i, tt := range tests {
 		pos, err := ParseFEN(tt.fen)
 		if err != nil {
 			b.Fatalf("bad benchmark FEN: %v", err)
 		}
-		fixtures[i] = fixture{pos, tt.move}
+		fixtures[i] = fixture{pos: pos, move: tt.move, chess960: tt.chess960}
 	}
 
 	for i := 0; b.Loop(); i++ {
 		f := fixtures[i%len(fixtures)]
+		if f.chess960 {
+			SetChess960(true)
+		}
 		_ = f.pos.MakeMove(f.move)
+		if f.chess960 {
+			SetChess960(false)
+		}
 	}
 }
 
