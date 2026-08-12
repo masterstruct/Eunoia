@@ -35,3 +35,13 @@ func IsSquareAttacked(pos board.Position, sq board.Square, byColor board.Color) 
 	}
 	return false
 }
+
+func InCheck(pos board.Position) bool {
+	// TODO: instead of creating new piece for
+	// pieceBB lookup use stored king square values
+	return IsSquareAttacked(
+		pos,
+		pos.PieceBB(board.NewPiece(board.King, pos.SideToMove)).LSB(),
+		pos.SideToMove.Opponent(),
+	)
+}
