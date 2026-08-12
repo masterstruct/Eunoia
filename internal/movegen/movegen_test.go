@@ -192,3 +192,47 @@ func TestGenKnightMoves(t *testing.T) {
 		})
 	}
 }
+
+func TestGenKingMoves(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+		to   []board.Square
+	}{
+		{
+			name: "starting position for white has 0 king moves",
+			fen:  board.StartingFEN,
+			to:   []board.Square{},
+		},
+		{
+			name: "starting position for black has 0 king moves",
+			fen:  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+			to:   []board.Square{},
+		},
+		{
+			name: "kiwipete for white has 4 king moves",
+			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			to:   []board.Square{board.C1, board.D1, board.F1, board.G1},
+		},
+		{
+			name: "kiwipete for black has 4 king moves",
+			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq -",
+			to:   []board.Square{board.C8, board.D8, board.F8, board.G8},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, _ := board.ParseFEN(tt.fen)
+
+			movelist := genKingMoves(pos)
+			for _, move := range movelist {
+				if !slices.Contains(tt.to, move.To()) {
+					t.Fatalf("unexpected knight move: %v\n%v", move, pos)
+				}
+			}
+			if len(movelist) != len(tt.to) {
+				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
+			}
+		})
+	}
+}
