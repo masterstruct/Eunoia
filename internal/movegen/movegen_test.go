@@ -36,9 +36,9 @@ func TestIsSquareAttacked(t *testing.T) {
 		{"king on corner does not wrap", "3k4/8/8/8/8/8/8/K7 w - - 0 1", board.H1, board.White, false},
 
 		// sliders
-		{"rook attacks along open file", "4k3/8/8/4R3/8/8/8/4K3 w - - 0 1", board.E1, board.White, true},
-		{"rook attack blocked by own king", "4k3/8/8/4R3/8/8/8/4K3 w - - 0 1", board.D8, board.White, false},
-		{"rook attacks along open rank", "4k3/8/8/R3K3/8/8/8/8 w - - 0 1", board.H5, board.White, true},
+		{"rook attacks along open file", "4k3/8/8/4R3/8/8/8/4K3 w - - 0 1", board.A5, board.White, true},
+		{"rook attack blocked by own king", "4k3/8/4K3/4R3/8/8/8/8 w - - 0 1", board.E8, board.White, false},
+		{"rook attacks along open rank", "4k3/8/8/R7/4K3/8/8/8 w - - 0 1", board.H5, board.White, true},
 		{"rook does not attack diagonally", "4k3/8/8/4R3/8/8/8/4K3 w - - 0 1", board.F6, board.White, false},
 		{"bishop attacks along open diagonal", "4k3/8/8/8/8/2B5/8/4K3 w - - 0 1", board.H8, board.White, true},
 		{"bishop attack blocked by intervening piece", "4k3/6p1/8/8/8/2B5/8/4K3 w - - 0 1", board.H8, board.White, false},
@@ -47,13 +47,21 @@ func TestIsSquareAttacked(t *testing.T) {
 		{"queen attacks straight like a rook", "4k3/2Q5/8/8/8/8/8/4K3 w - - 0 1", board.C1, board.White, true},
 
 		// multiple attackers and zero attackers
-		{"square attacked by two different pieces still true", "4k3/8/8/4R3/2N5/8/8/4K3 w - - 0 1", board.E4, board.White, true},
+		{"square attacked by two different pieces", "4k3/8/8/4R3/2N5/8/8/4K3 w - - 0 1", board.E3, board.White, true},
 		{"square with no attackers at all", "4k3/8/8/8/8/8/8/4K3 w - - 0 1", board.D4, board.White, false},
 		{"square occupied by the attacker itself is not being attacked", "4k3/8/8/8/4N3/8/8/4K3 w - - 0 1", board.E4, board.White, false},
 
 		// color filtering - same board, opposite color queried should differ
-		{"black piece does not count when querying white attackers", "4k3/8/8/3n4/8/8/8/4K3 w - - 0 1", board.F4, board.White, false},
-		{"black knight correctly attacks when querying black", "4k3/8/8/3n4/8/8/8/4K3 w - - 0 1", board.F4, board.Black, true},
+		{"black piece does not count when querying white attackers", "4k3/8/8/3n4/8/8/8/4K3 w - - 0 1", board.C3, board.White, false},
+		{"black knight correctly attacks when querying black", "4k3/8/8/3n4/8/8/8/4K3 w - - 0 1", board.C3, board.Black, true},
+
+		// attacking occupied squares
+		{"white rook attacks black piece", "8/2k5/8/1n2R3/8/8/8/4K3 w - - 0 1", board.B5, board.White, true},
+		{"black rook attacks white piece", "8/2k5/8/5r2/8/8/5B2/4K3 b - - 0 1", board.F2, board.Black, true},
+		{"white rook attacks (defends) white piece", "8/2k5/8/1Q2R3/8/8/8/4K3 w - - 0 1", board.B5, board.White, true},
+		{"black rook attacks (defends) black piece", "8/2k5/8/5r2/8/8/5n2/4K3 b - - 0 1", board.F2, board.Black, true},
+		{"white bishop attacks black piece", "8/8/6k1/6n1/8/4B3/1K6/8 w - - 0 1", board.G5, board.White, true},
+		{"black queen attacks white piece", "8/8/6k1/3q4/8/3N4/1K6/8 b - - 0 1", board.D3, board.Black, true},
 	}
 
 	for _, tt := range tests {
