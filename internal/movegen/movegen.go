@@ -45,3 +45,32 @@ func InCheck(pos board.Position) bool {
 		pos.SideToMove.Opponent(),
 	)
 }
+
+func genKnightMoves(pos board.Position) []board.Move {
+	// a knight can make up to 8 moves
+	movelist := make([]board.Move, 0, 8)
+	color := pos.SideToMove
+
+	// loop over each knight
+	knightBB := pos.PieceBB(board.NewPiece(board.Knight, pos.SideToMove))
+	for knightBB != 0 {
+		from := knightBB.PopLSB()
+		attackBB := KnightAttacks[from]
+
+		for attackBB != 0 {
+			to := attackBB.PopLSB()
+			toPiece := pos.Board[to]
+
+			if toPiece == board.NoPiece {
+				// quiet move
+				movelist = append(movelist, board.NewMove(from, to))
+				continue
+			}
+			// capture
+			if toPiece.Color != color {
+				movelist = append(movelist, board.NewCapture(from, to))
+			}
+		}
+	}
+	return movelist
+}
