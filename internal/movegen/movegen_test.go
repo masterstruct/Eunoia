@@ -105,3 +105,43 @@ var isSquareAttackedCases = []struct {
 	{"white bishop attacks black piece", "8/8/6k1/6n1/8/4B3/1K6/8 w - - 0 1", board.G5, board.White, true},
 	{"black queen attacks white piece", "8/8/6k1/3q4/8/3N4/1K6/8 b - - 0 1", board.D3, board.Black, true},
 }
+
+func TestInCheck(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+		want bool
+	}{
+		{
+			name: "white in check by rook",
+			fen:  "4k3/8/8/8/8/8/4r3/4K3 w - - 0 1",
+			want: true,
+		},
+		{
+			name: "black in check by bishop",
+			fen:  "8/5k2/8/8/2B5/5K2/8/8 b - - 0 1",
+			want: true,
+		},
+		{
+			name: "white not in check",
+			fen:  "4k3/8/3r4/1b6/8/5q2/1n6/4K3 w - - 0 1",
+			want: false,
+		},
+		{
+			name: "black not in check",
+			fen:  "8/3k4/8/8/8/8/4R3/4K3 b - - 0 1",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, _ := board.ParseFEN(tt.fen)
+
+			got := InCheck(pos)
+			if got != tt.want {
+				t.Fatalf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
