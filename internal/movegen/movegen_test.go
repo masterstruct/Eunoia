@@ -219,6 +219,61 @@ func TestGenKingMoves(t *testing.T) {
 			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq -",
 			to:   []board.Square{board.C8, board.D8, board.F8, board.G8},
 		},
+		{
+			name: "white king can castle kingside",
+			fen:  "8/8/8/3k4/8/8/8/4K2R w K - 0 1",
+			to:   []board.Square{board.D1, board.D2, board.E2, board.F2, board.F1, board.H1},
+		},
+		{
+			name: "white king cannot castle kingside through check",
+			fen:  "k7/8/8/8/2b5/8/8/4K2R w K - 0 1",
+			to:   []board.Square{board.D1, board.D2, board.F2},
+		},
+		{
+			name: "white king can castle queenside",
+			fen:  "8/8/8/3k4/8/8/8/R3K3 w Q - 0 1",
+			to:   []board.Square{board.A1, board.D1, board.D2, board.E2, board.F2, board.F1},
+		},
+		{
+			name: "white king cannot castle queenside through check",
+			fen:  "8/8/8/2k5/6b1/8/8/R3K3 w Q - 0 1",
+			to:   []board.Square{board.D2, board.F2, board.F1},
+		},
+		{
+			name: "white king can castle both ways",
+			fen:  "8/8/8/3k4/8/8/8/R3K2R w KQ - 0 1",
+			to:   []board.Square{board.A1, board.D1, board.D2, board.E2, board.F2, board.F1, board.H1},
+		},
+		{
+			name: "black king can castle kingside",
+			fen:  "4k2r/8/8/3K4/8/8/8/8 b k - 0 1",
+			to:   []board.Square{board.D8, board.D7, board.E7, board.F7, board.F8, board.H8},
+		},
+		{
+			name: "black king cannot castle kingside through check",
+			fen:  "r3k2r/8/3B4/3K4/8/8/8/8 b kq - 0 1",
+			to:   []board.Square{board.A8, board.D8, board.D7, board.F7},
+		},
+		{
+			name: "black king can castle queenside",
+			fen:  "r3k3/8/8/3K4/8/8/8/8 b q - 0 1",
+			to:   []board.Square{board.A8, board.D8, board.D7, board.E7, board.F7, board.F8},
+		},
+		{
+			name: "black king cannot castle queenside through check",
+			fen:  "r3k2r/8/8/3K2B1/8/8/8/8 b kq - 0 1",
+			to:   []board.Square{board.D7, board.F7, board.F8, board.H8},
+		},
+		{
+			name: "black king can castle both ways",
+			fen:  "r3k2r/8/8/3K4/8/8/8/8 b kq - 0 1",
+			to:   []board.Square{board.A8, board.D8, board.D7, board.E7, board.F7, board.F8, board.H8},
+		},
+		{
+			name: "king cannot castle to attacked square",
+			fen:  "8/8/8/3k4/8/7n/8/4K2R w K - 0 1",
+			to:   []board.Square{board.D1, board.D2, board.E2, board.F1},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
