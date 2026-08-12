@@ -5,22 +5,32 @@ import (
 )
 
 func IsSquareAttacked(pos board.Position, sq board.Square, byColor board.Color) bool {
+	if byColor == board.NoColor {
+		return false
+	}
+	if PawnAttacks[byColor.Opponent()][sq]&pos.PieceBB(board.NewPiece(board.Pawn, byColor)) != 0 {
+		return true
+	}
 	if KnightAttacks[sq]&pos.PieceBB(board.NewPiece(board.Knight, byColor)) != 0 {
 		return true
 	}
 	if KingAttacks[sq]&pos.PieceBB(board.NewPiece(board.King, byColor)) != 0 {
 		return true
 	}
-	if PawnAttacks[byColor.Opponent()][sq]&pos.PieceBB(board.NewPiece(board.Pawn, byColor)) != 0 {
+
+	occupied := pos.Occupied()
+	rooks := pos.PieceBB(board.NewPiece(board.Rook, byColor))
+	queens := pos.PieceBB(board.NewPiece(board.Queen, byColor))
+
+	rookAttacks := RookAttacks(sq, occupied)
+	if rookAttacks&(rooks|queens) != 0 {
 		return true
 	}
-	if RookAttacks(sq, pos.Occupied())&pos.PieceBB(board.NewPiece(board.Rook, byColor)) != 0 {
-		return true
-	}
-	if BishopAttacks(sq, pos.Occupied())&pos.PieceBB(board.NewPiece(board.Bishop, byColor)) != 0 {
-		return true
-	}
-	if QueenAttacks(sq, pos.Occupied())&pos.PieceBB(board.NewPiece(board.Queen, byColor)) != 0 {
+
+	bishops := pos.PieceBB(board.NewPiece(board.Bishop, byColor))
+
+	bishopAttacks := BishopAttacks(sq, occupied)
+	if bishopAttacks&(bishops|queens) != 0 {
 		return true
 	}
 	return false
