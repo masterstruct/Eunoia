@@ -21,6 +21,17 @@ func TestIsSquareAttacked(t *testing.T) {
 	}
 }
 
+func TestIsSquareAttacked_NoColor(t *testing.T) {
+	pos, err := board.ParseFEN("4k3/8/8/8/8/8/8/4K3 w - - 0 1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if IsSquareAttacked(pos, board.E4, board.NoColor) {
+		t.Fatal("expected false for NoColor")
+	}
+}
+
 func BenchmarkIsSquareAttacked(b *testing.B) {
 	positions := make([]board.Position, len(isSquareAttackedCases))
 	for i, tc := range isSquareAttackedCases {
