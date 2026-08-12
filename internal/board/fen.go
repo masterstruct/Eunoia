@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+const StartingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 var (
 	ErrInvalidFieldCount     = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
@@ -241,6 +241,6 @@ func FullmovesToPly(fullmoves uint16, sideToMove Color) uint16 {
 }
 
 func StartingPosition() Position {
-	pos, _ := ParseFEN(startingFEN)
+	pos, _ := ParseFEN(StartingFEN)
 	return pos
 }

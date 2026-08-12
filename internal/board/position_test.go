@@ -688,7 +688,7 @@ func TestCastlingRooks(t *testing.T) {
 	}{
 		{
 			name: "standard starting position, all four rights",
-			fen:  startingFEN,
+			fen:  StartingFEN,
 			want: CastlingRookSquares{
 				WhiteKingside:  H1,
 				WhiteQueenside: A1,

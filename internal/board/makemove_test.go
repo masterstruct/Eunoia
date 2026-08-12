@@ -11,7 +11,7 @@ func TestMakeMove(t *testing.T) {
 	}{
 		{
 			name:    "quiet move",
-			fen:     startingFEN,
+			fen:     StartingFEN,
 			move:    NewMove(E2, E3),
 			wantFEN: "rnbqkbnr/pppppppp/8/8/8/4P3/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
 		},
@@ -23,7 +23,7 @@ func TestMakeMove(t *testing.T) {
 		},
 		{
 			name:    "white double push sets en passant",
-			fen:     startingFEN,
+			fen:     StartingFEN,
 			move:    NewDoublePush(E2, E4),
 			wantFEN: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
 		},
@@ -320,9 +320,9 @@ func BenchmarkMakeMove(b *testing.B) {
 		move     Move
 		chess960 bool
 	}{
-		{startingFEN, NewMove(E2, E3), false},
+		{StartingFEN, NewMove(E2, E3), false},
 		{"rnbqkb1r/pp1ppppp/5n2/2pP4/8/8/PPP1PPPP/RNBQKBNR w KQkq c6 0 3", NewMove(G1, F3), false},
-		{startingFEN, NewDoublePush(E2, E4), false},
+		{StartingFEN, NewDoublePush(E2, E4), false},
 		{"rnbqkb1r/pppppppp/5n2/3P4/8/8/PPP1PPPP/RNBQKBNR b KQkq - 0 2", NewDoublePush(C7, C5), false},
 		{"8/2p5/3p4/KP5r/1R3p1k/8/6P1/8 w - - 0 1", NewDoublePush(G2, G4), false},
 		{"k7/8/8/3p4/4P3/8/8/K7 b - - 0 1", NewCapture(D5, E4), false},

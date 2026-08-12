@@ -63,7 +63,7 @@ func TestParseFEN_Valid(t *testing.T) {
 	}{
 		{
 			name: "starting position",
-			fen:  startingFEN,
+			fen:  StartingFEN,
 			placements: []placement{
 				{BlackRook, A8}, {BlackKnight, B8}, {BlackBishop, C8}, {BlackQueen, D8},
 				{BlackKing, E8}, {BlackBishop, F8}, {BlackKnight, G8}, {BlackRook, H8},
@@ -165,7 +165,7 @@ func TestParseFEN_Valid(t *testing.T) {
 
 func TestParseFEN_RoundTrip(t *testing.T) {
 	tests := []string{
-		startingFEN,
+		StartingFEN,
 		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 15 70",
@@ -190,7 +190,7 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 
 func BenchmarkFEN(b *testing.B) {
 	fens := []string{
-		startingFEN,
+		StartingFEN,
 		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
@@ -221,7 +221,7 @@ func BenchmarkFEN(b *testing.B) {
 
 func BenchmarkParseFEN(b *testing.B) {
 	fens := []string{
-		startingFEN,
+		StartingFEN,
 		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
@@ -488,7 +488,7 @@ func TestFullmovesPlyRoundTrip(t *testing.T) {
 }
 
 func TestStartingPosition(t *testing.T) {
-	want, err := ParseFEN(startingFEN)
+	want, err := ParseFEN(StartingFEN)
 	if err != nil {
 		t.Fatalf("ParseFEN(startingFEN) returned error: %v", err)
 	}
