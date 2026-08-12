@@ -1,6 +1,7 @@
 package movegen
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -141,6 +142,52 @@ func TestInCheck(t *testing.T) {
 			got := InCheck(pos)
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestGenKnightMoves(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+		to   []board.Square
+	}{
+		{
+			name: "starting position for white has 4 knight moves",
+			fen:  board.StartingFEN,
+			to:   []board.Square{board.A3, board.C3, board.F3, board.H3},
+		},
+		{
+			name: "starting position for black has 4 knight moves",
+			fen:  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1",
+			to:   []board.Square{board.A6, board.C6, board.F6, board.H6},
+		},
+		{
+			name: "kiwipete for white has 11 knight moves",
+			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			to: []board.Square{board.B1, board.D1, board.A4, board.B5,
+				board.D3, board.C4, board.G4, board.C6, board.G6, board.D7, board.F7},
+		},
+		{
+			name: "kiwipete for black has 10 knight moves",
+			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq -",
+			to: []board.Square{board.A4, board.C4, board.D5, board.C8,
+				board.E4, board.G4, board.D5, board.H5, board.G8, board.H7},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, _ := board.ParseFEN(tt.fen)
+
+			movelist := genKnightMoves(pos)
+			for _, move := range movelist {
+				if !slices.Contains(tt.to, move.To()) {
+					t.Fatalf("unexpected knight move: %v\n%v", move, pos)
+				}
+			}
+			if len(movelist) != len(tt.to) {
+				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
 	}
