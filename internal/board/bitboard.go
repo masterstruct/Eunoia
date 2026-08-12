@@ -1,6 +1,7 @@
 package board
 
 import (
+	"iter"
 	"math/bits"
 	"strconv"
 	"strings"
@@ -63,6 +64,33 @@ func (bb *Bitboard) PopLSB() Square {
 		bb.ClearBit(bit)
 	}
 	return bit
+}
+
+/*
+Custom iterator for looping over all 1s in a bitboard.
+
+Usage:
+
+	for sq := range bb.Bits() {}
+
+Equivalent to:
+
+	for bb != 0 {
+		sq := bb.PopLSB()
+	}
+*/
+func (bb Bitboard) Bits() iter.Seq[Square] {
+	return func(yield func(Square) bool) {
+		for {
+			sq := bb.PopLSB()
+			if sq == NoSquare {
+				return
+			}
+			if !yield(sq) {
+				return
+			}
+		}
+	}
 }
 
 func (bb Bitboard) String() string {

@@ -53,12 +53,10 @@ func genKnightMoves(pos board.Position) []board.Move {
 
 	// loop over each knight
 	knightBB := pos.PieceBB(board.NewPiece(board.Knight, pos.SideToMove))
-	for knightBB != 0 {
-		from := knightBB.PopLSB()
+	for from := range knightBB.Bits() {
 		attackBB := KnightAttacks[from]
 
-		for attackBB != 0 {
-			to := attackBB.PopLSB()
+		for to := range attackBB.Bits() {
 			toPiece := pos.Board[to]
 
 			if toPiece == board.NoPiece {
