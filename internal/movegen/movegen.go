@@ -236,31 +236,63 @@ func genPawnMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-// func genKingMoves(pos board.Position) []board.Move {
-// 	// a king can make up to 8 moves
-// 	movelist := make([]board.Move, 0, 8)
-// 	color := pos.SideToMove
+func genKingMoves(pos board.Position) []board.Move {
+	// a king can make up to 8 moves
+	movelist := make([]board.Move, 0, 8)
+	color := pos.SideToMove
 
-// 	// loop over each king
-// 	// TODO: replace with king square lookup
-// 	kingBB := pos.PieceBB(board.NewPiece(board.King, color))
-// 	from := kingBB.LSB()
+	// loop over each king
+	// TODO: replace with king square lookup
+	kingBB := pos.PieceBB(board.NewPiece(board.King, color))
+	from := kingBB.LSB()
 
-// 	attackBB := KingAttacks[from]
+	attackBB := KingAttacks[from]
 
-// 	for to := range attackBB.Bits() {
-// 		toPiece := pos.Board[to]
+	for to := range attackBB.Bits() {
+		toPiece := pos.Board[to]
 
-// 		if toPiece == board.NoPiece {
-// 			// quiet move
-// 			movelist = append(movelist, board.NewMove(from, to))
-// 			continue
-// 		}
-// 		// capture
-// 		if toPiece.Color != color {
-// 			movelist = append(movelist, board.NewCapture(from, to))
-// 		}
-// 	}
+		if toPiece == board.NoPiece {
+			// quiet move
+			movelist = append(movelist, board.NewMove(from, to))
+			continue
+		}
+		// capture
+		if toPiece.Color != color {
+			movelist = append(movelist, board.NewCapture(from, to))
+		}
+	}
 
-// 	return movelist
-// }
+	castlingRights := pos.CastlingRights
+	if castlingRights != board.NoCastling {
+		rooks := pos.CastlingRooks()
+		if color == board.White {
+			if castlingRights.Has(board.WhiteKingside) {
+				movelist = append(movelist, board.NewCastle(from, rooks.WhiteKingside))
+			}
+			if castlingRights.Has(board.WhiteQueenside) {
+				movelist = append(movelist, board.NewCastle(from, rooks.WhiteQueenside))
+			}
+		} else {
+			if castlingRights.Has(board.BlackKingside) {
+				movelist = append(movelist, board.NewCastle(from, rooks.BlackKingside))
+			}
+			if castlingRights.Has(board.BlackQueenside) {
+				movelist = append(movelist, board.NewCastle(from, rooks.BlackQueenside))
+			}
+		}
+	}
+
+	return movelist
+}
+
+func canCastle(pos board.Position, kingSq board.Square, toFile, dir board.File) bool {
+	rank := kingSq.Rank()
+	color := pos.Board[kingSq].Color
+	for file := kingSq.File(); file != toFile+dir; file += dir {
+		sq := board.NewSquare(file, rank)
+		if IsSquareAttacked(pos, sq, color.Opponent()) {
+			return false
+		}
+	}
+	return true
+}
