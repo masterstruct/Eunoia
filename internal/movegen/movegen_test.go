@@ -655,3 +655,93 @@ func TestGenKingMoves(t *testing.T) {
 		})
 	}
 }
+
+func TestCanCastle(t *testing.T) {
+	tests := []struct {
+		name   string
+		fen    string
+		kingSq board.Square
+		toFile board.File
+		dir    board.File
+		want   bool
+	}{
+		{
+			name:   "clear path, kingside, no attacks anywhere",
+			fen:    "4k3/8/8/8/8/8/8/4K2R w K - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileG,
+			dir:    1,
+			want:   true,
+		},
+		{
+			name:   "king currently in check, blocks castling",
+			fen:    "4k3/8/8/8/8/4r3/8/4K2R w K - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileG,
+			dir:    1,
+			want:   false,
+		},
+		{
+			name:   "king passes through attacked square",
+			fen:    "4k3/8/8/8/8/5r2/8/4K2R w K - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileG,
+			dir:    1,
+			want:   false,
+		},
+		{
+			name:   "destination square is attacked",
+			fen:    "4k3/8/8/8/8/6r1/8/4K2R w K - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileG,
+			dir:    1,
+			want:   false,
+		},
+		{
+			name:   "queenside clear path",
+			fen:    "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileC,
+			dir:    -1,
+			want:   true,
+		},
+		{
+			name:   "queenside destination attacked",
+			fen:    "4k3/8/8/8/8/2r5/8/R3K3 w Q - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileC,
+			dir:    -1,
+			want:   false,
+		},
+		{
+			name:   "black king kingside, clear",
+			fen:    "4k2r/8/8/8/8/8/8/4K3 b k - 0 1",
+			kingSq: board.E8,
+			toFile: board.FileG,
+			dir:    1,
+			want:   true,
+		},
+		{
+			name:   "black king queenside, path attacked by white",
+			fen:    "r3k3/8/8/3R4/8/8/8/4K3 w q - 0 1",
+			kingSq: board.E8,
+			toFile: board.FileC,
+			dir:    -1,
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := board.ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad fixture FEN: %v", err)
+			}
+
+			got := canCastle(pos, tt.kingSq, tt.toFile, tt.dir)
+			if got != tt.want {
+				t.Errorf("canCastle() = %v, want %v\n%v", got, tt.want, pos)
+			}
+		})
+	}
+}
