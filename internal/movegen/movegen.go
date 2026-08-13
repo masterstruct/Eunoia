@@ -266,17 +266,17 @@ func genKingMoves(pos board.Position) []board.Move {
 	if castlingRights != board.NoCastling {
 		rooks := pos.CastlingRooks()
 		if color == board.White {
-			if castlingRights.Has(board.WhiteKingside) {
+			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, board.FileG, 1) {
 				movelist = append(movelist, board.NewCastle(from, rooks.WhiteKingside))
 			}
-			if castlingRights.Has(board.WhiteQueenside) {
+			if castlingRights.Has(board.WhiteQueenside) && canCastle(pos, from, board.FileC, -1) {
 				movelist = append(movelist, board.NewCastle(from, rooks.WhiteQueenside))
 			}
 		} else {
-			if castlingRights.Has(board.BlackKingside) {
+			if castlingRights.Has(board.BlackKingside) && canCastle(pos, from, board.FileG, 1) {
 				movelist = append(movelist, board.NewCastle(from, rooks.BlackKingside))
 			}
-			if castlingRights.Has(board.BlackQueenside) {
+			if castlingRights.Has(board.BlackQueenside) && canCastle(pos, from, board.FileC, -1) {
 				movelist = append(movelist, board.NewCastle(from, rooks.BlackQueenside))
 			}
 		}
@@ -287,10 +287,13 @@ func genKingMoves(pos board.Position) []board.Move {
 
 func canCastle(pos board.Position, kingSq board.Square, toFile, dir board.File) bool {
 	rank := kingSq.Rank()
+	occupied := pos.Occupied()
+	occupied.ClearBit(kingSq)
+
 	color := pos.Board[kingSq].Color
 	for file := kingSq.File(); file != toFile+dir; file += dir {
 		sq := board.NewSquare(file, rank)
-		if IsSquareAttacked(pos, sq, color.Opponent()) {
+		if occupied.IsBitSet(sq) || IsSquareAttacked(pos, sq, color.Opponent()) {
 			return false
 		}
 	}

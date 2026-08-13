@@ -674,6 +674,22 @@ func TestCanCastle(t *testing.T) {
 			want:   true,
 		},
 		{
+			name:   "castling path blocked",
+			fen:    "8/8/8/8/2k5/8/8/4KN1R w K - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileG,
+			dir:    1,
+			want:   false,
+		},
+		{
+			name:   "destination square occupied",
+			fen:    "8/8/8/8/2k5/8/8/4K1NR w K - 0 1",
+			kingSq: board.E1,
+			toFile: board.FileG,
+			dir:    1,
+			want:   false,
+		},
+		{
 			name:   "king currently in check, blocks castling",
 			fen:    "4k3/8/8/8/8/4r3/8/4K2R w K - 0 1",
 			kingSq: board.E1,
