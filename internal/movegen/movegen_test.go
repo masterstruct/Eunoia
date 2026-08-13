@@ -7,6 +7,13 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
+// TODO: move to an approprate file
+func withChess960(t *testing.T) {
+	t.Helper()
+	board.SetChess960(true)
+	t.Cleanup(func() { board.SetChess960(false) })
+}
+
 func TestIsSquareAttacked(t *testing.T) {
 	for _, tt := range isSquareAttackedCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -661,14 +668,16 @@ func TestCanCastle(t *testing.T) {
 		name   string
 		fen    string
 		kingSq board.Square
+		rookSq board.Square
 		toFile board.File
 		dir    board.File
 		want   bool
 	}{
 		{
-			name:   "clear path, kingside, no attacks anywhere",
+			name:   "clear kingside path",
 			fen:    "4k3/8/8/8/8/8/8/4K2R w K - 0 1",
 			kingSq: board.E1,
+			rookSq: board.H1,
 			toFile: board.FileG,
 			dir:    1,
 			want:   true,
@@ -677,6 +686,7 @@ func TestCanCastle(t *testing.T) {
 			name:   "castling path blocked",
 			fen:    "8/8/8/8/2k5/8/8/4KN1R w K - 0 1",
 			kingSq: board.E1,
+			rookSq: board.H1,
 			toFile: board.FileG,
 			dir:    1,
 			want:   false,
@@ -685,14 +695,16 @@ func TestCanCastle(t *testing.T) {
 			name:   "destination square occupied",
 			fen:    "8/8/8/8/2k5/8/8/4K1NR w K - 0 1",
 			kingSq: board.E1,
+			rookSq: board.H1,
 			toFile: board.FileG,
 			dir:    1,
 			want:   false,
 		},
 		{
-			name:   "king currently in check, blocks castling",
+			name:   "king in check",
 			fen:    "4k3/8/8/8/8/4r3/8/4K2R w K - 0 1",
 			kingSq: board.E1,
+			rookSq: board.H1,
 			toFile: board.FileG,
 			dir:    1,
 			want:   false,
@@ -701,46 +713,52 @@ func TestCanCastle(t *testing.T) {
 			name:   "king passes through attacked square",
 			fen:    "4k3/8/8/8/8/5r2/8/4K2R w K - 0 1",
 			kingSq: board.E1,
+			rookSq: board.H1,
 			toFile: board.FileG,
 			dir:    1,
 			want:   false,
 		},
 		{
-			name:   "destination square is attacked",
+			name:   "kinside destination square attacked",
 			fen:    "4k3/8/8/8/8/6r1/8/4K2R w K - 0 1",
 			kingSq: board.E1,
+			rookSq: board.H1,
 			toFile: board.FileG,
 			dir:    1,
 			want:   false,
 		},
 		{
-			name:   "queenside clear path",
+			name:   "clear queenside path",
 			fen:    "4k3/8/8/8/8/8/8/R3K3 w Q - 0 1",
 			kingSq: board.E1,
+			rookSq: board.A1,
 			toFile: board.FileC,
 			dir:    -1,
 			want:   true,
 		},
 		{
-			name:   "queenside destination attacked",
+			name:   "queenside destination square attacked",
 			fen:    "4k3/8/8/8/8/2r5/8/R3K3 w Q - 0 1",
 			kingSq: board.E1,
+			rookSq: board.A1,
 			toFile: board.FileC,
 			dir:    -1,
 			want:   false,
 		},
 		{
-			name:   "black king kingside, clear",
+			name:   "clear black kingside path",
 			fen:    "4k2r/8/8/8/8/8/8/4K3 b k - 0 1",
 			kingSq: board.E8,
+			rookSq: board.H8,
 			toFile: board.FileG,
 			dir:    1,
 			want:   true,
 		},
 		{
-			name:   "black king queenside, path attacked by white",
+			name:   "black king passes through attacked square",
 			fen:    "r3k3/8/8/3R4/8/8/8/4K3 w q - 0 1",
 			kingSq: board.E8,
+			rookSq: board.A8,
 			toFile: board.FileC,
 			dir:    -1,
 			want:   false,
@@ -751,12 +769,128 @@ func TestCanCastle(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, err := board.ParseFEN(tt.fen)
 			if err != nil {
-				t.Fatalf("bad fixture FEN: %v", err)
+				t.Fatalf("bad FEN: %v", err)
 			}
 
-			got := canCastle(pos, tt.kingSq, tt.toFile, tt.dir)
+			got := canCastle(pos, tt.kingSq, tt.rookSq)
 			if got != tt.want {
-				t.Errorf("canCastle() = %v, want %v\n%v", got, tt.want, pos)
+				t.Errorf("expected %v but got %v\n%v", got, tt.want, pos)
+			}
+		})
+	}
+}
+
+func TestCanCastle_Chess960(t *testing.T) {
+	withChess960(t)
+	tests := []struct {
+		name   string
+		fen    string
+		kingSq board.Square
+		rookSq board.Square
+		want   bool
+	}{
+		{
+			name:   "clear kingside path",
+			fen:    "8/8/8/8/2k5/8/8/1K5R w H - 0 1",
+			kingSq: board.B1,
+			rookSq: board.H1,
+			want:   true,
+		},
+		{
+			name:   "castling path blocked",
+			fen:    "8/8/8/8/2k5/8/8/1K1N3R w H - 0 1",
+			kingSq: board.B1,
+			rookSq: board.H1,
+			want:   false,
+		},
+		{
+			name:   "destination square occupied",
+			fen:    "8/8/8/3b4/2k5/8/8/1K3RN1 w F - 0 1",
+			kingSq: board.B1,
+			rookSq: board.F1,
+			want:   false,
+		},
+		{
+			name:   "king passes through attacked square",
+			fen:    "8/8/8/8/2k5/8/1n6/1K5R w H - 0 1",
+			kingSq: board.B1,
+			rookSq: board.H1,
+			want:   false,
+		},
+		{
+			name:   "kingside destination square attacked",
+			fen:    "8/8/8/8/2k5/5n2/8/1K5R w H - 0 1",
+			kingSq: board.B1,
+			rookSq: board.H1,
+			want:   false,
+		},
+		{
+			name:   "king jumps over rook kingside",
+			fen:    "8/8/8/8/1k6/8/8/1KR5 w C - 0 1",
+			kingSq: board.B1,
+			rookSq: board.C1,
+			want:   true,
+		},
+		{
+			name:   "king jumps over rook queenside",
+			fen:    "8/8/8/8/1k6/8/8/5RK1 w F - 0 1",
+			kingSq: board.G1,
+			rookSq: board.F1,
+			want:   true,
+		},
+		{
+			name:   "king jumps over rook queenside, but destination square attacked",
+			fen:    "8/8/8/6b1/1k6/8/8/5RK1 w F - 0 1",
+			kingSq: board.G1,
+			rookSq: board.F1,
+			want:   false,
+		},
+		{
+			name:   "king and rook move right, but path attacked",
+			fen:    "8/8/8/8/1k6/2b5/8/1KR5 w C - 0 1",
+			kingSq: board.B1,
+			rookSq: board.C1,
+			want:   false,
+		},
+		{
+			name:   "rook jumps over king kingside",
+			fen:    "8/8/8/8/1k6/8/8/6KR w H - 0 1",
+			kingSq: board.G1,
+			rookSq: board.H1,
+			want:   true,
+		},
+		{
+			name:   "rook jumps over king queenside",
+			fen:    "8/8/8/8/1k1b4/8/8/RK6 w A - 0 1",
+			kingSq: board.B1,
+			rookSq: board.A1,
+			want:   true,
+		},
+		{
+			name:   "rook jumps over king but rook destination square blocked",
+			fen:    "8/8/8/8/1k6/8/8/5NKR w H - 0 1",
+			kingSq: board.G1,
+			rookSq: board.H1,
+			want:   false,
+		},
+		{
+			name:   "rook and king swap positions",
+			fen:    "8/8/8/8/1k6/8/8/5KR1 w G - 0 1",
+			kingSq: board.F1,
+			rookSq: board.G1,
+			want:   true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := board.ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad FEN: %v", err)
+			}
+
+			got := canCastle(pos, tt.kingSq, tt.rookSq)
+			if got != tt.want {
+				t.Errorf("expected %v but got %v\n%v", tt.want, got, pos)
 			}
 		})
 	}
