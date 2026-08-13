@@ -266,17 +266,17 @@ func genKingMoves(pos board.Position) []board.Move {
 	if castlingRights != board.NoCastling {
 		rooks := pos.CastlingRooks()
 		if color == board.White {
-			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, board.FileG, 1) {
+			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, rooks.WhiteKingside) {
 				movelist = append(movelist, board.NewCastle(from, rooks.WhiteKingside))
 			}
-			if castlingRights.Has(board.WhiteQueenside) && canCastle(pos, from, board.FileC, -1) {
+			if castlingRights.Has(board.WhiteQueenside) && canCastle(pos, from, rooks.WhiteQueenside) {
 				movelist = append(movelist, board.NewCastle(from, rooks.WhiteQueenside))
 			}
 		} else {
-			if castlingRights.Has(board.BlackKingside) && canCastle(pos, from, board.FileG, 1) {
+			if castlingRights.Has(board.BlackKingside) && canCastle(pos, from, rooks.BlackKingside) {
 				movelist = append(movelist, board.NewCastle(from, rooks.BlackKingside))
 			}
-			if castlingRights.Has(board.BlackQueenside) && canCastle(pos, from, board.FileC, -1) {
+			if castlingRights.Has(board.BlackQueenside) && canCastle(pos, from, rooks.BlackQueenside) {
 				movelist = append(movelist, board.NewCastle(from, rooks.BlackQueenside))
 			}
 		}
@@ -285,13 +285,39 @@ func genKingMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-func canCastle(pos board.Position, kingSq board.Square, toFile, dir board.File) bool {
+func canCastle(pos board.Position, kingSq, rookSq board.Square) bool {
 	rank := kingSq.Rank()
+	kingFile := kingSq.File()
 	occupied := pos.Occupied()
 	occupied.ClearBit(kingSq)
+	occupied.ClearBit(rookSq) // in chess960 king can jump over rook
+
+	var toFile board.File
+	var dir board.File
+	if rookSq > kingSq {
+		// kingside
+		dir = 1
+		toFile = board.FileG
+		if occupied.IsBitSet(board.NewSquare(board.FileF, rank)) {
+			return false
+		}
+	} else {
+		// queenside
+		dir = -1
+		toFile = board.FileC
+		if board.FileC > kingFile {
+			// castling queenside (left), but because chess960,
+			// king can start on B1 and actually move right.
+			// this cannot happen with kingside if position is legal.
+			dir = 1
+		}
+		if occupied.IsBitSet(board.NewSquare(board.FileD, rank)) {
+			return false
+		}
+	}
 
 	color := pos.Board[kingSq].Color
-	for file := kingSq.File(); file != toFile+dir; file += dir {
+	for file := kingFile; file != toFile+dir; file += dir {
 		sq := board.NewSquare(file, rank)
 		if occupied.IsBitSet(sq) || IsSquareAttacked(pos, sq, color.Opponent()) {
 			return false
