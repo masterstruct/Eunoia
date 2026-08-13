@@ -378,7 +378,7 @@ func TestGenPawnMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, err := board.ParseFEN(tt.fen)
 			if err != nil {
-				t.Fatalf("bad fixture FEN: %v", err)
+				t.Fatalf("bad FEN: %v", err)
 			}
 
 			movelist := genPawnMoves(pos)
@@ -391,6 +391,125 @@ func TestGenPawnMoves(t *testing.T) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
+	}
+}
+
+func TestGenPawnMoves_EnPassant(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+		to   []board.Square
+	}{
+		{
+			name: "white captures en passant",
+			fen:  "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+			to:   []board.Square{board.E6, board.D6},
+		},
+		{
+			name: "black captures en passant",
+			fen:  "4k3/8/8/8/3pP3/8/8/4K3 b - e3 0 1",
+			to:   []board.Square{board.D3, board.E3},
+		},
+		{
+			name: "no en passant square set",
+			fen:  "4k3/8/8/3pP3/8/8/8/4K3 w - - 0 1",
+			to:   []board.Square{board.E6},
+		},
+		{
+			name: "en passant pin: pseudolegal movegen still creates capture",
+			fen:  "8/2p5/3p4/KP5r/1R3pPk/8/8/8 b - g3 0 1",
+			to:   []board.Square{board.F3, board.G3},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := board.ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad FEN: %v", err)
+			}
+
+			movelist := genPawnMoves(pos)
+			for _, move := range movelist {
+				if !slices.Contains(tt.to, move.To()) {
+					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
+				}
+			}
+			if len(movelist) != len(tt.to) {
+				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
+			}
+		})
+	}
+}
+
+func TestGenPawnMoves_Promotion(t *testing.T) {
+	pos, err := board.ParseFEN("3r4/4P3/8/8/8/8/8/4K2k w - - 0 1")
+	if err != nil {
+		t.Fatalf("bad FEN: %v", err)
+	}
+
+	movelist := genPawnMoves(pos)
+
+	wantPromos := map[board.PieceType]board.Piece{
+		board.Knight: board.WhiteKnight,
+		board.Bishop: board.WhiteBishop,
+		board.Rook:   board.WhiteRook,
+		board.Queen:  board.WhiteQueen,
+	}
+
+	type destCase struct {
+		to        board.Square
+		isCapture bool
+	}
+	dests := []destCase{
+		{board.E8, false}, // regular promo: e7e8
+		{board.D8, true},  // capture promo: e7d8
+	}
+
+	for _, to := range dests {
+		found := map[board.PieceType]bool{}
+
+		for _, move := range movelist {
+			if move.To() != to.to {
+				continue
+			}
+			promo := move.Promo()
+			found[promo] = true
+
+			newPos := pos.MakeMove(move)
+			wantPiece := wantPromos[promo]
+
+			if piece, ok := newPos.PieceOn(to.to); !ok || piece != wantPiece {
+				t.Errorf("to %v, promo %v: expected %v, got %v (ok=%v)", to.to, promo, wantPiece, piece, ok)
+			}
+			if piece, ok := newPos.PieceOn(board.E7); ok {
+				t.Errorf("to %v, promo %v: expected e7 empty, got %v", to.to, promo, piece)
+			}
+			if to.isCapture && move.IsCapture() {
+			} else if to.isCapture && !move.IsCapture() {
+				t.Errorf("to %v, promo %v: expected move flagged as capture, wasn't", to.to, promo)
+			} else if !to.isCapture && move.IsCapture() {
+				t.Errorf("to %v, promo %v: expected quiet promotion, move flagged as capture", to.to, promo)
+			}
+		}
+
+		for pt := range wantPromos {
+			if !found[pt] {
+				t.Errorf("to %v: missing promotion for piece type %v", to.to, pt)
+			}
+		}
+		if len(found) != 4 {
+			t.Errorf("to %v: expected exactly 4 promotion moves, got %d", to.to, len(found))
+		}
+	}
+
+	total := 0
+	for _, m := range movelist {
+		if m.To() == board.E8 || m.To() == board.D8 {
+			total++
+		}
+	}
+	if total != 8 {
+		t.Errorf("expected 8 total promotion moves (4 push + 4 capture), got %d", total)
 	}
 }
 
