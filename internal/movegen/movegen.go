@@ -158,26 +158,71 @@ func genQueenMoves(pos board.Position) []board.Move {
 }
 
 func genPawnMoves(pos board.Position) []board.Move {
-	// a knight can make up to 8 moves
+	// TODO: replace slices. there can be multiple pieces so reallocation happens
+	// a pawn can make up to 8 moves
 	movelist := make([]board.Move, 0, 8)
 	color := pos.SideToMove
 
-	// loop over each knight
-	knightBB := pos.PieceBB(board.NewPiece(board.Knight, color))
-	for from := range knightBB.Bits() {
-		attackBB := KnightAttacks[from]
+	pawnBB := pos.PieceBB(board.NewPiece(board.Pawn, color))
 
-		for to := range attackBB.Bits() {
+	epSq := pos.EnPassant
+	if epSq != board.NoSquare {
+		attackers := PawnAttacks[color.Opponent()][epSq] & pawnBB
+		for from := range attackers.Bits() {
+			movelist = append(movelist, board.NewEnPassant(from, epSq))
+		}
+	}
+
+	// loop over each pawn
+	for from := range pawnBB.Bits() {
+		attackBB := PawnAttacks[color][from]
+		fromRank := from.Rank()
+		for to := range (attackBB & pos.Occupied()).Bits() {
 			toPiece := pos.Board[to]
-
-			if toPiece == board.NoPiece {
-				// quiet move
-				movelist = append(movelist, board.NewMove(from, to))
+			if toPiece.Color != color &&
+				((color == board.White && fromRank == board.Rank7) ||
+					(color == board.Black && fromRank == board.Rank2)) {
+				// capture promo
+				movelist = append(movelist, board.NewCapturePromo(from, to, board.Knight))
+				movelist = append(movelist, board.NewCapturePromo(from, to, board.Bishop))
+				movelist = append(movelist, board.NewCapturePromo(from, to, board.Rook))
+				movelist = append(movelist, board.NewCapturePromo(from, to, board.Queen))
 				continue
 			}
-			// capture
 			if toPiece.Color != color {
 				movelist = append(movelist, board.NewCapture(from, to))
+				continue
+			}
+		}
+
+		// regular pushes
+		if color == board.White {
+			if !pos.Occupied().IsBitSet(from + 8) {
+				if fromRank == board.Rank7 {
+					movelist = append(movelist, board.NewPromo(from, from+8, board.Knight))
+					movelist = append(movelist, board.NewPromo(from, from+8, board.Bishop))
+					movelist = append(movelist, board.NewPromo(from, from+8, board.Rook))
+					movelist = append(movelist, board.NewPromo(from, from+8, board.Queen))
+					continue
+				}
+				movelist = append(movelist, board.NewMove(from, from+8))
+				if fromRank == board.Rank2 && !pos.Occupied().IsBitSet(from+16) {
+					movelist = append(movelist, board.NewMove(from, from+16))
+				}
+			}
+		} else {
+			if !pos.Occupied().IsBitSet(from - 8) {
+				if fromRank == board.Rank2 {
+					movelist = append(movelist, board.NewPromo(from, from-8, board.Knight))
+					movelist = append(movelist, board.NewPromo(from, from-8, board.Bishop))
+					movelist = append(movelist, board.NewPromo(from, from-8, board.Rook))
+					movelist = append(movelist, board.NewPromo(from, from-8, board.Queen))
+					continue
+				}
+				movelist = append(movelist, board.NewMove(from, from-8))
+				if fromRank == board.Rank7 && !pos.Occupied().IsBitSet(from-16) {
+					movelist = append(movelist, board.NewMove(from, from-16))
+				}
 			}
 		}
 	}
