@@ -229,7 +229,7 @@ func TestGenBishopMoves(t *testing.T) {
 			movelist := genBishopMoves(pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
-					t.Fatalf("unexpected knight move: %v\n%v", move, pos)
+					t.Fatalf("unexpected bishop move: %v\n%v", move, pos)
 				}
 			}
 			if len(movelist) != len(tt.to) {

@@ -73,6 +73,34 @@ func genKnightMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
+func genBishopMoves(pos board.Position) []board.Move {
+	// a bishop can make up to 13 moves
+	movelist := make([]board.Move, 0, 13)
+	color := pos.SideToMove
+	occupied := pos.Occupied()
+
+	// loop over each bishop
+	bishopBB := pos.PieceBB(board.NewPiece(board.Bishop, color))
+	for from := range bishopBB.Bits() {
+		attackBB := BishopAttacks(from, occupied)
+
+		for to := range (attackBB & occupied).Bits() {
+			// capture
+			toPiece := pos.Board[to]
+			if toPiece.Color != color {
+				movelist = append(movelist, board.NewCapture(from, to))
+			}
+		}
+
+		attackBB &^= occupied
+		for to := range attackBB.Bits() {
+			// quiet move
+			movelist = append(movelist, board.NewMove(from, to))
+		}
+	}
+	return movelist
+}
+
 // func genKingMoves(pos board.Position) []board.Move {
 // 	// a king can make up to 8 moves
 // 	movelist := make([]board.Move, 0, 8)
