@@ -129,6 +129,34 @@ func genRookMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
+func genQueenMoves(pos board.Position) []board.Move {
+	// a queen can make up to 27 moves
+	movelist := make([]board.Move, 0, 27)
+	color := pos.SideToMove
+	occupied := pos.Occupied()
+
+	// loop over each queen
+	queenBB := pos.PieceBB(board.NewPiece(board.Queen, color))
+	for from := range queenBB.Bits() {
+		attackBB := QueenAttacks(from, occupied)
+
+		for to := range (attackBB & occupied).Bits() {
+			// capture
+			toPiece := pos.Board[to]
+			if toPiece.Color != color {
+				movelist = append(movelist, board.NewCapture(from, to))
+			}
+		}
+
+		attackBB &^= occupied
+		for to := range attackBB.Bits() {
+			// quiet move
+			movelist = append(movelist, board.NewMove(from, to))
+		}
+	}
+	return movelist
+}
+
 // func genKingMoves(pos board.Position) []board.Move {
 // 	// a king can make up to 8 moves
 // 	movelist := make([]board.Move, 0, 8)
