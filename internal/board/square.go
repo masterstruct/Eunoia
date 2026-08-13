@@ -79,6 +79,22 @@ func (sq Square) IsValid() bool {
 	return sq >= A1 && sq <= H8
 }
 
+func (sq Square) Up() Square {
+	return sq + 8
+}
+
+func (sq Square) Down() Square {
+	return sq - 8
+}
+
+func (sq Square) Left() Square {
+	return sq - 1
+}
+
+func (sq Square) Right() Square {
+	return sq + 1
+}
+
 func (sq Square) String() string {
 	if sq == NoSquare {
 		return "-"

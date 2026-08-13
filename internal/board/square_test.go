@@ -169,6 +169,86 @@ func TestIsValid(t *testing.T) {
 	}
 }
 
+func TestSquareUp(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   Square
+		want Square
+	}{
+		{"A1 to A2", A1, A2},
+		{"D4 to D5", D4, D5},
+		{"H7 to H8", H7, H8},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Up(); got != tt.want {
+				t.Fatalf("Up() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSquareDown(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   Square
+		want Square
+	}{
+		{"A2 to A1", A2, A1},
+		{"D5 to D4", D5, D4},
+		{"H8 to H7", H8, H7},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Down(); got != tt.want {
+				t.Fatalf("Down() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSquareLeft(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   Square
+		want Square
+	}{
+		{"B1 to A1", B1, A1},
+		{"E4 to D4", E4, D4},
+		{"H8 to G8", H8, G8},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Left(); got != tt.want {
+				t.Fatalf("Left() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSquareRight(t *testing.T) {
+	tests := []struct {
+		name string
+		sq   Square
+		want Square
+	}{
+		{"A1 to B1", A1, B1},
+		{"D4 to E4", D4, E4},
+		{"G8 to H8", G8, H8},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.sq.Right(); got != tt.want {
+				t.Fatalf("Right() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestNewSquare(t *testing.T) {
 	tests := []struct {
 		name string
