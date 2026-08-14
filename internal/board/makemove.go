@@ -17,7 +17,8 @@ func (pos Position) MakeMove(move Move) Position {
 	isCapture := move.IsCapture()
 	isCastle := move.IsCastle()
 
-	epSquare := Square((int(from) + int(to)) / 2)
+	dir := 16*int(color) - 8
+	epSquare := Square(int(to) - dir)
 
 	newPos.HalfmoveClock++
 	newPos.EnPassant = NoSquare
