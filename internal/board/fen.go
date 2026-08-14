@@ -139,7 +139,7 @@ func ParseFEN(fen string) (Position, error) {
 	return pos, nil
 }
 
-func (pos Position) FEN() string {
+func (pos *Position) FEN() string {
 	var sb strings.Builder
 	var rankBB Bitboard
 	var skip int
@@ -202,7 +202,7 @@ func (pos Position) FEN() string {
 	return sb.String()
 }
 
-func (pos Position) shredderCastlingString() string {
+func (pos *Position) shredderCastlingString() string {
 	if pos.CastlingRights == NoCastling {
 		return "-"
 	}

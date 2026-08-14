@@ -389,8 +389,8 @@ func TestOccupied(t *testing.T) {
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
-			if pos.Occupied() != allPieceBB(pos) {
-				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", pos.Occupied(), allPieceBB(pos))
+			if pos.Occupied() != allPieceBB(&pos) {
+				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", pos.Occupied(), allPieceBB(&pos))
 			}
 		})
 	}
@@ -520,7 +520,7 @@ func TestPlacePiece(t *testing.T) {
 				t.Fatalf("occupied: expected %v but got %v", tt.want, got)
 			}
 
-			if got := allPieceBB(pos); got != tt.want {
+			if got := allPieceBB(&pos); got != tt.want {
 				t.Fatalf("pieces: expected %v but got %v", tt.want, got)
 			}
 
@@ -585,7 +585,7 @@ func TestRemovePiece(t *testing.T) {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
 
-			if got := allPieceBB(pos); got != tt.want {
+			if got := allPieceBB(&pos); got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
 
@@ -662,7 +662,7 @@ func setBits(sqs []Square) Bitboard {
 	return bb
 }
 
-func allPieceBB(pos Position) Bitboard {
+func allPieceBB(pos *Position) Bitboard {
 	b := EmptyBB
 	for _, pt := range PieceTypes() {
 		b |= pos.pieces[pt]

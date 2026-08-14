@@ -13,10 +13,10 @@ type PerftResult struct {
 	NPS   uint64
 }
 
-func Perft(pos board.Position, depth int) PerftResult {
+func Perft(pos *board.Position, depth int) PerftResult {
 	start := time.Now()
 
-	nodes := perft(pos, depth)
+	nodes := perft(*pos, depth)
 
 	elapsed := time.Since(start)
 	ns := max(uint64(elapsed.Nanoseconds()), 1)
@@ -35,11 +35,11 @@ func perft(pos board.Position, depth int) uint64 {
 	}
 
 	var nodes uint64
-	movelist := GeneratePseudolegalMoves(pos)
+	movelist := GeneratePseudolegalMoves(&pos)
 	for _, move := range movelist {
 		mover := pos.SideToMove
 		newPos := pos.MakeMove(move)
-		if InCheck(newPos, mover) {
+		if InCheck(&newPos, mover) {
 			continue
 		}
 		nodes += perft(newPos, depth-1)
@@ -47,7 +47,7 @@ func perft(pos board.Position, depth int) uint64 {
 	return nodes
 }
 
-func SplitPerft(pos board.Position, depth int) PerftResult {
+func SplitPerft(pos *board.Position, depth int) PerftResult {
 	start := time.Now()
 
 	var total uint64
@@ -55,7 +55,7 @@ func SplitPerft(pos board.Position, depth int) PerftResult {
 	for _, move := range movelist {
 		mover := pos.SideToMove
 		newPos := pos.MakeMove(move)
-		if InCheck(newPos, mover) {
+		if InCheck(&newPos, mover) {
 			continue
 		}
 		nodes := perft(newPos, depth-1)

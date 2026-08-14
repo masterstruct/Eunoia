@@ -4,7 +4,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-func IsSquareAttacked(pos board.Position, sq board.Square, byColor board.Color) bool {
+func IsSquareAttacked(pos *board.Position, sq board.Square, byColor board.Color) bool {
 	if byColor == board.NoColor {
 		return false
 	}
@@ -36,7 +36,7 @@ func IsSquareAttacked(pos board.Position, sq board.Square, byColor board.Color) 
 	return false
 }
 
-func InCheck(pos board.Position, color board.Color) bool {
+func InCheck(pos *board.Position, color board.Color) bool {
 	// TODO: instead of creating new piece for
 	// pieceBB lookup use stored king square values
 	return IsSquareAttacked(
@@ -46,7 +46,7 @@ func InCheck(pos board.Position, color board.Color) bool {
 	)
 }
 
-func genKnightMoves(pos board.Position) []board.Move {
+func genKnightMoves(pos *board.Position) []board.Move {
 	// a knight can make up to 8 moves
 	movelist := make([]board.Move, 0, 8)
 	color := pos.SideToMove
@@ -73,7 +73,7 @@ func genKnightMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-func genBishopMoves(pos board.Position) []board.Move {
+func genBishopMoves(pos *board.Position) []board.Move {
 	// a bishop can make up to 13 moves
 	movelist := make([]board.Move, 0, 13)
 	color := pos.SideToMove
@@ -101,7 +101,7 @@ func genBishopMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-func genRookMoves(pos board.Position) []board.Move {
+func genRookMoves(pos *board.Position) []board.Move {
 	// a rook can make up to 14 moves
 	movelist := make([]board.Move, 0, 14)
 	color := pos.SideToMove
@@ -129,7 +129,7 @@ func genRookMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-func genQueenMoves(pos board.Position) []board.Move {
+func genQueenMoves(pos *board.Position) []board.Move {
 	// a queen can make up to 27 moves
 	movelist := make([]board.Move, 0, 27)
 	color := pos.SideToMove
@@ -157,7 +157,7 @@ func genQueenMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-func genPawnMoves(pos board.Position) []board.Move {
+func genPawnMoves(pos *board.Position) []board.Move {
 	// TODO: replace slices. there can be multiple pieces so reallocation happens
 	// a pawn can make up to 12 moves
 	movelist := make([]board.Move, 0, 12)
@@ -236,7 +236,7 @@ func genPawnMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-func genKingMoves(pos board.Position) []board.Move {
+func genKingMoves(pos *board.Position) []board.Move {
 	// a king can make up to 8 moves
 	movelist := make([]board.Move, 0, 8)
 	color := pos.SideToMove
@@ -285,7 +285,7 @@ func genKingMoves(pos board.Position) []board.Move {
 	return movelist
 }
 
-func canCastle(pos board.Position, kingSq, rookSq board.Square) bool {
+func canCastle(pos *board.Position, kingSq, rookSq board.Square) bool {
 	rank := kingSq.Rank()
 	kingFile := kingSq.File()
 	rookFile := rookSq.File()
@@ -341,7 +341,7 @@ func canCastle(pos board.Position, kingSq, rookSq board.Square) bool {
 	return true
 }
 
-func GeneratePseudolegalMoves(pos board.Position) []board.Move {
+func GeneratePseudolegalMoves(pos *board.Position) []board.Move {
 	// a chess position can have up to 218 legal moves
 	movelist := make([]board.Move, 0, 218)
 

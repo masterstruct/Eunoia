@@ -70,7 +70,7 @@ func TestPerft(t *testing.T) {
 				depth = len(tt.want)
 			}
 
-			got := Perft(pos, depth)
+			got := Perft(&pos, depth)
 			want := tt.want[depth-1]
 
 			if got.Nodes != want {

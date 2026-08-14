@@ -16,7 +16,7 @@ type CastlingRookSquares struct {
 	BlackQueenside Square
 }
 
-func (pos Position) CastlingRooks() CastlingRookSquares {
+func (pos *Position) CastlingRooks() CastlingRookSquares {
 	rs := CastlingRookSquares{NoSquare, NoSquare, NoSquare, NoSquare}
 
 	if pos.CastlingRights.Has(WhiteKingside) {
@@ -229,7 +229,7 @@ func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 	return piece, piece != NoPiece
 }
 
-func (pos Position) String() string {
+func (pos *Position) String() string {
 	// If using VSCode, go to settings
 	// and set this setting:
 	// "terminal.integrated.minimumContrastRatio": 1,

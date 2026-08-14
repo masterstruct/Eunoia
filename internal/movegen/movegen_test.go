@@ -21,7 +21,7 @@ func TestIsSquareAttacked(t *testing.T) {
 			if err != nil {
 				t.Fatalf("bad test FEN: %v", err)
 			}
-			got := IsSquareAttacked(pos, tt.sq, tt.byColor)
+			got := IsSquareAttacked(&pos, tt.sq, tt.byColor)
 			if got != tt.want {
 				t.Errorf("IsSquareAttacked(%s, %s) = %v, want %v", tt.sq, tt.byColor, got, tt.want)
 			}
@@ -35,7 +35,7 @@ func TestIsSquareAttacked_NoColor(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if IsSquareAttacked(pos, board.E4, board.NoColor) {
+	if IsSquareAttacked(&pos, board.E4, board.NoColor) {
 		t.Fatal("expected false for NoColor")
 	}
 }
@@ -53,7 +53,7 @@ func BenchmarkIsSquareAttacked(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		tc := isSquareAttackedCases[i%len(isSquareAttackedCases)]
 		pos := positions[i%len(positions)]
-		_ = IsSquareAttacked(pos, tc.sq, tc.byColor)
+		_ = IsSquareAttacked(&pos, tc.sq, tc.byColor)
 	}
 }
 
@@ -152,7 +152,7 @@ func TestInCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			got := InCheck(pos, pos.SideToMove)
+			got := InCheck(&pos, pos.SideToMove)
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
@@ -193,7 +193,7 @@ func TestGenKnightMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genKnightMoves(pos)
+			movelist := genKnightMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected knight move: %v\n%v", move, pos)
@@ -239,7 +239,7 @@ func TestGenBishopMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genBishopMoves(pos)
+			movelist := genBishopMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected bishop move: %v\n%v", move, pos)
@@ -284,7 +284,7 @@ func TestGenRookMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genRookMoves(pos)
+			movelist := genRookMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected rook move: %v\n%v", move, pos)
@@ -329,7 +329,7 @@ func TestGenQueenMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genQueenMoves(pos)
+			movelist := genQueenMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected queen move: %v\n%v", move, pos)
@@ -394,7 +394,7 @@ func TestGenPawnMoves(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			movelist := genPawnMoves(pos)
+			movelist := genPawnMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
@@ -446,7 +446,7 @@ func TestGenPawnMoves_EnPassant(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			movelist := genPawnMoves(pos)
+			movelist := genPawnMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
@@ -541,7 +541,7 @@ func TestGenPawnMoves_Promotion(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			movelist := genPawnMoves(pos)
+			movelist := genPawnMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.wantMoves, move) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
@@ -656,7 +656,7 @@ func TestGenKingMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genKingMoves(pos)
+			movelist := genKingMoves(&pos)
 			for _, move := range movelist {
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected king move: %v\n%v", move, pos)
@@ -787,7 +787,7 @@ func TestCanCastle(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			got := canCastle(pos, tt.kingSq, tt.rookSq)
+			got := canCastle(&pos, tt.kingSq, tt.rookSq)
 			if got != tt.want {
 				t.Errorf("expected %v but got %v\n%v", got, tt.want, pos)
 			}
@@ -903,7 +903,7 @@ func TestCanCastle_Chess960(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			got := canCastle(pos, tt.kingSq, tt.rookSq)
+			got := canCastle(&pos, tt.kingSq, tt.rookSq)
 			if got != tt.want {
 				t.Errorf("expected %v but got %v\n%v", tt.want, got, pos)
 			}
@@ -918,14 +918,14 @@ func TestGeneratePseudolegalMoves(t *testing.T) {
 	}
 
 	total := 0
-	total += len(genKnightMoves(pos))
-	total += len(genBishopMoves(pos))
-	total += len(genRookMoves(pos))
-	total += len(genQueenMoves(pos))
-	total += len(genPawnMoves(pos))
-	total += len(genKingMoves(pos))
+	total += len(genKnightMoves(&pos))
+	total += len(genBishopMoves(&pos))
+	total += len(genRookMoves(&pos))
+	total += len(genQueenMoves(&pos))
+	total += len(genPawnMoves(&pos))
+	total += len(genKingMoves(&pos))
 
-	got := len(GeneratePseudolegalMoves(pos))
+	got := len(GeneratePseudolegalMoves(&pos))
 
 	if got != total {
 		t.Fatalf("expected %v but got %v\n%v", total, got, pos)
