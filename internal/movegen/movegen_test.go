@@ -152,7 +152,7 @@ func TestInCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			got := InCheck(pos)
+			got := InCheck(pos, pos.SideToMove)
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}

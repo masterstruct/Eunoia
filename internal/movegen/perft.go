@@ -14,10 +14,12 @@ func Perft(pos board.Position, depth int) uint64 {
 	var nodes uint64
 	movelist := GeneratePseudolegalMoves(pos)
 	for _, move := range movelist {
+		mover := pos.SideToMove
 		newPos := pos.MakeMove(move)
-		if !InCheck(newPos) {
-			nodes += Perft(newPos, depth-1)
+		if InCheck(newPos, mover) {
+			continue
 		}
+		nodes += Perft(newPos, depth-1)
 	}
 	return nodes
 }
@@ -31,8 +33,9 @@ func SplitPerft(pos board.Position, depth int) uint64 {
 	var total uint64
 	movelist := GeneratePseudolegalMoves(pos)
 	for _, move := range movelist {
+		mover := pos.SideToMove
 		newPos := pos.MakeMove(move)
-		if InCheck(newPos) {
+		if InCheck(newPos, mover) {
 			continue
 		}
 		nodes = Perft(newPos, depth-1)
