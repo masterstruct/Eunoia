@@ -46,6 +46,7 @@ func TestNewDoublePush(t *testing.T) {
 		to   Square
 	}{
 		{"e2e4", E2, E4},
+		{"d2d4", D2, D4},
 		{"a2a4", A2, A4},
 		{"h2h4", H2, H4},
 		{"e7e5", E7, E5},

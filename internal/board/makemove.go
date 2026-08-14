@@ -17,11 +17,7 @@ func (pos Position) MakeMove(move Move) Position {
 	isCapture := move.IsCapture()
 	isCastle := move.IsCastle()
 
-	pawnMoveDir := 8
-	if color == Black {
-		pawnMoveDir = -8
-	}
-	epSquare := Square(int(to) - pawnMoveDir)
+	epSquare := Square((int(from) + int(to)) / 2)
 
 	newPos.HalfmoveClock++
 	newPos.EnPassant = NoSquare
@@ -30,7 +26,7 @@ func (pos Position) MakeMove(move Move) Position {
 	if !isCastle {
 		// PlacePiece(sq) overrides the square, therefore if
 		// I've done everything correctly, this is unnecessary:
-		// newPos.RemovePiece(to)
+		newPos.RemovePiece(to)
 
 		if isPromo {
 			newPos.PlacePiece(NewPiece(move.Promo(), color), to)

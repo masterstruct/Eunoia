@@ -208,7 +208,7 @@ func genPawnMoves(pos board.Position) []board.Move {
 					continue
 				case board.Rank2:
 					if !pos.Occupied().IsBitSet(dup) {
-						movelist = append(movelist, board.NewMove(from, dup))
+						movelist = append(movelist, board.NewDoublePush(from, dup))
 					}
 				}
 				movelist = append(movelist, board.NewMove(from, up))
@@ -226,7 +226,7 @@ func genPawnMoves(pos board.Position) []board.Move {
 					continue
 				case board.Rank7:
 					if !pos.Occupied().IsBitSet(ddown) {
-						movelist = append(movelist, board.NewMove(from, ddown))
+						movelist = append(movelist, board.NewDoublePush(from, ddown))
 					}
 				}
 				movelist = append(movelist, board.NewMove(from, down))
