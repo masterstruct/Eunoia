@@ -8,6 +8,8 @@ func IsSquareAttacked(pos *board.Position, sq board.Square, byColor board.Color)
 	if byColor == board.NoColor {
 		return false
 	}
+	// TODO: construct pieces with board.Piece instead of board.NewPiece
+	// to skip multiple NoColor and NoPiece checks
 	if PawnAttacks[byColor.Opponent()][sq]&pos.PieceBB(board.NewPiece(board.Pawn, byColor)) != 0 {
 		return true
 	}
@@ -37,11 +39,16 @@ func IsSquareAttacked(pos *board.Position, sq board.Square, byColor board.Color)
 }
 
 func InCheck(pos *board.Position, color board.Color) bool {
-	// TODO: instead of creating new piece for
-	// pieceBB lookup use stored king square values
+	if color == board.Black {
+		return IsSquareAttacked(
+			pos,
+			pos.BlackKing,
+			color.Opponent(),
+		)
+	}
 	return IsSquareAttacked(
 		pos,
-		pos.PieceBB(board.NewPiece(board.King, color)).LSB(),
+		pos.WhiteKing,
 		color.Opponent(),
 	)
 }
@@ -241,13 +248,12 @@ func genKingMoves(pos *board.Position) []board.Move {
 	movelist := make([]board.Move, 0, 8)
 	color := pos.SideToMove
 
-	// loop over each king
-	// TODO: replace with king square lookup
-	kingBB := pos.PieceBB(board.NewPiece(board.King, color))
-	from := kingBB.LSB()
+	from := pos.WhiteKing
+	if color == board.Black {
+		from = pos.BlackKing
+	}
 
 	attackBB := KingAttacks[from]
-
 	for to := range attackBB.Bits() {
 		toPiece := pos.Board[to]
 
@@ -286,6 +292,11 @@ func genKingMoves(pos *board.Position) []board.Move {
 }
 
 func canCastle(pos *board.Position, kingSq, rookSq board.Square) bool {
+	// TODO: on ParseFEN(), precompute which bits to check
+	// with occupied and IsSquareAttacked.
+	// Compare (rookPath|kingPath)&occupied==0,
+	// then just check if kingPath is attacked.
+
 	rank := kingSq.Rank()
 	kingFile := kingSq.File()
 	rookFile := rookSq.File()

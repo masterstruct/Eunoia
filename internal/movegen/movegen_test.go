@@ -160,6 +160,27 @@ func TestInCheck(t *testing.T) {
 	}
 }
 
+func BenchmarkInCheck(b *testing.B) {
+	fens := []string{
+		"4k3/8/8/8/8/8/4r3/4K3 w - - 0 1",
+		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+		"8/5k2/8/8/2B5/5K2/8/8 b - - 0 1",
+		"4k3/8/3r4/1b6/8/5q2/1n6/4K3 w - - 0 1",
+		"8/3k4/8/8/8/8/4R3/4K3 b - - 0 1",
+	}
+
+	positions := make([]board.Position, len(fens))
+	for i, fen := range fens {
+		pos, _ := board.ParseFEN(fen)
+		positions[i] = pos
+	}
+
+	for i := 0; b.Loop(); i++ {
+		pos := &positions[i%len(positions)]
+		_ = InCheck(pos, pos.SideToMove)
+	}
+}
+
 func TestGenKnightMoves(t *testing.T) {
 	tests := []struct {
 		name string

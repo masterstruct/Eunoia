@@ -75,6 +75,17 @@ func (pos *Position) MakeMove(move Move) Position {
 		if move.IsDoublePush() {
 			newPos.EnPassant = epSquare
 		}
+
+		// king moved - remove castling rights
+		if pieceType == King {
+			if color == Black {
+				newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
+				newPos.BlackKing = to
+			} else {
+				newPos.CastlingRights.Remove(WhiteKingside | WhiteQueenside)
+				newPos.WhiteKing = to
+			}
+		}
 	} else {
 		// castle - move pieces
 		rooks := pos.CastlingRooks()
@@ -84,29 +95,26 @@ func (pos *Position) MakeMove(move Move) Position {
 				newPos.RemovePiece(rooks.BlackKingside)
 				newPos.PlacePiece(BlackKing, G8)
 				newPos.PlacePiece(BlackRook, F8)
+				newPos.BlackKing = G8
 			} else {
 				newPos.RemovePiece(rooks.BlackQueenside)
 				newPos.PlacePiece(BlackKing, C8)
 				newPos.PlacePiece(BlackRook, D8)
+				newPos.BlackKing = C8
 			}
+			newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
 		} else {
 			if move.IsKingsideCastle() {
 				newPos.RemovePiece(rooks.WhiteKingside)
 				newPos.PlacePiece(WhiteKing, G1)
 				newPos.PlacePiece(WhiteRook, F1)
+				newPos.WhiteKing = G1
 			} else {
 				newPos.RemovePiece(rooks.WhiteQueenside)
 				newPos.PlacePiece(WhiteKing, C1)
 				newPos.PlacePiece(WhiteRook, D1)
+				newPos.WhiteKing = C1
 			}
-		}
-	}
-
-	// king moved - remove castling rights
-	if pieceType == King {
-		if color == Black {
-			newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
-		} else {
 			newPos.CastlingRights.Remove(WhiteKingside | WhiteQueenside)
 		}
 	}
