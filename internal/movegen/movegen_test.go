@@ -743,6 +743,15 @@ func TestCanCastle(t *testing.T) {
 			want:   true,
 		},
 		{
+			name:   "blocked queenside path",
+			fen:    "3k4/8/8/8/8/8/8/RN2K3 w Q - 0 2",
+			kingSq: board.E1,
+			rookSq: board.A1,
+			toFile: board.FileC,
+			dir:    -1,
+			want:   false,
+		},
+		{
 			name:   "queenside destination square attacked",
 			fen:    "4k3/8/8/8/8/2r5/8/R3K3 w Q - 0 1",
 			kingSq: board.E1,

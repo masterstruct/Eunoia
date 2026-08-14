@@ -288,38 +288,53 @@ func genKingMoves(pos board.Position) []board.Move {
 func canCastle(pos board.Position, kingSq, rookSq board.Square) bool {
 	rank := kingSq.Rank()
 	kingFile := kingSq.File()
+	rookFile := rookSq.File()
 	occupied := pos.Occupied()
 	occupied.ClearBit(kingSq)
 	occupied.ClearBit(rookSq) // in chess960 king can jump over rook
 
-	var toFile board.File
-	var dir board.File
+	var toFileKing board.File
+	var toFileRook board.File
+	var kingDir board.File
+	var rookDir board.File
 	if rookSq > kingSq {
 		// kingside
-		dir = 1
-		toFile = board.FileG
-		if occupied.IsBitSet(board.NewSquare(board.FileF, rank)) {
-			return false
+		kingDir = 1
+		rookDir = -1
+		toFileKing = board.FileG
+		toFileRook = board.FileF
+		if toFileRook > rookFile {
+			// castling kingside (rook moves left), but because chess960,
+			// rook can start on H1 and actually move left.
+			rookDir = 1
 		}
 	} else {
 		// queenside
-		dir = -1
-		toFile = board.FileC
-		if board.FileC > kingFile {
+		kingDir = -1
+		rookDir = -1
+		toFileKing = board.FileC
+		toFileRook = board.FileD
+		if toFileKing > kingFile {
 			// castling queenside (left), but because chess960,
 			// king can start on B1 and actually move right.
 			// this cannot happen with kingside if position is legal.
-			dir = 1
+			kingDir = 1
 		}
-		if occupied.IsBitSet(board.NewSquare(board.FileD, rank)) {
-			return false
+		if toFileRook > rookFile {
+			rookDir = 1
 		}
 	}
 
 	color := pos.Board[kingSq].Color
-	for file := kingFile; file != toFile+dir; file += dir {
+	for file := kingFile; file != toFileKing+kingDir; file += kingDir {
 		sq := board.NewSquare(file, rank)
 		if occupied.IsBitSet(sq) || IsSquareAttacked(pos, sq, color.Opponent()) {
+			return false
+		}
+	}
+	for file := rookFile; file != toFileRook+rookDir; file += rookDir {
+		sq := board.NewSquare(file, rank)
+		if occupied.IsBitSet(sq) {
 			return false
 		}
 	}
