@@ -325,3 +325,17 @@ func canCastle(pos board.Position, kingSq, rookSq board.Square) bool {
 	}
 	return true
 }
+
+func GeneratePseudolegalMoves(pos board.Position) []board.Move {
+	// a chess position can have up to 218 legal moves
+	movelist := make([]board.Move, 0, 218)
+
+	movelist = append(movelist, genKnightMoves(pos)...)
+	movelist = append(movelist, genBishopMoves(pos)...)
+	movelist = append(movelist, genRookMoves(pos)...)
+	movelist = append(movelist, genQueenMoves(pos)...)
+	movelist = append(movelist, genPawnMoves(pos)...)
+	movelist = append(movelist, genKingMoves(pos)...)
+
+	return movelist
+}
