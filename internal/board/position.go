@@ -16,7 +16,10 @@ type CastlingRookSquares struct {
 	BlackQueenside Square
 }
 
-func (pos *Position) CastlingRooks() CastlingRookSquares {
+// please don't write at the same time :)
+var CastlingRooks CastlingRookSquares
+
+func (pos *Position) NewCastlingRooks() CastlingRookSquares {
 	rs := CastlingRookSquares{NoSquare, NoSquare, NoSquare, NoSquare}
 
 	if pos.CastlingRights.Has(WhiteKingside) {
@@ -35,6 +38,7 @@ func (pos *Position) CastlingRooks() CastlingRookSquares {
 }
 
 func scanRook(rookBB Bitboard, kingSq Square, dir File) Square {
+	// TODO: use PopLSB
 	rank := kingSq.Rank()
 	for file := kingSq.File() + dir; file >= FileA && file <= FileH; file += dir {
 		sq := NewSquare(file, rank)

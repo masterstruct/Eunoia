@@ -113,6 +113,9 @@ func ParseFEN(fen string) (Position, error) {
 	}
 	pos.CastlingRights = rights
 
+	// find castling rooks
+	CastlingRooks = pos.NewCastlingRooks()
+
 	// en passant
 	sq, err := ParseSquare(splits[3])
 	if err != nil {
@@ -208,7 +211,7 @@ func (pos *Position) shredderCastlingString() string {
 	if pos.CastlingRights == NoCastling {
 		return "-"
 	}
-	rooks := pos.CastlingRooks()
+	rooks := CastlingRooks
 	s := ""
 	if pos.CastlingRights.Has(WhiteQueenside) {
 		s += strings.ToUpper(rooks.WhiteQueenside.File().String())

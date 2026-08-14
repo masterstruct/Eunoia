@@ -765,7 +765,7 @@ func TestCastlingRooks(t *testing.T) {
 				t.Fatalf("bad test FEN: %v", err)
 			}
 
-			got := pos.CastlingRooks()
+			got := pos.NewCastlingRooks()
 			if got != tt.want {
 				t.Errorf("\n%v got %v want %v", pos, got, tt.want)
 			}

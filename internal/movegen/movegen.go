@@ -269,7 +269,7 @@ func genKingMoves(pos *board.Position) []board.Move {
 
 	castlingRights := pos.CastlingRights
 	if castlingRights != board.NoCastling {
-		rooks := pos.CastlingRooks()
+		rooks := board.CastlingRooks
 		if color == board.White {
 			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, rooks.WhiteKingside) {
 				movelist = append(movelist, board.NewCastle(from, rooks.WhiteKingside))
