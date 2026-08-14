@@ -8,28 +8,27 @@ func IsSquareAttacked(pos *board.Position, sq board.Square, byColor board.Color)
 	if byColor == board.NoColor {
 		return false
 	}
-	// TODO: construct pieces with board.Piece instead of board.NewPiece
-	// to skip multiple NoColor and NoPiece checks
-	if PawnAttacks[byColor.Opponent()][sq]&pos.PieceBB(board.NewPiece(board.Pawn, byColor)) != 0 {
+
+	if PawnAttacks[byColor.Opponent()][sq]&pos.PieceBB(board.Piece{Type: board.Pawn, Color: byColor}) != 0 {
 		return true
 	}
-	if KnightAttacks[sq]&pos.PieceBB(board.NewPiece(board.Knight, byColor)) != 0 {
+	if KnightAttacks[sq]&pos.PieceBB(board.Piece{Type: board.Knight, Color: byColor}) != 0 {
 		return true
 	}
-	if KingAttacks[sq]&pos.PieceBB(board.NewPiece(board.King, byColor)) != 0 {
+	if KingAttacks[sq]&pos.PieceBB(board.Piece{Type: board.King, Color: byColor}) != 0 {
 		return true
 	}
 
 	occupied := pos.Occupied()
-	rooks := pos.PieceBB(board.NewPiece(board.Rook, byColor))
-	queens := pos.PieceBB(board.NewPiece(board.Queen, byColor))
+	rooks := pos.PieceBB(board.Piece{Type: board.Rook, Color: byColor})
+	queens := pos.PieceBB(board.Piece{Type: board.Queen, Color: byColor})
 
 	rookAttacks := RookAttacks(sq, occupied)
 	if rookAttacks&(rooks|queens) != 0 {
 		return true
 	}
 
-	bishops := pos.PieceBB(board.NewPiece(board.Bishop, byColor))
+	bishops := pos.PieceBB(board.Piece{Type: board.Bishop, Color: byColor})
 
 	bishopAttacks := BishopAttacks(sq, occupied)
 	if bishopAttacks&(bishops|queens) != 0 {
@@ -59,7 +58,7 @@ func genKnightMoves(pos *board.Position) []board.Move {
 	color := pos.SideToMove
 
 	// loop over each knight
-	knightBB := pos.PieceBB(board.NewPiece(board.Knight, color))
+	knightBB := pos.PieceBB(board.Piece{Type: board.Knight, Color: color})
 	for from := range knightBB.Bits() {
 		attackBB := KnightAttacks[from]
 
@@ -87,7 +86,7 @@ func genBishopMoves(pos *board.Position) []board.Move {
 	occupied := pos.Occupied()
 
 	// loop over each bishop
-	bishopBB := pos.PieceBB(board.NewPiece(board.Bishop, color))
+	bishopBB := pos.PieceBB(board.Piece{Type: board.Bishop, Color: color})
 	for from := range bishopBB.Bits() {
 		attackBB := BishopAttacks(from, occupied)
 
@@ -115,7 +114,7 @@ func genRookMoves(pos *board.Position) []board.Move {
 	occupied := pos.Occupied()
 
 	// loop over each rook
-	rookBB := pos.PieceBB(board.NewPiece(board.Rook, color))
+	rookBB := pos.PieceBB(board.Piece{Type: board.Rook, Color: color})
 	for from := range rookBB.Bits() {
 		attackBB := RookAttacks(from, occupied)
 
@@ -143,7 +142,7 @@ func genQueenMoves(pos *board.Position) []board.Move {
 	occupied := pos.Occupied()
 
 	// loop over each queen
-	queenBB := pos.PieceBB(board.NewPiece(board.Queen, color))
+	queenBB := pos.PieceBB(board.Piece{Type: board.Queen, Color: color})
 	for from := range queenBB.Bits() {
 		attackBB := QueenAttacks(from, occupied)
 
@@ -170,7 +169,7 @@ func genPawnMoves(pos *board.Position) []board.Move {
 	movelist := make([]board.Move, 0, 12)
 	color := pos.SideToMove
 
-	pawnBB := pos.PieceBB(board.NewPiece(board.Pawn, color))
+	pawnBB := pos.PieceBB(board.Piece{Type: board.Pawn, Color: color})
 
 	epSq := pos.EnPassant
 	if epSq != board.NoSquare {

@@ -70,18 +70,16 @@ func ParseFEN(fen string) (Position, error) {
 		}
 
 		pt := ParsePieceType(byte(char))
-		color := NoColor
+		color := White
 		if pt != NoPieceType {
 			// char is a chess piece
 			if char&0x20 != 0 {
 				// lowercase => Black
 				color = Black
-			} else {
-				color = White
 			}
 
 			// place piece on the board
-			pos.PlacePiece(NewPiece(pt, color), NewSquare(file, rank))
+			pos.PlacePiece(Piece{pt, color}, NewSquare(file, rank))
 
 			file += 1
 			continue
