@@ -64,6 +64,7 @@ var isSquareAttackedCases = []struct {
 	byColor board.Color
 	want    bool
 }{
+	{"white pawn attacking black knight", "k7/8/8/2n5/3P4/4K3/8/8 b - - 0 1", board.C5, board.White, true},
 	// pawns
 	{"white pawn attacks diagonally forward", "4k3/8/8/8/4P3/8/8/4K3 w - - 0 1", board.D5, board.White, true},
 	{"white pawn attacks other diagonal", "4k3/8/8/8/4P3/8/8/4K3 w - - 0 1", board.F5, board.White, true},
@@ -124,6 +125,11 @@ func TestInCheck(t *testing.T) {
 			name: "white in check by rook",
 			fen:  "4k3/8/8/8/8/8/4r3/4K3 w - - 0 1",
 			want: true,
+		},
+		{
+			name: "white king not in check in kiwipete position",
+			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+			want: false,
 		},
 		{
 			name: "black in check by bishop",

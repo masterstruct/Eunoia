@@ -35,9 +35,6 @@ func InitAttackTables() {
 	for sq := board.A1; sq <= board.H8; sq++ {
 		KnightAttacks[sq] = knightAttacksFrom(sq)
 		KingAttacks[sq] = kingAttacksFrom(sq)
-		if sq.Rank() == board.Rank1 || sq.Rank() == board.Rank8 {
-			continue
-		}
 		PawnAttacks[board.Black][sq] = pawnAttacksFrom(sq, board.Black)
 		PawnAttacks[board.White][sq] = pawnAttacksFrom(sq, board.White)
 	}
