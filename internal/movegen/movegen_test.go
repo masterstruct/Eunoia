@@ -895,3 +895,24 @@ func TestCanCastle_Chess960(t *testing.T) {
 		})
 	}
 }
+
+func TestGeneratePseudolegalMoves(t *testing.T) {
+	pos, err := board.ParseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
+	if err != nil {
+		t.Fatalf("bad FEN: %v", err)
+	}
+
+	total := 0
+	total += len(genKnightMoves(pos))
+	total += len(genBishopMoves(pos))
+	total += len(genRookMoves(pos))
+	total += len(genQueenMoves(pos))
+	total += len(genPawnMoves(pos))
+	total += len(genKingMoves(pos))
+
+	got := len(GeneratePseudolegalMoves(pos))
+
+	if got != total {
+		t.Fatalf("expected %v but got %v\n%v", total, got, pos)
+	}
+}
