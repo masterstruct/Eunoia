@@ -2,6 +2,7 @@ package movegen
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 )
@@ -25,9 +26,10 @@ func Perft(pos board.Position, depth int) uint64 {
 }
 
 func SplitPerft(pos board.Position, depth int) uint64 {
-	if depth == 0 {
+	if depth <= 0 {
 		return 1
 	}
+	start := time.Now()
 
 	var nodes uint64
 	var total uint64
@@ -42,6 +44,14 @@ func SplitPerft(pos board.Position, depth int) uint64 {
 		fmt.Println(move, nodes)
 		total += nodes
 	}
-	fmt.Println("Total:", total)
+	fmt.Println("total:", total)
+	elapsed := time.Since(start)
+	ms := uint64(elapsed.Milliseconds())
+	fmt.Println("time:", ms, "ms")
+	if ms < 1 {
+		ms = 1
+	}
+	fmt.Println("nps:", total*1000/ms)
+
 	return total
 }
