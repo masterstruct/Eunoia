@@ -190,8 +190,8 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 }
 
 type Bitboards struct {
-	pieces [6]Bitboard
-	colors [2]Bitboard
+	Pieces [6]Bitboard
+	Colors [2]Bitboard
 }
 
 type Position struct {
@@ -207,24 +207,24 @@ type Position struct {
 }
 
 func (pos *Position) PieceBB(piece Piece) Bitboard {
-	return pos.pieces[piece.Type] & pos.colors[piece.Color]
+	return pos.Pieces[piece.Type] & pos.Colors[piece.Color]
 }
 
 func (pos *Position) Occupied() Bitboard {
-	return pos.colors[White] | pos.colors[Black]
+	return pos.Colors[White] | pos.Colors[Black]
 }
 
 func (pos *Position) PlacePiece(piece Piece, sq Square) {
-	pos.pieces[piece.Type].SetBit(sq)
-	pos.colors[piece.Color].SetBit(sq)
+	pos.Pieces[piece.Type].SetBit(sq)
+	pos.Colors[piece.Color].SetBit(sq)
 	pos.Board[sq] = piece
 }
 
 func (pos *Position) RemovePiece(sq Square) {
 	piece, ok := pos.PieceOn(sq)
 	if ok {
-		pos.pieces[piece.Type].ClearBit(sq)
-		pos.colors[piece.Color].ClearBit(sq)
+		pos.Pieces[piece.Type].ClearBit(sq)
+		pos.Colors[piece.Color].ClearBit(sq)
 		pos.Board[sq] = NoPiece
 	}
 }

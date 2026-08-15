@@ -665,7 +665,7 @@ func setBits(sqs []Square) Bitboard {
 func allPieceBB(pos *Position) Bitboard {
 	b := EmptyBB
 	for _, pt := range PieceTypes() {
-		b |= pos.pieces[pt]
+		b |= pos.Pieces[pt]
 	}
 	return b
 }

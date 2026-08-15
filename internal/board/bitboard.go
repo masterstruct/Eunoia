@@ -52,18 +52,14 @@ func (bb Bitboard) CountBits() int {
 }
 
 func (bb Bitboard) LSB() Square {
-	if bb == EmptyBB {
-		return NoSquare
-	}
+	// if bb == 0, returns 64 (NoSquare)
 	return Square(bits.TrailingZeros64(uint64(bb)))
 }
 
 func (bb *Bitboard) PopLSB() Square {
-	bit := bb.LSB()
-	if bit != NoSquare {
-		bb.ClearBit(bit)
-	}
-	return bit
+	sq := bb.LSB()
+	*bb &= *bb - 1
+	return sq
 }
 
 /*
