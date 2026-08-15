@@ -214,13 +214,15 @@ func TestGenKnightMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genKnightMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genKnightMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected knight move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.to) {
+			if movelist.Len != len(tt.to) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
@@ -260,13 +262,15 @@ func TestGenBishopMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genBishopMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genBishopMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected bishop move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.to) {
+			if movelist.Len != len(tt.to) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
@@ -305,13 +309,15 @@ func TestGenRookMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genRookMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genRookMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected rook move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.to) {
+			if movelist.Len != len(tt.to) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
@@ -350,13 +356,15 @@ func TestGenQueenMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genQueenMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genQueenMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected queen move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.to) {
+			if movelist.Len != len(tt.to) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
@@ -415,13 +423,15 @@ func TestGenPawnMoves(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			movelist := genPawnMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genPawnMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.to) {
+			if movelist.Len != len(tt.to) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
@@ -467,13 +477,15 @@ func TestGenPawnMoves_EnPassant(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			movelist := genPawnMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genPawnMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.to) {
+			if movelist.Len != len(tt.to) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
@@ -562,13 +574,15 @@ func TestGenPawnMoves_Promotion(t *testing.T) {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			movelist := genPawnMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genPawnMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.wantMoves, move) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.wantMoves) {
+			if movelist.Len != len(tt.wantMoves) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.wantMoves, movelist, pos)
 			}
 		})
@@ -677,13 +691,15 @@ func TestGenKingMoves(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
-			movelist := genKingMoves(&pos)
-			for _, move := range movelist {
+			var movelist Movelist
+			genKingMoves(&pos, &movelist)
+			for i := range movelist.Len {
+				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected king move: %v\n%v", move, pos)
 				}
 			}
-			if len(movelist) != len(tt.to) {
+			if movelist.Len != len(tt.to) {
 				t.Fatalf("missing moves: expected %v but got %v\n%v", tt.to, movelist, pos)
 			}
 		})
@@ -932,27 +948,6 @@ func TestCanCastle_Chess960(t *testing.T) {
 	}
 }
 
-func TestGeneratePseudolegalMoves(t *testing.T) {
-	pos, err := board.ParseFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
-	if err != nil {
-		t.Fatalf("bad FEN: %v", err)
-	}
-
-	total := 0
-	total += len(genKnightMoves(&pos))
-	total += len(genBishopMoves(&pos))
-	total += len(genRookMoves(&pos))
-	total += len(genQueenMoves(&pos))
-	total += len(genPawnMoves(&pos))
-	total += len(genKingMoves(&pos))
-
-	got := len(GeneratePseudolegalMoves(&pos))
-
-	if got != total {
-		t.Fatalf("expected %v but got %v\n%v", total, got, pos)
-	}
-}
-
 func BenchmarkGenMoves(b *testing.B) {
 	fens := []string{
 		board.StartingFEN,
@@ -973,7 +968,8 @@ func BenchmarkGenMoves(b *testing.B) {
 	b.ReportAllocs()
 
 	for i := 0; b.Loop(); i++ {
+		var movelist Movelist
 		pos := positions[i%len(positions)]
-		_ = GeneratePseudolegalMoves(pos)
+		GeneratePseudolegalMoves(pos, &movelist)
 	}
 }

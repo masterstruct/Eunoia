@@ -35,15 +35,17 @@ func perft(pos board.Position, depth int) uint64 {
 	}
 
 	var nodes uint64
-	movelist := GeneratePseudolegalMoves(&pos)
-	for _, move := range movelist {
-		mover := pos.SideToMove
-		newPos := pos.MakeMove(move)
+	var movelist Movelist
+	GeneratePseudolegalMoves(&pos, &movelist)
+	mover := pos.SideToMove
+	for i := 0; i < movelist.Len; i++ {
+		newPos := pos.MakeMove(movelist.Moves[i])
 		if InCheck(&newPos, mover) {
 			continue
 		}
 		nodes += perft(newPos, depth-1)
 	}
+
 	return nodes
 }
 
@@ -51,27 +53,29 @@ func SplitPerft(pos *board.Position, depth int) PerftResult {
 	start := time.Now()
 
 	var total uint64
-	movelist := GeneratePseudolegalMoves(pos)
-	for _, move := range movelist {
-		mover := pos.SideToMove
-		newPos := pos.MakeMove(move)
+	var movelist Movelist
+	GeneratePseudolegalMoves(pos, &movelist)
+
+	mover := pos.SideToMove
+	for i := 0; i < movelist.Len; i++ {
+		newPos := pos.MakeMove(movelist.Moves[i])
 		if InCheck(&newPos, mover) {
 			continue
 		}
 		nodes := perft(newPos, depth-1)
-		fmt.Println(move, nodes)
+		fmt.Println(movelist.Moves[i], nodes)
 		total += nodes
 	}
 
 	elapsed := time.Since(start)
-	nps := uint64(0)
-	if elapsed > 0 {
-		nps = total * 1_000_000_000 / uint64(elapsed.Nanoseconds())
+	ns := uint64(elapsed.Nanoseconds())
+	if ns == 0 {
+		ns = 1
 	}
 
 	return PerftResult{
 		Nodes: total,
 		Time:  elapsed,
-		NPS:   nps,
+		NPS:   total * 1_000_000_000 / ns,
 	}
 }

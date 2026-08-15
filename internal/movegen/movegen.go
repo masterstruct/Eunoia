@@ -4,6 +4,18 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
+const MaxMoves = 256
+
+type Movelist struct {
+	Moves [MaxMoves]board.Move
+	Len   int
+}
+
+func (ml *Movelist) Add(m board.Move) {
+	ml.Moves[ml.Len] = m
+	ml.Len++
+}
+
 func IsSquareAttacked(pos *board.Position, sq board.Square, byColor board.Color) bool {
 	if byColor == board.NoColor {
 		return false
@@ -52,9 +64,7 @@ func InCheck(pos *board.Position, color board.Color) bool {
 	)
 }
 
-func genKnightMoves(pos *board.Position) []board.Move {
-	// a knight can make up to 8 moves
-	movelist := make([]board.Move, 0, 16)
+func genKnightMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -69,20 +79,17 @@ func genKnightMoves(pos *board.Position) []board.Move {
 
 		for captures != 0 {
 			// capture
-			movelist = append(movelist, board.NewCapture(from, captures.PopLSB()))
+			movelist.Add(board.NewCapture(from, captures.PopLSB()))
 		}
 
 		for quiets != 0 {
 			// quiet move
-			movelist = append(movelist, board.NewMove(from, quiets.PopLSB()))
+			movelist.Add(board.NewMove(from, quiets.PopLSB()))
 		}
 	}
-	return movelist
 }
 
-func genBishopMoves(pos *board.Position) []board.Move {
-	// a bishop can make up to 13 moves
-	movelist := make([]board.Move, 0, 13)
+func genBishopMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -97,20 +104,17 @@ func genBishopMoves(pos *board.Position) []board.Move {
 
 		for captures != 0 {
 			// capture
-			movelist = append(movelist, board.NewCapture(from, captures.PopLSB()))
+			movelist.Add(board.NewCapture(from, captures.PopLSB()))
 		}
 
 		for quiets != 0 {
 			// quiet move
-			movelist = append(movelist, board.NewMove(from, quiets.PopLSB()))
+			movelist.Add(board.NewMove(from, quiets.PopLSB()))
 		}
 	}
-	return movelist
 }
 
-func genRookMoves(pos *board.Position) []board.Move {
-	// a rook can make up to 14 moves
-	movelist := make([]board.Move, 0, 14)
+func genRookMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -125,20 +129,17 @@ func genRookMoves(pos *board.Position) []board.Move {
 
 		for captures != 0 {
 			// capture
-			movelist = append(movelist, board.NewCapture(from, captures.PopLSB()))
+			movelist.Add(board.NewCapture(from, captures.PopLSB()))
 		}
 
 		for quiets != 0 {
 			// quiet move
-			movelist = append(movelist, board.NewMove(from, quiets.PopLSB()))
+			movelist.Add(board.NewMove(from, quiets.PopLSB()))
 		}
 	}
-	return movelist
 }
 
-func genQueenMoves(pos *board.Position) []board.Move {
-	// a queen can make up to 27 moves
-	movelist := make([]board.Move, 0, 27)
+func genQueenMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -153,20 +154,17 @@ func genQueenMoves(pos *board.Position) []board.Move {
 
 		for captures != 0 {
 			// capture
-			movelist = append(movelist, board.NewCapture(from, captures.PopLSB()))
+			movelist.Add(board.NewCapture(from, captures.PopLSB()))
 		}
 
 		for quiets != 0 {
 			// quiet move
-			movelist = append(movelist, board.NewMove(from, quiets.PopLSB()))
+			movelist.Add(board.NewMove(from, quiets.PopLSB()))
 		}
 	}
-	return movelist
 }
 
-func genPawnMoves(pos *board.Position) []board.Move {
-	movelist := make([]board.Move, 0, 16)
-
+func genPawnMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	enemyColor := color.Opponent()
 	occupied := pos.Occupied()
@@ -179,7 +177,7 @@ func genPawnMoves(pos *board.Position) []board.Move {
 	if epSq != board.NoSquare {
 		attackers := PawnAttacks[enemyColor][epSq] & pawns
 		for attackers != 0 {
-			movelist = append(movelist, board.NewEnPassant(attackers.PopLSB(), epSq))
+			movelist.Add(board.NewEnPassant(attackers.PopLSB(), epSq))
 		}
 	}
 
@@ -191,12 +189,12 @@ func genPawnMoves(pos *board.Position) []board.Move {
 		for captures != 0 {
 			to := captures.PopLSB()
 			if to.Rank() == board.Rank1 || to.Rank() == board.Rank8 {
-				movelist = append(movelist, board.NewCapturePromo(from, to, board.Knight))
-				movelist = append(movelist, board.NewCapturePromo(from, to, board.Bishop))
-				movelist = append(movelist, board.NewCapturePromo(from, to, board.Rook))
-				movelist = append(movelist, board.NewCapturePromo(from, to, board.Queen))
+				movelist.Add(board.NewCapturePromo(from, to, board.Knight))
+				movelist.Add(board.NewCapturePromo(from, to, board.Bishop))
+				movelist.Add(board.NewCapturePromo(from, to, board.Rook))
+				movelist.Add(board.NewCapturePromo(from, to, board.Queen))
 			} else {
-				movelist = append(movelist, board.NewCapture(from, to))
+				movelist.Add(board.NewCapture(from, to))
 			}
 		}
 
@@ -208,19 +206,19 @@ func genPawnMoves(pos *board.Position) []board.Move {
 			}
 
 			if from.Rank() == board.Rank7 {
-				movelist = append(movelist, board.NewPromo(from, to, board.Knight))
-				movelist = append(movelist, board.NewPromo(from, to, board.Bishop))
-				movelist = append(movelist, board.NewPromo(from, to, board.Rook))
-				movelist = append(movelist, board.NewPromo(from, to, board.Queen))
+				movelist.Add(board.NewPromo(from, to, board.Knight))
+				movelist.Add(board.NewPromo(from, to, board.Bishop))
+				movelist.Add(board.NewPromo(from, to, board.Rook))
+				movelist.Add(board.NewPromo(from, to, board.Queen))
 				continue
 			}
 
-			movelist = append(movelist, board.NewMove(from, to))
+			movelist.Add(board.NewMove(from, to))
 
 			if from.Rank() == board.Rank2 {
 				to2 := from + 16
 				if !occupied.IsBitSet(to2) {
-					movelist = append(movelist, board.NewDoublePush(from, to2))
+					movelist.Add(board.NewDoublePush(from, to2))
 				}
 			}
 		} else {
@@ -230,30 +228,25 @@ func genPawnMoves(pos *board.Position) []board.Move {
 			}
 
 			if from.Rank() == board.Rank2 {
-				movelist = append(movelist, board.NewPromo(from, to, board.Knight))
-				movelist = append(movelist, board.NewPromo(from, to, board.Bishop))
-				movelist = append(movelist, board.NewPromo(from, to, board.Rook))
-				movelist = append(movelist, board.NewPromo(from, to, board.Queen))
+				movelist.Add(board.NewPromo(from, to, board.Knight))
+				movelist.Add(board.NewPromo(from, to, board.Bishop))
+				movelist.Add(board.NewPromo(from, to, board.Rook))
+				movelist.Add(board.NewPromo(from, to, board.Queen))
 				continue
 			}
 
-			movelist = append(movelist, board.NewMove(from, to))
+			movelist.Add(board.NewMove(from, to))
 
 			if from.Rank() == board.Rank7 {
 				to2 := from - 16
 				if !occupied.IsBitSet(to2) {
-					movelist = append(movelist, board.NewDoublePush(from, to2))
+					movelist.Add(board.NewDoublePush(from, to2))
 				}
 			}
 		}
 	}
-
-	return movelist
 }
-
-func genKingMoves(pos *board.Position) []board.Move {
-	// a king can make up to 8 moves
-	movelist := make([]board.Move, 0, 8)
+func genKingMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 
 	var from board.Square
@@ -263,10 +256,10 @@ func genKingMoves(pos *board.Position) []board.Move {
 		if castlingRights != board.NoCastling {
 			rooks := board.CastlingRooks
 			if castlingRights.Has(board.BlackKingside) && canCastle(pos, from, rooks.BlackKingside) {
-				movelist = append(movelist, board.NewCastle(from, rooks.BlackKingside))
+				movelist.Add(board.NewCastle(from, rooks.BlackKingside))
 			}
 			if castlingRights.Has(board.BlackQueenside) && canCastle(pos, from, rooks.BlackQueenside) {
-				movelist = append(movelist, board.NewCastle(from, rooks.BlackQueenside))
+				movelist.Add(board.NewCastle(from, rooks.BlackQueenside))
 			}
 
 		}
@@ -275,10 +268,10 @@ func genKingMoves(pos *board.Position) []board.Move {
 		if castlingRights != board.NoCastling {
 			rooks := board.CastlingRooks
 			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, rooks.WhiteKingside) {
-				movelist = append(movelist, board.NewCastle(from, rooks.WhiteKingside))
+				movelist.Add(board.NewCastle(from, rooks.WhiteKingside))
 			}
 			if castlingRights.Has(board.WhiteQueenside) && canCastle(pos, from, rooks.WhiteQueenside) {
-				movelist = append(movelist, board.NewCastle(from, rooks.WhiteQueenside))
+				movelist.Add(board.NewCastle(from, rooks.WhiteQueenside))
 			}
 		}
 	}
@@ -293,17 +286,15 @@ func genKingMoves(pos *board.Position) []board.Move {
 		// capture
 		to := captures.PopLSB()
 		if pos.Board[to].Color != color {
-			movelist = append(movelist, board.NewCapture(from, to))
+			movelist.Add(board.NewCapture(from, to))
 		}
 	}
 
 	for quiets != 0 {
 		// quiet move
 		to := quiets.PopLSB()
-		movelist = append(movelist, board.NewMove(from, to))
+		movelist.Add(board.NewMove(from, to))
 	}
-
-	return movelist
 }
 
 func canCastle(pos *board.Position, kingSq, rookSq board.Square) bool {
@@ -367,16 +358,11 @@ func canCastle(pos *board.Position, kingSq, rookSq board.Square) bool {
 	return true
 }
 
-func GeneratePseudolegalMoves(pos *board.Position) []board.Move {
-	// a chess position can have up to 218 legal moves
-	movelist := make([]board.Move, 0, 218)
-
-	movelist = append(movelist, genKnightMoves(pos)...)
-	movelist = append(movelist, genBishopMoves(pos)...)
-	movelist = append(movelist, genRookMoves(pos)...)
-	movelist = append(movelist, genQueenMoves(pos)...)
-	movelist = append(movelist, genPawnMoves(pos)...)
-	movelist = append(movelist, genKingMoves(pos)...)
-
-	return movelist
+func GeneratePseudolegalMoves(pos *board.Position, movelist *Movelist) {
+	genKnightMoves(pos, movelist)
+	genBishopMoves(pos, movelist)
+	genRookMoves(pos, movelist)
+	genQueenMoves(pos, movelist)
+	genPawnMoves(pos, movelist)
+	genKingMoves(pos, movelist)
 }
