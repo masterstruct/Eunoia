@@ -952,3 +952,28 @@ func TestGeneratePseudolegalMoves(t *testing.T) {
 		t.Fatalf("expected %v but got %v\n%v", total, got, pos)
 	}
 }
+
+func BenchmarkGenMoves(b *testing.B) {
+	fens := []string{
+		board.StartingFEN,
+		"r1bqkbnr/pppp1ppp/2n5/4p3/1P6/2N5/P1PPPPPP/R1BQKBNR w KQkq - 0 1",
+		"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+		"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
+	}
+
+	positions := make([]*board.Position, 0, len(fens))
+	for _, fen := range fens {
+		pos, err := board.ParseFEN(fen)
+		if err != nil {
+			b.Fatalf("Bad FEN: %v", fen)
+		}
+		positions = append(positions, &pos)
+	}
+
+	b.ReportAllocs()
+
+	for i := 0; b.Loop(); i++ {
+		pos := positions[i%len(positions)]
+		_ = GeneratePseudolegalMoves(pos)
+	}
+}

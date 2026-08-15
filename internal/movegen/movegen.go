@@ -165,86 +165,89 @@ func genQueenMoves(pos *board.Position) []board.Move {
 }
 
 func genPawnMoves(pos *board.Position) []board.Move {
-	// TODO: replace slices. there can be multiple pieces so reallocation happens
-	// a pawn can make up to 12 moves
 	movelist := make([]board.Move, 0, 16)
+
 	color := pos.SideToMove
+	enemyColor := color.Opponent()
 	occupied := pos.Occupied()
+	enemyOcc := pos.Colors[enemyColor]
 
 	pawns := pos.PieceBB(board.Piece{Type: board.Pawn, Color: color})
 
+	// en passant
 	epSq := pos.EnPassant
 	if epSq != board.NoSquare {
-		attackers := PawnAttacks[color.Opponent()][epSq] & pawns
-		for from := range attackers.Bits() {
-			movelist = append(movelist, board.NewEnPassant(from, epSq))
+		attackers := PawnAttacks[enemyColor][epSq] & pawns
+		for attackers != 0 {
+			movelist = append(movelist, board.NewEnPassant(attackers.PopLSB(), epSq))
 		}
 	}
 
-	// loop over each pawn
 	for pawns != 0 {
 		from := pawns.PopLSB()
-		fromRank := from.Rank()
-		captures := PawnAttacks[color][from] & occupied
 
+		// captures
+		captures := PawnAttacks[color][from] & enemyOcc
 		for captures != 0 {
 			to := captures.PopLSB()
-			if pos.Board[to].Color == color {
-				continue
-			}
-			toRank := to.Rank()
-			if toRank == board.Rank1 || toRank == board.Rank8 {
-				// capture promo
+			if to.Rank() == board.Rank1 || to.Rank() == board.Rank8 {
 				movelist = append(movelist, board.NewCapturePromo(from, to, board.Knight))
 				movelist = append(movelist, board.NewCapturePromo(from, to, board.Bishop))
 				movelist = append(movelist, board.NewCapturePromo(from, to, board.Rook))
 				movelist = append(movelist, board.NewCapturePromo(from, to, board.Queen))
-				continue
+			} else {
+				movelist = append(movelist, board.NewCapture(from, to))
 			}
-			movelist = append(movelist, board.NewCapture(from, to))
 		}
 
-		// regular pushes
-		// TODO: bit shifts
+		// pushes
 		if color == board.White {
-			up := from.Up()
-			if !occupied.IsBitSet(up) {
-				switch fromRank {
-				case board.Rank7:
-					// regular promotion
-					movelist = append(movelist, board.NewPromo(from, up, board.Knight))
-					movelist = append(movelist, board.NewPromo(from, up, board.Bishop))
-					movelist = append(movelist, board.NewPromo(from, up, board.Rook))
-					movelist = append(movelist, board.NewPromo(from, up, board.Queen))
-					continue
-				case board.Rank2:
-					dup := up.Up()
-					if !occupied.IsBitSet(dup) {
-						movelist = append(movelist, board.NewDoublePush(from, dup))
-					}
+			to := from + 8
+			if occupied.IsBitSet(to) {
+				continue
+			}
+
+			if from.Rank() == board.Rank7 {
+				movelist = append(movelist, board.NewPromo(from, to, board.Knight))
+				movelist = append(movelist, board.NewPromo(from, to, board.Bishop))
+				movelist = append(movelist, board.NewPromo(from, to, board.Rook))
+				movelist = append(movelist, board.NewPromo(from, to, board.Queen))
+				continue
+			}
+
+			movelist = append(movelist, board.NewMove(from, to))
+
+			if from.Rank() == board.Rank2 {
+				to2 := from + 16
+				if !occupied.IsBitSet(to2) {
+					movelist = append(movelist, board.NewDoublePush(from, to2))
 				}
-				movelist = append(movelist, board.NewMove(from, up))
 			}
 		} else {
-			down := from.Down()
-			if !occupied.IsBitSet(down) {
-				switch fromRank {
-				case board.Rank2:
-					movelist = append(movelist, board.NewPromo(from, down, board.Knight))
-					movelist = append(movelist, board.NewPromo(from, down, board.Bishop))
-					movelist = append(movelist, board.NewPromo(from, down, board.Rook))
-					movelist = append(movelist, board.NewPromo(from, down, board.Queen))
-					continue
-				case board.Rank7:
-					ddown := down.Down()
-					if !occupied.IsBitSet(ddown) {
-						movelist = append(movelist, board.NewDoublePush(from, ddown))
-					}
+			to := from - 8
+			if occupied.IsBitSet(to) {
+				continue
+			}
+
+			if from.Rank() == board.Rank2 {
+				movelist = append(movelist, board.NewPromo(from, to, board.Knight))
+				movelist = append(movelist, board.NewPromo(from, to, board.Bishop))
+				movelist = append(movelist, board.NewPromo(from, to, board.Rook))
+				movelist = append(movelist, board.NewPromo(from, to, board.Queen))
+				continue
+			}
+
+			movelist = append(movelist, board.NewMove(from, to))
+
+			if from.Rank() == board.Rank7 {
+				to2 := from - 16
+				if !occupied.IsBitSet(to2) {
+					movelist = append(movelist, board.NewDoublePush(from, to2))
 				}
-				movelist = append(movelist, board.NewMove(from, down))
 			}
 		}
 	}
+
 	return movelist
 }
 
