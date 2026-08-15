@@ -74,7 +74,7 @@ func TestPerft(t *testing.T) {
 			want := tt.want[depth-1]
 
 			if got.Nodes != want {
-				t.Fatalf("depth %d: got %d, want %d", depth, got, want)
+				t.Errorf("depth %d: got %d, want %d", depth, got.Nodes, want)
 			}
 			fmt.Println("total:", got.Nodes)
 			fmt.Println("time:", got.Time)
