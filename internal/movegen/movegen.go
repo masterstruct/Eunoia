@@ -246,6 +246,7 @@ func genPawnMoves(pos *board.Position, movelist *Movelist) {
 		}
 	}
 }
+
 func genKingMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 
