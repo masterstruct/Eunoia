@@ -193,7 +193,7 @@ func TestMagicAttacksCorrect(t *testing.T) {
 
 			if got != want {
 				t.Fatalf("square %v blockers %v: got %v want %v",
-					sq, uint64(blockers), uint64(got), uint64(want))
+					sq, blockers, got, want)
 			}
 		}
 	}
