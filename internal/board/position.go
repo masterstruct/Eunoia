@@ -16,9 +16,6 @@ type CastlingRookSquares struct {
 	BlackQueenside Square
 }
 
-// please don't write at the same time :)
-var CastlingRooks CastlingRookSquares
-
 func (pos *Position) NewCastlingRooks() CastlingRookSquares {
 	rs := CastlingRookSquares{NoSquare, NoSquare, NoSquare, NoSquare}
 
@@ -199,6 +196,7 @@ type Position struct {
 	Board          [64]Piece
 	SideToMove     Color
 	CastlingRights CastlingRights
+	CastlingRookSq CastlingRookSquares
 	EnPassant      Square
 	HalfmoveClock  uint8
 	Ply            uint16

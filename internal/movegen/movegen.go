@@ -198,7 +198,7 @@ func genPawnMoves(pos *board.Position, movelist *Movelist) {
 				continue
 			}
 
-			if from.Rank() == board.Rank7 {
+			if to.Rank() == board.Rank8 {
 				movelist.Add(board.NewPromo(from, to, board.Knight))
 				movelist.Add(board.NewPromo(from, to, board.Bishop))
 				movelist.Add(board.NewPromo(from, to, board.Rook))
@@ -220,7 +220,7 @@ func genPawnMoves(pos *board.Position, movelist *Movelist) {
 				continue
 			}
 
-			if from.Rank() == board.Rank2 {
+			if to.Rank() == board.Rank1 {
 				movelist.Add(board.NewPromo(from, to, board.Knight))
 				movelist.Add(board.NewPromo(from, to, board.Bishop))
 				movelist.Add(board.NewPromo(from, to, board.Rook))
@@ -245,20 +245,16 @@ func genKingMoves(pos *board.Position, movelist *Movelist) {
 
 	castlingRights := pos.CastlingRights
 	from := pos.KingSq[color]
-	if color == board.Black {
-		if castlingRights != board.NoCastling {
-			rooks := board.CastlingRooks
+	if castlingRights != board.NoCastling {
+		rooks := pos.CastlingRookSq
+		if color == board.Black {
 			if castlingRights.Has(board.BlackKingside) && canCastle(pos, from, rooks.BlackKingside) {
 				movelist.Add(board.NewCastle(from, rooks.BlackKingside))
 			}
 			if castlingRights.Has(board.BlackQueenside) && canCastle(pos, from, rooks.BlackQueenside) {
 				movelist.Add(board.NewCastle(from, rooks.BlackQueenside))
 			}
-
-		}
-	} else {
-		if castlingRights != board.NoCastling {
-			rooks := board.CastlingRooks
+		} else {
 			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, rooks.WhiteKingside) {
 				movelist.Add(board.NewCastle(from, rooks.WhiteKingside))
 			}
@@ -268,24 +264,18 @@ func genKingMoves(pos *board.Position, movelist *Movelist) {
 		}
 	}
 
-	occupied := pos.Occupied()
-
 	attacks := KingAttacks[from]
 	captures := attacks & pos.Colors[color.Opponent()]
-	quiets := attacks &^ occupied
+	quiets := attacks &^ pos.Occupied()
 
 	for captures != 0 {
 		// capture
-		to := captures.PopLSB()
-		if pos.Board[to].Color != color {
-			movelist.Add(board.NewCapture(from, to))
-		}
+		movelist.Add(board.NewCapture(from, captures.PopLSB()))
 	}
 
 	for quiets != 0 {
 		// quiet move
-		to := quiets.PopLSB()
-		movelist.Add(board.NewMove(from, to))
+		movelist.Add(board.NewMove(from, quiets.PopLSB()))
 	}
 }
 

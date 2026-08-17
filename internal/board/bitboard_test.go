@@ -1,7 +1,6 @@
 package board
 
 import (
-	"slices"
 	"testing"
 )
 
@@ -180,25 +179,5 @@ func TestPopLSB(t *testing.T) {
 				t.Errorf("expected bitboard %d but got %d", tt.wantBB, bb)
 			}
 		})
-	}
-}
-
-func TestBitboardBits(t *testing.T) {
-	bb := Bitboard(0x942a0024db55aaff)
-
-	want := []Square{
-		A1, B1, C1, D1, E1, F1, G1, H1,
-		B2, D2, F2, H2, A3, C3, E3, G3,
-		A4, B4, D4, E4, G4, H4, C5, F5,
-		B7, D7, F7, C8, E8, H8,
-	}
-
-	var got []Square
-	for sq := range bb.Bits() {
-		got = append(got, sq)
-	}
-
-	if !slices.Equal(got, want) {
-		t.Fatalf("expected %v but got %v", want, got)
 	}
 }

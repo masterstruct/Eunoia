@@ -41,7 +41,7 @@ func (pos *Position) MakeMove(move Move) Position {
 
 		// rook move - remove castling rights
 		if pieceType == Rook {
-			rooks := CastlingRooks
+			rooks := pos.CastlingRookSq
 			switch from {
 			case rooks.WhiteQueenside:
 				newPos.CastlingRights.Remove(WhiteQueenside)
@@ -56,7 +56,7 @@ func (pos *Position) MakeMove(move Move) Position {
 
 		// rook captured - remove castling rights
 		if isCapture && capturedPiece.Type == Rook {
-			rooks := CastlingRooks
+			rooks := pos.CastlingRookSq
 			switch to {
 			case rooks.WhiteQueenside:
 				newPos.CastlingRights.Remove(WhiteQueenside)
@@ -87,7 +87,7 @@ func (pos *Position) MakeMove(move Move) Position {
 		}
 	} else {
 		// castle - move pieces
-		rooks := CastlingRooks
+		rooks := pos.CastlingRookSq
 
 		if color == Black {
 			if move.IsKingsideCastle() {
