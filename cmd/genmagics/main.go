@@ -21,7 +21,7 @@ func findMagic(isRook bool, sq board.Square, indexBits uint8, rng *rand.Rand) (m
 
 	for {
 		magic := rng.Uint64() & rng.Uint64() & rng.Uint64()
-		entry := movegen.MagicEntry{Mask: mask, Magic: magic, Shift: 64 - indexBits}
+		entry := movegen.MagicEntry{Mask: mask, Magic: board.Bitboard(magic), Shift: 64 - indexBits}
 
 		table, ok := movegen.TryMakeTable(isRook, sq, &entry)
 		if ok {
@@ -34,7 +34,7 @@ func writeMagics(name string, magics *[64]movegen.MagicEntry, w io.Writer) {
 	fmt.Fprintf(w, "var %vMagics = [64]MagicEntry{\n", name)
 	for sq := board.A1; sq <= board.H8; sq += 2 {
 		entry, entry2 := magics[sq], magics[sq+1]
-		fmt.Fprintf(w, "    {Magic: 0x%016x}, {Magic: 0x%016x},\n", entry.Magic, entry2.Magic)
+		fmt.Fprintf(w, "    {Magic: 0x%016x}, {Magic: 0x%016x},\n", uint64(entry.Magic), uint64(entry2.Magic))
 	}
 	fmt.Fprintf(w, "}\n\n")
 }

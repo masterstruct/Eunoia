@@ -31,14 +31,13 @@ func BishopMask(sq board.Square) board.Bitboard {
 
 type MagicEntry struct {
 	Mask   board.Bitboard
-	Magic  uint64
+	Magic  board.Bitboard
 	Shift  uint8
 	Offset int
 }
 
 func MagicIndex(entry *MagicEntry, occupied board.Bitboard) int {
-	hash := uint64(occupied&entry.Mask) * entry.Magic
-	return int(hash>>entry.Shift) + entry.Offset
+	return int(((occupied&entry.Mask)*entry.Magic)>>entry.Shift) + entry.Offset
 }
 
 // iterate over all subsets of a bitboard
