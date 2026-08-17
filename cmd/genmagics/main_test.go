@@ -1,1 +1,1 @@
-package genmagics
+package main

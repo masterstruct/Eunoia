@@ -25,10 +25,10 @@ func BishopMask(sq board.Square) board.Bitboard {
 	return mask &^ board.EdgesBB
 }
 
-var rookMagics [64]MagicEntry
-var bishopMagics [64]MagicEntry
-var rookMoves [64][]board.Bitboard
-var bishopMoves [64][]board.Bitboard
+var RookMagics [64]MagicEntry
+var BishopMagics [64]MagicEntry
+var RookMoves [64][]board.Bitboard
+var BishopMoves [64][]board.Bitboard
 
 type MagicEntry struct {
 	Mask      board.Bitboard
