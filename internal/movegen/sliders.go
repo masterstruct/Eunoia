@@ -23,7 +23,7 @@ func BishopAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard 
 	return rayAttacks(sq, bishopDirs, occupied)
 }
 
-func QueenAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func QueenAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
 	return rayAttacks(sq, rookDirs, occupied) | rayAttacks(sq, bishopDirs, occupied)
 }
 
@@ -58,4 +58,8 @@ func RookAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
 
 func BishopAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
 	return BishopMoves[sq][MagicIndex(&BishopMagics[sq], occupied)]
+}
+
+func QueenAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
+	return RookAttacks(sq, occupied) | BishopAttacks(sq, occupied)
 }

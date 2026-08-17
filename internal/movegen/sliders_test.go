@@ -82,7 +82,7 @@ func TestRookAttacks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.occupied.SetBit(tt.sq)
 
-			got := RookAttacksSlow(tt.sq, tt.occupied)
+			got := RookAttacks(tt.sq, tt.occupied)
 			if got != tt.want {
 				t.Errorf("RookAttacks(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.occupied, got, tt.want)
 			}
@@ -147,7 +147,7 @@ func TestBishopAttacks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.occupied.SetBit(tt.sq)
 
-			got := BishopAttacksSlow(tt.sq, tt.occupied)
+			got := BishopAttacks(tt.sq, tt.occupied)
 			if got != tt.want {
 				t.Errorf("BishopAttacks(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.occupied, got, tt.want)
 			}
@@ -174,7 +174,7 @@ func TestQueenAttacks(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.occupied.SetBit(tt.sq)
 
-			want := RookAttacksSlow(tt.sq, tt.occupied) | BishopAttacksSlow(tt.sq, tt.occupied)
+			want := RookAttacks(tt.sq, tt.occupied) | BishopAttacks(tt.sq, tt.occupied)
 			got := QueenAttacks(tt.sq, tt.occupied)
 			if got != want {
 				t.Errorf("QueenAttacks(%v, %v):\ngot:\n%v\nwant (rook|bishop):\n%v", tt.sq, tt.occupied, got, want)
