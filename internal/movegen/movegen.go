@@ -35,14 +35,14 @@ func IsSquareAttacked(pos *board.Position, sq board.Square, byColor board.Color)
 	rooks := pos.PieceBB(board.Piece{Type: board.Rook, Color: byColor})
 	queens := pos.PieceBB(board.Piece{Type: board.Queen, Color: byColor})
 
-	rookAttacks := RookAttacks(sq, occupied)
+	rookAttacks := RookAttacksSlow(sq, occupied)
 	if rookAttacks&(rooks|queens) != 0 {
 		return true
 	}
 
 	bishops := pos.PieceBB(board.Piece{Type: board.Bishop, Color: byColor})
 
-	bishopAttacks := BishopAttacks(sq, occupied)
+	bishopAttacks := BishopAttacksSlow(sq, occupied)
 	if bishopAttacks&(bishops|queens) != 0 {
 		return true
 	}
@@ -91,7 +91,7 @@ func genBishopMoves(pos *board.Position, movelist *Movelist) {
 	bishops := pos.PieceBB(board.Piece{Type: board.Bishop, Color: color})
 	for bishops != 0 {
 		from := bishops.PopLSB()
-		attacks := BishopAttacks(from, occupied)
+		attacks := BishopAttacksSlow(from, occupied)
 		captures := attacks & opponents
 		quiets := attacks &^ occupied
 
@@ -116,7 +116,7 @@ func genRookMoves(pos *board.Position, movelist *Movelist) {
 	rooks := pos.PieceBB(board.Piece{Type: board.Rook, Color: color})
 	for rooks != 0 {
 		from := rooks.PopLSB()
-		attacks := RookAttacks(from, occupied)
+		attacks := RookAttacksSlow(from, occupied)
 		captures := attacks & opponents
 		quiets := attacks &^ occupied
 
