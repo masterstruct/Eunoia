@@ -103,11 +103,11 @@ func ParseFEN(fen string) (Position, error) {
 	}
 
 	// king squares
-	pos.WhiteKing = whiteKingBB.LSB()
-	pos.BlackKing = blackKingBB.LSB()
+	pos.KingSq[Black] = blackKingBB.LSB()
+	pos.KingSq[White] = whiteKingBB.LSB()
 
 	// castling rights
-	rights, err := ParseCastlingRights(splits[2], pos.WhiteKing, pos.BlackKing)
+	rights, err := ParseCastlingRights(splits[2], pos.KingSq[White], pos.KingSq[Black])
 	if err != nil {
 		return pos, err
 	}

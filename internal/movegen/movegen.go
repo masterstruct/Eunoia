@@ -50,16 +50,9 @@ func IsSquareAttacked(pos *board.Position, sq board.Square, byColor board.Color)
 }
 
 func InCheck(pos *board.Position, color board.Color) bool {
-	if color == board.Black {
-		return IsSquareAttacked(
-			pos,
-			pos.BlackKing,
-			color.Opponent(),
-		)
-	}
 	return IsSquareAttacked(
 		pos,
-		pos.WhiteKing,
+		pos.KingSq[color],
 		color.Opponent(),
 	)
 }
@@ -250,10 +243,9 @@ func genPawnMoves(pos *board.Position, movelist *Movelist) {
 func genKingMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 
-	var from board.Square
 	castlingRights := pos.CastlingRights
+	from := pos.KingSq[color]
 	if color == board.Black {
-		from = pos.BlackKing
 		if castlingRights != board.NoCastling {
 			rooks := board.CastlingRooks
 			if castlingRights.Has(board.BlackKingside) && canCastle(pos, from, rooks.BlackKingside) {
@@ -265,7 +257,6 @@ func genKingMoves(pos *board.Position, movelist *Movelist) {
 
 		}
 	} else {
-		from = pos.WhiteKing
 		if castlingRights != board.NoCastling {
 			rooks := board.CastlingRooks
 			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, rooks.WhiteKingside) {

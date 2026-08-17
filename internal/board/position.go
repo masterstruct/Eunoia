@@ -23,16 +23,16 @@ func (pos *Position) NewCastlingRooks() CastlingRookSquares {
 	rs := CastlingRookSquares{NoSquare, NoSquare, NoSquare, NoSquare}
 
 	if pos.CastlingRights.Has(WhiteKingside) {
-		rs.WhiteKingside = scanRook(pos.PieceBB(WhiteRook), pos.WhiteKing, +1)
+		rs.WhiteKingside = scanRook(pos.PieceBB(WhiteRook), pos.KingSq[White], +1)
 	}
 	if pos.CastlingRights.Has(WhiteQueenside) {
-		rs.WhiteQueenside = scanRook(pos.PieceBB(WhiteRook), pos.WhiteKing, -1)
+		rs.WhiteQueenside = scanRook(pos.PieceBB(WhiteRook), pos.KingSq[White], -1)
 	}
 	if pos.CastlingRights.Has(BlackKingside) {
-		rs.BlackKingside = scanRook(pos.PieceBB(BlackRook), pos.BlackKing, +1)
+		rs.BlackKingside = scanRook(pos.PieceBB(BlackRook), pos.KingSq[Black], +1)
 	}
 	if pos.CastlingRights.Has(BlackQueenside) {
-		rs.BlackQueenside = scanRook(pos.PieceBB(BlackRook), pos.BlackKing, -1)
+		rs.BlackQueenside = scanRook(pos.PieceBB(BlackRook), pos.KingSq[Black], -1)
 	}
 	return rs
 }
@@ -196,14 +196,14 @@ type Bitboards struct {
 
 type Position struct {
 	Bitboards
-	Board                [64]Piece
-	SideToMove           Color
-	CastlingRights       CastlingRights
-	EnPassant            Square
-	HalfmoveClock        uint8
-	Ply                  uint16
-	Hash                 uint64
-	WhiteKing, BlackKing Square
+	Board          [64]Piece
+	SideToMove     Color
+	CastlingRights CastlingRights
+	EnPassant      Square
+	HalfmoveClock  uint8
+	Ply            uint16
+	Hash           uint64
+	KingSq         [2]Square
 }
 
 func (pos *Position) PieceBB(piece Piece) Bitboard {
