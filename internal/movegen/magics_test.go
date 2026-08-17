@@ -77,3 +77,32 @@ func TestBishopMask(t *testing.T) {
 		})
 	}
 }
+
+func TestSubsets(t *testing.T) {
+	mask := board.Bitboard(0b100011)
+
+	var got []board.Bitboard
+	for subset := range Subsets(mask) {
+		got = append(got, subset)
+	}
+
+	want := []board.Bitboard{
+		0b100011,
+		0b100010,
+		0b100001,
+		0b100000,
+		0b000011,
+		0b000010,
+		0b000001,
+		0b000000,
+	}
+
+	if len(got) != len(want) {
+		t.Fatalf("expected %v subsets, got %v", len(want), len(got))
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("expected %b but got %b", want[i], got[i])
+		}
+	}
+}

@@ -41,3 +41,19 @@ func MagicIndex(entry *MagicEntry, occupied board.Bitboard) int {
 	hash := uint64(occupied) * entry.Magic
 	return int(hash >> entry.Shift)
 }
+
+// iterate over all subsets of a bitboard
+func Subsets(mask board.Bitboard) func(yield func(board.Bitboard) bool) {
+	return func(yield func(board.Bitboard) bool) {
+		subset := mask
+		for {
+			if !yield(subset) {
+				return
+			}
+			if subset == 0 {
+				return
+			}
+			subset = (subset - 1) & mask
+		}
+	}
+}
