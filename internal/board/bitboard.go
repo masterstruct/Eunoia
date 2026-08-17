@@ -8,8 +8,12 @@ import (
 
 type Bitboard uint64
 
-const FullBB Bitboard = ^Bitboard(0)
-const EmptyBB Bitboard = 0
+const (
+	FullBB  Bitboard = ^Bitboard(0)
+	EmptyBB Bitboard = 0
+
+	EdgesBB Bitboard = 0xff818181818181ff
+)
 
 var RankBB = [8]Bitboard{
 	0x00000000000000FF,

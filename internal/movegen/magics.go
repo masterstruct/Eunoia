@@ -20,5 +20,7 @@ func rookMask(sq board.Square) board.Bitboard {
 }
 
 func bishopMask(sq board.Square) board.Bitboard {
-	return board.EmptyBB
+	var mask board.Bitboard
+	mask = BishopAttacks(sq, board.EmptyBB)
+	return mask &^ board.EdgesBB
 }
