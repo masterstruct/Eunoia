@@ -34,7 +34,7 @@ func writeMagics(name string, magics *[64]movegen.MagicEntry, w io.Writer) {
 	fmt.Fprintf(w, "var %vMagics = [64]MagicEntry{\n", name)
 	for sq := board.A1; sq <= board.H8; sq++ {
 		entry := magics[sq]
-		fmt.Fprintf(w, "    {Mask: 0x%016x, Magic: 0x%016x, Shift: %v},\n", uint64(entry.Mask), entry.Magic, entry.Shift)
+		fmt.Fprintf(w, "    {Magic: 0x%016x, Shift: %v},\n", entry.Magic, entry.Shift)
 	}
 	fmt.Fprintf(w, "}\n\n")
 }
