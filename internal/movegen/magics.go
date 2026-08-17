@@ -18,3 +18,7 @@ func rookMask(sq board.Square) board.Bitboard {
 	mask.ClearBit(sq)
 	return mask
 }
+
+func bishopMask(sq board.Square) board.Bitboard {
+	return board.EmptyBB
+}
