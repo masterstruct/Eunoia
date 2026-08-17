@@ -44,22 +44,19 @@ func main() {
 
 	fmt.Println("Finding magics for bishops...")
 	for sq := board.A1; sq <= board.H8; sq++ {
-		mask := movegen.RookMask(sq)
+		mask := movegen.BishopMask(sq)
 
-		entry, table := findMagic(false, sq, uint8(mask.CountBits()), rng)
+		entry, _ := findMagic(false, sq, uint8(mask.CountBits()), rng)
 
 		movegen.BishopMagics[sq] = entry
-		movegen.BishopMoves[sq] = table
 	}
 
 	fmt.Println("Finding magics for rooks...")
 	for sq := board.A1; sq <= board.H8; sq++ {
 		mask := movegen.RookMask(sq)
 
-		entry, table := findMagic(true, sq, uint8(mask.CountBits()), rng)
-
+		entry, _ := findMagic(true, sq, uint8(mask.CountBits()), rng)
 		movegen.RookMagics[sq] = entry
-		movegen.RookMoves[sq] = table
 	}
 
 	writeMagics("Rook", &movegen.RookMagics, os.Stdout)

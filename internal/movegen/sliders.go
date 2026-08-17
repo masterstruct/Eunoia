@@ -53,11 +53,11 @@ func rayAttacks(sq board.Square, dirs [][2]int, occupied board.Bitboard) board.B
 }
 
 func RookAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
-	return RookMoves[sq][MagicIndex(&RookMagics[sq], occupied)]
+	return RookMoves[MagicIndex(&RookMagics[sq], occupied)]
 }
 
 func BishopAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
-	return BishopMoves[sq][MagicIndex(&BishopMagics[sq], occupied)]
+	return BishopMoves[MagicIndex(&BishopMagics[sq], occupied)]
 }
 
 func QueenAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
