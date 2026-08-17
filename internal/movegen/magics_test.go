@@ -31,7 +31,7 @@ func TestRookMask(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.sq.String(), func(t *testing.T) {
-			got := rookMask(tt.sq)
+			got := RookMask(tt.sq)
 
 			if got != tt.want {
 				t.Errorf("expected %v, but got %v", tt.want, got)
@@ -69,7 +69,7 @@ func TestBishopMask(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.sq.String(), func(t *testing.T) {
-			got := bishopMask(tt.sq)
+			got := BishopMask(tt.sq)
 
 			if got != tt.want {
 				t.Errorf("expected %v, but got %v", tt.want, got)

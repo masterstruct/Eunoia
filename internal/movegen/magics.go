@@ -2,7 +2,7 @@ package movegen
 
 import "github.com/masterstruct/Eunoia/internal/board"
 
-func rookMask(sq board.Square) board.Bitboard {
+func RookMask(sq board.Square) board.Bitboard {
 	file := sq.File()
 	rank := sq.Rank()
 	var mask board.Bitboard
@@ -19,7 +19,7 @@ func rookMask(sq board.Square) board.Bitboard {
 	return mask
 }
 
-func bishopMask(sq board.Square) board.Bitboard {
+func BishopMask(sq board.Square) board.Bitboard {
 	var mask board.Bitboard
 	mask = BishopAttacks(sq, board.EmptyBB)
 	return mask &^ board.EdgesBB
@@ -31,15 +31,15 @@ var rookMoves [64][]board.Bitboard
 var bishopMoves [64][]board.Bitboard
 
 type MagicEntry struct {
-	Mask  board.Bitboard
-	Magic uint64
-	Shift uint8
+	Mask      board.Bitboard
+	Magic     uint64
+	IndexBits uint8
 }
 
 func MagicIndex(entry *MagicEntry, occupied board.Bitboard) int {
 	occupied &= entry.Mask
 	hash := uint64(occupied) * entry.Magic
-	return int(hash >> entry.Shift)
+	return int(hash >> (64 - entry.IndexBits))
 }
 
 // iterate over all subsets of a bitboard
