@@ -49,6 +49,12 @@ var perftPositions = []struct {
 		depth: 4,
 		want:  []uint64{46, 2079, 89890, 3894594, 164075551, 6923051137, 287188994746, 11923589843526, 490154852788714},
 	},
+	{
+		name:  "position 7",
+		fen:   "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/P2P2PP/q2Q1R1K w kq - 0 2",
+		depth: 4,
+		want:  []uint64{37, 1766, 67665, 3251340, 126325537, 6084758848, 238196369383},
+	},
 }
 
 func TestPerft(t *testing.T) {
