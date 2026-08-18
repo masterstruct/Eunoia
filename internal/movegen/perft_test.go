@@ -7,6 +7,15 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
+func TestPerft(t *testing.T) {
+	runPerftTests(t, perftPositions, false)
+}
+
+func TestPerft_Chess960(t *testing.T) {
+	withChess960(t)
+	runPerftTests(t, perftPositionsChess960, false)
+}
+
 var perftPositions = []struct {
 	name  string
 	fen   string
@@ -57,10 +66,66 @@ var perftPositions = []struct {
 	},
 }
 
-func TestPerft(t *testing.T) {
+var perftPositionsChess960 = []struct {
+	name  string
+	fen   string
+	depth int
+	want  []uint64
+}{
+	{
+		name:  "position 1",
+		fen:   "bqnb1rkr/pp3ppp/3ppn2/2p5/5P2/P2P4/NPP1P1PP/BQ1BNRKR w HFhf - 2 9",
+		depth: 5,
+		want:  []uint64{21, 528, 12189, 326672, 8146062, 227689589},
+	},
+	{
+		name:  "position 93",
+		fen:   "1nrbkr1q/1pppp1pp/1n6/p4p2/N1b4P/8/PPPPPPPB/N1RBKR1Q w FCfc - 2 9",
+		depth: 4,
+		want:  []uint64{27, 862, 24141, 755171, 22027695, 696353497},
+	},
+	{
+		name:  "position 175",
+		fen:   "nrnk1rbb/p1p2ppp/3pq3/Qp2p3/1P1P4/8/P1P1PPPP/NRN1KRBB w fb - 2 9",
+		depth: 4,
+		want:  []uint64{28, 873, 25683, 791823, 23868737, 747991356},
+	},
+	{
+		name:  "position 246",
+		fen:   "1rbkqbr1/ppp1pppp/1n5n/3p4/3P4/1PP3P1/P3PP1P/NRBKQBNR w HBb - 1 9",
+		depth: 5,
+		want:  []uint64{27, 752, 20686, 606783, 16986290, 521817800},
+	},
+	{
+		name:  "position 519",
+		fen:   "r1bqk1rb/pppnpppp/5n2/3p4/2P3PP/2N5/PP1PPP2/R1BQKNRB w GAga - 1 9",
+		depth: 4,
+		want:  []uint64{32, 821, 27121, 733155, 24923473, 710765657},
+	},
+	{
+		name:  "position 787",
+		fen:   "1rqknrnb/2pp1ppp/p3p3/1p6/P2P4/5bP1/1PP1PP1P/BRQKNRNB w FBfb - 0 9",
+		depth: 4,
+		want:  []uint64{24, 737, 20052, 598439, 17948681, 536330341},
+	},
+	{
+		name:  "position 889",
+		fen:   "rqkb1rnn/1pp1pp1p/p5p1/1b1p4/3P4/P5P1/RPP1PP1P/1QKBBRNN w Ffa - 1 9",
+		depth: 5,
+		want:  []uint64{21, 505, 11592, 290897, 7147063, 188559137},
+	},
+}
+
+func runPerftTests(t *testing.T, positions []struct {
+	name  string
+	fen   string
+	depth int
+	want  []uint64
+}, splitperft bool) {
+	t.Helper()
 	var total uint64
 	var n uint64
-	for _, tt := range perftPositions {
+	for _, tt := range positions {
 		depth := tt.depth
 		t.Run(tt.name, func(t *testing.T) {
 			pos, err := board.ParseFEN(tt.fen)
@@ -71,17 +136,22 @@ func TestPerft(t *testing.T) {
 			if depth < 1 {
 				t.Fatalf("depth must be >= 1: %d", depth)
 			}
-
 			if depth > len(tt.want) {
 				depth = len(tt.want)
 			}
 
-			got := Perft(&pos, depth)
+			var got PerftResult
+			if splitperft {
+				got = SplitPerft(&pos, depth)
+			} else {
+				got = Perft(&pos, depth)
+			}
 			want := tt.want[depth-1]
 
 			if got.Nodes != want {
 				t.Errorf("depth %d: got %d, want %d", depth, got.Nodes, want)
 			}
+
 			fmt.Println("total:", got.Nodes)
 			fmt.Println("time:", got.Time)
 			fmt.Println("nps:", got.NPS)
@@ -89,5 +159,8 @@ func TestPerft(t *testing.T) {
 			n++
 		})
 	}
-	fmt.Println("Average nps:", total/n)
+
+	if n > 0 {
+		fmt.Println("Average nps:", total/n)
+	}
 }
