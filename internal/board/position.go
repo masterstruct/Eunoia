@@ -110,80 +110,78 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRig
 		return NoCastling, fmt.Errorf("%w: %q", ErrMixedCastlingNotation, s)
 	}
 
-	var cr CastlingRights
+	var rights CastlingRights
 
 	// standard KQkq form
 	switch s[0] {
 	case 'K', 'Q', 'k', 'q':
 		for _, char := range s {
-			var castling CastlingRights
+			var newRights CastlingRights
 			switch char {
 			case 'k':
-				castling = BlackKingside
+				newRights = BlackKingside
 			case 'q':
-				castling = BlackQueenside
+				newRights = BlackQueenside
 			case 'K':
-				castling = WhiteKingside
+				newRights = WhiteKingside
 			case 'Q':
-				castling = WhiteQueenside
+				newRights = WhiteQueenside
 			default:
 				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
 			}
 
-			if cr&castling != 0 {
+			// newRights already in rights - duplicate entry
+			if rights.Has(newRights) {
 				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
 			}
-			cr |= castling
+			rights |= newRights
 		}
-		return cr, nil
+		return rights, nil
 	}
 
 	// shredder form
+	var file File
+	var kingFile File
+	var queenside CastlingRights
+	var kingside CastlingRights
+
 	for _, char := range s {
 		// validate and normalize file
-		var file File
+
 		switch {
 		case 'A' <= char && char <= 'H':
+			// white
 			file = File(char - 'A')
-			kingFile := whiteKingSq.File()
-
-			if file == kingFile {
-				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
-			}
-
-			last := cr
-			if file < kingFile {
-				cr |= WhiteQueenside
-			} else {
-				cr |= WhiteKingside
-			}
-
-			if last == cr {
-				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
-			}
+			queenside = WhiteQueenside
+			kingside = WhiteKingside
+			kingFile = whiteKingSq.File()
 		case 'a' <= char && char <= 'h':
+			// black
 			file = File(char - 'a')
-			kingFile := blackKingSq.File()
-
-			if file == kingFile {
-				return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
-			}
-
-			last := cr
-			if file < kingFile {
-				cr |= BlackQueenside
-			} else {
-				cr |= BlackKingside
-			}
-
-			if last == cr {
-				return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
-			}
+			queenside = BlackQueenside
+			kingside = BlackKingside
+			kingFile = blackKingSq.File()
 		default:
 			return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
 		}
+
+		if file == kingFile {
+			// rook is inside the king..?
+			return NoCastling, fmt.Errorf("%w: %q", ErrInvalidCastlingChar, s)
+		}
+
+		last := rights
+		if file < kingFile {
+			rights |= queenside
+		} else {
+			rights |= kingside
+		}
+
+		if last == rights {
+			return NoCastling, fmt.Errorf("%w: %q", ErrDuplicateCastlingChar, s)
+		}
 	}
-	return cr, nil
+	return rights, nil
 }
 
 type Bitboards struct {
