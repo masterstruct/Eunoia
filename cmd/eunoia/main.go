@@ -12,5 +12,5 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	uci.Loop(ctx)
+	uci.Loop(ctx, os.Stdin, os.Stdout)
 }

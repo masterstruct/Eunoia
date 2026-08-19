@@ -3,9 +3,10 @@ package uci
 import (
 	"context"
 	"fmt"
+	"io"
 )
 
-func Loop(ctx context.Context) {
+func Loop(ctx context.Context, r io.Reader, w io.Writer) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -13,6 +14,6 @@ func Loop(ctx context.Context) {
 		default:
 		}
 
-		fmt.Println("Eunoia chess engine")
+		fmt.Fprintln(w, "Eunoia chess engine")
 	}
 }
