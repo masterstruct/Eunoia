@@ -1,9 +1,16 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"os"
+	"os/signal"
+
+	"github.com/masterstruct/Eunoia/internal/uci"
 )
 
 func main() {
-	fmt.Println("Eunoia chess engine")
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	uci.Loop(ctx)
 }
