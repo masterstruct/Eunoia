@@ -76,7 +76,7 @@ func Negamax(pos board.Position, depth int8) int16 {
 }
 
 func evaluate(pos board.Position) int16 {
-	// // piece count
+	// piece count
 	blackPieceCount := pos.Bitboards.Colors[board.Black].CountBits()
 	whitePieceCount := pos.Bitboards.Colors[board.White].CountBits()
 	score := 50 * (whitePieceCount - blackPieceCount)
@@ -103,10 +103,10 @@ func evaluate(pos board.Position) int16 {
 
 	// giving checks is good
 	if movegen.InCheck(&pos, board.Black) {
-		score += 250
+		score += 50
 	}
 	if movegen.InCheck(&pos, board.White) {
-		score -= 250
+		score -= 50
 	}
 
 	if pos.SideToMove == board.Black {
