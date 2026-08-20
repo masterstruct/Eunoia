@@ -1,33 +1,95 @@
 package search
 
 import (
-	"math/rand/v2"
+	"math"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
-func Search(pos board.Position) board.Move {
+func SearchBestMove(pos board.Position, depth int8) board.Move {
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
-	order := make([]int, movelist.Len)
-	for i := range order {
-		order[i] = i
-	}
-	rand.Shuffle(len(order), func(i, j int) {
-		order[i], order[j] = order[j], order[i]
-	})
+	var bestMove board.Move
+	bestScore := int16(math.MinInt16)
 
-	for _, idx := range order {
-		move := movelist.Moves[idx]
+	for i := range movelist.Len {
+		move := movelist.Moves[i]
+		newPos := pos.MakeMove(move)
+
+		if movegen.InCheck(&newPos, mover) {
+			continue
+		}
+		score := -Negamax(newPos, depth-1)
+
+		if score > bestScore {
+			bestScore = score
+			bestMove = move
+		}
+	}
+	return bestMove
+}
+
+func Negamax(pos board.Position, depth int8) int16 {
+	var movelist movegen.Movelist
+	movegen.GeneratePseudolegalMoves(&pos, &movelist)
+	mover := pos.SideToMove
+
+	if depth <= 0 {
+		return evaluate(pos)
+	}
+
+	max := int16(math.MinInt16)
+	legalMoves := 0
+
+	for i := range movelist.Len {
+		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
 		if movegen.InCheck(&newPos, mover) {
 			continue
 		}
-		return move
+
+		legalMoves++
+		score := -Negamax(newPos, depth-1)
+		if score > max {
+			max = score
+		}
 	}
 
-	return board.NullMove
+	if legalMoves == 0 {
+		if movegen.InCheck(&pos, mover) {
+			return -30000
+		}
+		return 0
+	}
+	return max
+}
+
+func evaluate(pos board.Position) int16 {
+	var ownMoves, oppMoves movegen.Movelist
+	movegen.GeneratePseudolegalMoves(&pos, &ownMoves)
+
+	mover := pos.SideToMove
+	oppPos := pos
+	oppPos.SideToMove = mover.Opponent()
+	movegen.GeneratePseudolegalMoves(&oppPos, &oppMoves)
+
+	blackPieceCount := pos.Bitboards.Colors[board.Black].CountBits()
+	whitePieceCount := pos.Bitboards.Colors[board.White].CountBits()
+	score := whitePieceCount - blackPieceCount
+
+	score += 100 * (pos.PieceBB(board.WhitePawn).CountBits() - pos.PieceBB(board.BlackPawn).CountBits())
+	score += 300 * (pos.PieceBB(board.WhiteKnight).CountBits() - pos.PieceBB(board.BlackKnight).CountBits())
+	score += 300 * (pos.PieceBB(board.WhiteBishop).CountBits() - pos.PieceBB(board.BlackBishop).CountBits())
+	score += 500 * (pos.PieceBB(board.WhiteRook).CountBits() - pos.PieceBB(board.BlackRook).CountBits())
+	score += 900 * (pos.PieceBB(board.WhiteQueen).CountBits() - pos.PieceBB(board.BlackQueen).CountBits())
+
+	score += 50 * (ownMoves.Len - oppMoves.Len)
+
+	if mover == board.Black {
+		return int16(-score)
+	}
+	return int16(score)
 }

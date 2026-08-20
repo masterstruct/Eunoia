@@ -61,7 +61,7 @@ func Loop(r io.Reader, w io.Writer) {
 
 		case "go":
 			stopSearch()
-			move := search.Search(eng.pos)
+			move := search.SearchBestMove(eng.pos, 3)
 			if move == board.NullMove {
 				fmt.Fprintln(w, "bestmove 0000")
 				break
