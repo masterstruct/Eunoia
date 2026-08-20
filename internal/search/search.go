@@ -37,10 +37,6 @@ func Negamax(pos board.Position, depth int8) int16 {
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
-	if depth <= 0 {
-		return evaluate(pos)
-	}
-
 	max := int16(math.MinInt16)
 	legalMoves := 0
 
@@ -52,6 +48,12 @@ func Negamax(pos board.Position, depth int8) int16 {
 		}
 
 		legalMoves++
+
+		if depth <= 0 {
+			// count legal moves without recursing
+			continue
+		}
+
 		score := -Negamax(newPos, depth-1)
 		if score > max {
 			max = score
@@ -60,35 +62,54 @@ func Negamax(pos board.Position, depth int8) int16 {
 
 	if legalMoves == 0 {
 		if movegen.InCheck(&pos, mover) {
-			return -30000
+			// checkmate
+			return -30000 + int16(pos.Ply)
 		}
+		// stalemate
 		return 0
+	}
+
+	if depth <= 0 {
+		return evaluate(pos)
 	}
 	return max
 }
 
 func evaluate(pos board.Position) int16 {
-	var ownMoves, oppMoves movegen.Movelist
-	movegen.GeneratePseudolegalMoves(&pos, &ownMoves)
-
-	mover := pos.SideToMove
-	oppPos := pos
-	oppPos.SideToMove = mover.Opponent()
-	movegen.GeneratePseudolegalMoves(&oppPos, &oppMoves)
-
+	// // piece count
 	blackPieceCount := pos.Bitboards.Colors[board.Black].CountBits()
 	whitePieceCount := pos.Bitboards.Colors[board.White].CountBits()
-	score := whitePieceCount - blackPieceCount
+	score := 50 * (whitePieceCount - blackPieceCount)
 
+	// material count
 	score += 100 * (pos.PieceBB(board.WhitePawn).CountBits() - pos.PieceBB(board.BlackPawn).CountBits())
 	score += 300 * (pos.PieceBB(board.WhiteKnight).CountBits() - pos.PieceBB(board.BlackKnight).CountBits())
 	score += 300 * (pos.PieceBB(board.WhiteBishop).CountBits() - pos.PieceBB(board.BlackBishop).CountBits())
 	score += 500 * (pos.PieceBB(board.WhiteRook).CountBits() - pos.PieceBB(board.BlackRook).CountBits())
 	score += 900 * (pos.PieceBB(board.WhiteQueen).CountBits() - pos.PieceBB(board.BlackQueen).CountBits())
 
-	score += 50 * (ownMoves.Len - oppMoves.Len)
+	// mobility
+	var whiteMoves, blackMoves movegen.Movelist
 
-	if mover == board.Black {
+	wPos := pos
+	wPos.SideToMove = board.White
+	movegen.GeneratePseudolegalMoves(&wPos, &whiteMoves)
+
+	bPos := pos
+	bPos.SideToMove = board.Black
+	movegen.GeneratePseudolegalMoves(&bPos, &blackMoves)
+
+	score += 5 * (whiteMoves.Len - blackMoves.Len)
+
+	// giving checks is good
+	if movegen.InCheck(&pos, board.Black) {
+		score += 250
+	}
+	if movegen.InCheck(&pos, board.White) {
+		score -= 250
+	}
+
+	if pos.SideToMove == board.Black {
 		return int16(-score)
 	}
 	return int16(score)
