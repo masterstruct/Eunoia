@@ -1,7 +1,6 @@
 package search
 
 import (
-	"context"
 	"math"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -10,7 +9,7 @@ import (
 
 const InfinityInt16 int16 = math.MaxInt16
 
-func SearchBestMove(ctx context.Context, pos board.Position, depth int8) board.Move {
+func (ss *SearchState) SearchBestMove(pos board.Position, depth int8) board.Move {
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
@@ -19,17 +18,13 @@ func SearchBestMove(ctx context.Context, pos board.Position, depth int8) board.M
 	bestScore := -InfinityInt16
 
 	for i := range movelist.Len {
-		if searchStopped(ctx) {
-			return bestMove
-		}
-
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
 
 		if movegen.InCheck(&newPos, mover) {
 			continue
 		}
-		score := -Negamax(ctx, newPos, depth-1, -InfinityInt16, InfinityInt16)
+		score := -ss.Negamax(newPos, depth-1, -InfinityInt16, InfinityInt16)
 
 		if score > bestScore {
 			bestScore = score
@@ -39,10 +34,11 @@ func SearchBestMove(ctx context.Context, pos board.Position, depth int8) board.M
 	return bestMove
 }
 
-func Negamax(ctx context.Context, pos board.Position, depth int8, alpha, beta int16) int16 {
-	if searchStopped(ctx) {
+func (ss *SearchState) Negamax(pos board.Position, depth int8, alpha, beta int16) int16 {
+	if ss.searchStopped() {
 		return 0
 	}
+	ss.Nodes++
 
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
@@ -65,7 +61,7 @@ func Negamax(ctx context.Context, pos board.Position, depth int8, alpha, beta in
 			continue
 		}
 
-		score := -Negamax(ctx, newPos, depth-1, -beta, -alpha)
+		score := -ss.Negamax(newPos, depth-1, -beta, -alpha)
 		if score > bestValue {
 			bestValue = score
 			if score > alpha {
@@ -132,6 +128,12 @@ func evaluate(pos board.Position) int16 {
 	return int16(score)
 }
 
-func searchStopped(ctx context.Context) bool {
-	return ctx.Err() != nil
+func (ss *SearchState) searchStopped() bool {
+	if ss.Stop {
+		return true
+	}
+	if ss.MaxNodes > 0 && ss.Nodes >= ss.MaxNodes {
+		return true
+	}
+	return false
 }

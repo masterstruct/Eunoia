@@ -2,7 +2,6 @@ package uci
 
 import (
 	"bufio"
-	"context"
 	"fmt"
 	"io"
 	"strconv"
@@ -14,24 +13,21 @@ import (
 )
 
 type Engine struct {
-	pos board.Position
+	pos   board.Position
+	state search.SearchState
 }
 
 func NewEngine() Engine {
-	return Engine{pos: board.StartingPosition()}
+	return Engine{
+		pos:   board.StartingPosition(),
+		state: search.SearchState{},
+	}
 }
 
 func Loop(r io.Reader, w io.Writer) {
 	scanner := bufio.NewScanner(r)
-	eng := NewEngine()
 
-	var searchCancel context.CancelFunc
-	stopSearch := func() {
-		if searchCancel != nil {
-			searchCancel()
-			searchCancel = nil
-		}
-	}
+	eng := NewEngine()
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -61,12 +57,9 @@ func Loop(r io.Reader, w io.Writer) {
 			}
 
 		case "go":
-			stopSearch()
-			ctx, cancel := context.WithCancel(context.Background())
-			searchCancel = cancel
-
+			eng.state.Reset()
 			go func() {
-				move := search.SearchBestMove(ctx, eng.pos, 4)
+				move := eng.state.SearchBestMove(eng.pos, 5)
 				if move == board.NullMove {
 					fmt.Fprintln(w, "bestmove 0000")
 				} else {
@@ -86,10 +79,10 @@ func Loop(r io.Reader, w io.Writer) {
 			fmt.Fprintln(w, "nps:", perftRes.NPS)
 
 		case "stop":
-			stopSearch()
+			eng.state.Stop = true
 
 		case "quit":
-			stopSearch()
+			eng.state.Stop = true
 			return
 
 		case "d":
