@@ -66,7 +66,7 @@ func Loop(r io.Reader, w io.Writer) {
 			searchCancel = cancel
 
 			go func() {
-				move := search.SearchBestMove(ctx, eng.pos, 3)
+				move := search.SearchBestMove(ctx, eng.pos, 4)
 				if move == board.NullMove {
 					fmt.Fprintln(w, "bestmove 0000")
 				} else {

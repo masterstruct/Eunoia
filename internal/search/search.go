@@ -8,13 +8,15 @@ import (
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
+const InfinityInt16 int16 = math.MaxInt16
+
 func SearchBestMove(ctx context.Context, pos board.Position, depth int8) board.Move {
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
 	var bestMove board.Move
-	bestScore := int16(math.MinInt16)
+	bestScore := -InfinityInt16
 
 	for i := range movelist.Len {
 		if searchStopped(ctx) {
@@ -27,7 +29,7 @@ func SearchBestMove(ctx context.Context, pos board.Position, depth int8) board.M
 		if movegen.InCheck(&newPos, mover) {
 			continue
 		}
-		score := -Negamax(ctx, newPos, depth-1)
+		score := -Negamax(ctx, newPos, depth-1, -InfinityInt16, InfinityInt16)
 
 		if score > bestScore {
 			bestScore = score
@@ -37,7 +39,7 @@ func SearchBestMove(ctx context.Context, pos board.Position, depth int8) board.M
 	return bestMove
 }
 
-func Negamax(ctx context.Context, pos board.Position, depth int8) int16 {
+func Negamax(ctx context.Context, pos board.Position, depth int8, alpha, beta int16) int16 {
 	if searchStopped(ctx) {
 		return 0
 	}
@@ -46,7 +48,7 @@ func Negamax(ctx context.Context, pos board.Position, depth int8) int16 {
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
-	max := int16(math.MinInt16)
+	bestValue := int16(math.MinInt16)
 	legalMoves := 0
 
 	for i := range movelist.Len {
@@ -63,9 +65,15 @@ func Negamax(ctx context.Context, pos board.Position, depth int8) int16 {
 			continue
 		}
 
-		score := -Negamax(ctx, newPos, depth-1)
-		if score > max {
-			max = score
+		score := -Negamax(ctx, newPos, depth-1, -beta, -alpha)
+		if score > bestValue {
+			bestValue = score
+			if score > alpha {
+				alpha = score
+			}
+		}
+		if score >= beta {
+			return bestValue
 		}
 	}
 
@@ -81,7 +89,7 @@ func Negamax(ctx context.Context, pos board.Position, depth int8) int16 {
 	if depth <= 0 {
 		return evaluate(pos)
 	}
-	return max
+	return bestValue
 }
 
 func evaluate(pos board.Position) int16 {
