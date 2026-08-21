@@ -16,7 +16,7 @@ var (
 	ErrInvalidRankDigit      = errors.New("fen: empty-square digit must be between 1 and 8")
 	ErrInvalidRankLength     = errors.New("fen: each rank must total exactly 8 squares")
 	ErrInvalidSideToMove     = errors.New("fen: side to move must be 'w' or 'b'")
-	ErrInvalidHalfmoveClock  = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 255")
+	ErrInvalidHalfmoveClock  = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 100")
 	ErrInvalidFullmoveNumber = errors.New("fen: fullmove number must be a positive integer starting from 1")
 	ErrInvalidKingCount      = errors.New("fen: each side must have exactly one king")
 )
