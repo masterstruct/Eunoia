@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -68,6 +69,16 @@ func Loop(r io.Reader, w io.Writer) {
 			}
 			eng.pos = eng.pos.MakeMove(move)
 			fmt.Fprintf(w, "bestmove %s\n", move.String())
+
+		case "perft":
+			depth := 0
+			if len(args) > 0 {
+				depth, _ = strconv.Atoi(args[0])
+			}
+			perftRes := movegen.Perft(&eng.pos, depth)
+			fmt.Fprintln(w, "total:", perftRes.Nodes)
+			fmt.Fprintln(w, "time:", perftRes.Time)
+			fmt.Fprintln(w, "nps:", perftRes.NPS)
 
 		case "stop":
 			stopSearch()
