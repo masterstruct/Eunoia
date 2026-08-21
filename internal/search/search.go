@@ -1,13 +1,14 @@
 package search
 
 import (
+	"context"
 	"math"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
-func SearchBestMove(pos board.Position, depth int8) board.Move {
+func SearchBestMove(ctx context.Context, pos board.Position, depth int8) board.Move {
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
@@ -16,13 +17,17 @@ func SearchBestMove(pos board.Position, depth int8) board.Move {
 	bestScore := int16(math.MinInt16)
 
 	for i := range movelist.Len {
+		if searchStopped(ctx) {
+			return bestMove
+		}
+
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
 
 		if movegen.InCheck(&newPos, mover) {
 			continue
 		}
-		score := -Negamax(newPos, depth-1)
+		score := -Negamax(ctx, newPos, depth-1)
 
 		if score > bestScore {
 			bestScore = score
@@ -32,7 +37,11 @@ func SearchBestMove(pos board.Position, depth int8) board.Move {
 	return bestMove
 }
 
-func Negamax(pos board.Position, depth int8) int16 {
+func Negamax(ctx context.Context, pos board.Position, depth int8) int16 {
+	if searchStopped(ctx) {
+		return 0
+	}
+
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
@@ -54,7 +63,7 @@ func Negamax(pos board.Position, depth int8) int16 {
 			continue
 		}
 
-		score := -Negamax(newPos, depth-1)
+		score := -Negamax(ctx, newPos, depth-1)
 		if score > max {
 			max = score
 		}
@@ -113,4 +122,8 @@ func evaluate(pos board.Position) int16 {
 		return int16(-score)
 	}
 	return int16(score)
+}
+
+func searchStopped(ctx context.Context) bool {
+	return ctx.Err() != nil
 }

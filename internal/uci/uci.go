@@ -62,13 +62,18 @@ func Loop(r io.Reader, w io.Writer) {
 
 		case "go":
 			stopSearch()
-			move := search.SearchBestMove(eng.pos, 3)
-			if move == board.NullMove {
-				fmt.Fprintln(w, "bestmove 0000")
-				break
-			}
-			eng.pos = eng.pos.MakeMove(move)
-			fmt.Fprintf(w, "bestmove %s\n", move.String())
+			ctx, cancel := context.WithCancel(context.Background())
+			searchCancel = cancel
+
+			go func() {
+				move := search.SearchBestMove(ctx, eng.pos, 3)
+				if move == board.NullMove {
+					fmt.Fprintln(w, "bestmove 0000")
+				} else {
+					eng.pos = eng.pos.MakeMove(move)
+					fmt.Fprintf(w, "bestmove %s\n", move.String())
+				}
+			}()
 
 		case "perft":
 			depth := 0
