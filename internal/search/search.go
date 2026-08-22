@@ -10,7 +10,7 @@ import (
 
 const InfinityInt16 int16 = math.MaxInt16
 
-func (ss *SearchState) SearchBestMove(pos board.Position, depth int8) board.Move {
+func (ss *SearchState) SearchBestMove(pos board.Position, depth int) board.Move {
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
@@ -35,9 +35,9 @@ func (ss *SearchState) SearchBestMove(pos board.Position, depth int8) board.Move
 	return bestMove
 }
 
-func (ss *SearchState) Negamax(pos board.Position, depth int8, alpha, beta int16) int16 {
+func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16) int16 {
 	if ss.searchStopped() {
-		return 0
+		return evaluate(pos)
 	}
 	ss.Nodes++
 

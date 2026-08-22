@@ -6,6 +6,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -14,8 +15,9 @@ import (
 )
 
 type Engine struct {
-	pos   board.Position
-	state search.SearchState
+	pos     board.Position
+	state   search.SearchState
+	running sync.WaitGroup
 }
 
 func NewEngine() Engine {
@@ -58,22 +60,7 @@ func Loop(r io.Reader, w io.Writer) {
 			}
 
 		case "go":
-			eng.state.Reset()
-
-			// TODO: parse uci wtime btime winc binc
-			// and assign soft and hard time limits
-			eng.state.MaxTime = eng.state.StartTime.Add(800 * time.Millisecond)
-
-			go func() {
-				move := eng.state.SearchBestMove(eng.pos, 4)
-
-				if move == board.NullMove {
-					fmt.Fprintln(w, "bestmove 0000")
-				} else {
-					eng.pos = eng.pos.MakeMove(move)
-					fmt.Fprintf(w, "bestmove %s\n", move.String())
-				}
-			}()
+			eng.handleGo(args, w)
 
 		case "perft":
 			depth := 0
@@ -87,9 +74,11 @@ func Loop(r io.Reader, w io.Writer) {
 
 		case "stop":
 			eng.state.Stop = true
+			eng.running.Wait()
 
 		case "quit":
 			eng.state.Stop = true
+			eng.running.Wait()
 			return
 
 		case "d":
@@ -159,4 +148,94 @@ func (e *Engine) applyMove(moveStr string) error {
 		}
 	}
 	return fmt.Errorf("uci: illegal or unknown move %q", moveStr)
+}
+
+func (e *Engine) handleGo(args []string, w io.Writer) {
+	e.state.Stop = true
+	e.running.Wait()
+	e.state.Reset()
+
+	depth := 1000
+	hasDepth := false
+	hasTimeControl := false
+	timeLeft := 0
+	moveTime := 0
+	increment := 0
+
+	// returns the integer following args[i] and ok bool
+	intArg := func(i int) (int, bool) {
+		if i+1 >= len(args) {
+			return 0, false
+		}
+		n, err := strconv.Atoi(args[i+1])
+		return n, err == nil
+	}
+
+	for i, arg := range args {
+		switch arg {
+		case "movetime":
+			if v, ok := intArg(i); ok {
+				moveTime = v
+				hasTimeControl = true
+			}
+		case "nodes":
+			if v, ok := intArg(i); ok {
+				e.state.MaxNodes = uint64(v)
+				hasTimeControl = true
+			}
+		case "wtime":
+			if v, ok := intArg(i); ok && e.pos.SideToMove == board.White {
+				timeLeft = v
+				hasTimeControl = true
+			}
+		case "btime":
+			if v, ok := intArg(i); ok && e.pos.SideToMove == board.Black {
+				timeLeft = v
+				hasTimeControl = true
+			}
+		case "winc":
+			if v, ok := intArg(i); ok && e.pos.SideToMove == board.White {
+				increment = v
+			}
+		case "binc":
+			if v, ok := intArg(i); ok && e.pos.SideToMove == board.Black {
+				increment = v
+			}
+		case "depth":
+			if v, ok := intArg(i); ok {
+				depth = v
+				hasDepth = true
+			}
+		case "infinite":
+			depth = 1000
+			hasDepth = true
+		}
+	}
+
+	switch {
+	case moveTime > 0:
+		e.state.MaxTime = e.state.StartTime.Add(time.Duration(moveTime) * time.Millisecond)
+	case timeLeft > 0 || increment > 0:
+		// TODO: add soft bound and safety margin
+		hard := timeLeft/3 + (increment*7)/10
+		if hard > 0 {
+			e.state.MaxTime = e.state.StartTime.Add(time.Duration(hard) * time.Millisecond)
+		}
+	}
+
+	if hasTimeControl && !hasDepth {
+		depth = 4
+	}
+
+	e.running.Go(func() {
+		move := e.state.SearchBestMove(e.pos, depth)
+
+		if move == board.NullMove {
+			fmt.Fprintln(w, "bestmove 0000")
+			return
+		}
+
+		e.pos = e.pos.MakeMove(move)
+		fmt.Fprintf(w, "bestmove %s\n", move.String())
+	})
 }
