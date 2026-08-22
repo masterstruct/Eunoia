@@ -2,6 +2,7 @@ package search
 
 import (
 	"math"
+	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
@@ -133,6 +134,9 @@ func (ss *SearchState) searchStopped() bool {
 		return true
 	}
 	if ss.MaxNodes > 0 && ss.Nodes >= ss.MaxNodes {
+		return true
+	}
+	if !ss.MaxTime.IsZero() && time.Now().After(ss.MaxTime) {
 		return true
 	}
 	return false

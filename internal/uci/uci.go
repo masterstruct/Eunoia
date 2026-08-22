@@ -6,6 +6,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
@@ -58,8 +59,14 @@ func Loop(r io.Reader, w io.Writer) {
 
 		case "go":
 			eng.state.Reset()
+
+			// TODO: parse uci wtime btime winc binc
+			// and assign soft and hard time limits
+			eng.state.MaxTime = eng.state.StartTime.Add(800 * time.Millisecond)
+
 			go func() {
-				move := eng.state.SearchBestMove(eng.pos, 5)
+				move := eng.state.SearchBestMove(eng.pos, 4)
+
 				if move == board.NullMove {
 					fmt.Fprintln(w, "bestmove 0000")
 				} else {
