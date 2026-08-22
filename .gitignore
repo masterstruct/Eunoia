@@ -7,6 +7,12 @@
 *.dll
 *.so
 *.dylib
+dev
+base
+
+# fastchess
+config.json
+*.pgn
 
 # Test binary, built with `go test -c`
 *.test
