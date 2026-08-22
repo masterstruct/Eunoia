@@ -102,6 +102,11 @@ func Loop(r io.Reader, w io.Writer) {
 			board := eng.pos.String()
 			eng.mu.Unlock()
 			fmt.Fprintln(w, board)
+
+		case "flip":
+			eng.mu.Lock()
+			eng.pos.SideToMove = eng.pos.SideToMove.Opponent()
+			eng.mu.Unlock()
 		}
 	}
 }

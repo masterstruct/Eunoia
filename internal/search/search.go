@@ -10,11 +10,11 @@ import (
 
 const InfinityInt16 int16 = math.MaxInt16
 
-func (ss *SearchState) SearchBestMove(pos board.Position, depth int) board.Move {
+func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Move {
 	var bestMove board.Move
 
 	// iterative deepening
-	for d := 1; d <= depth; d++ {
+	for depth := 1; depth <= maxDepth; depth++ {
 		if (ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) || (!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime)) {
 			break
 		}
@@ -36,7 +36,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, depth int) board.Move 
 				continue
 			}
 
-			score := -ss.Negamax(newPos, d-1, -InfinityInt16, InfinityInt16)
+			score := -ss.Negamax(newPos, depth-1, -InfinityInt16, InfinityInt16)
 
 			if score > bestScore {
 				bestScore = score
