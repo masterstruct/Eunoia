@@ -180,9 +180,8 @@ func (e *Engine) handleGo(args []string, w io.Writer) {
 	pos := e.pos
 	e.mu.Unlock()
 
-	depth := 1000
-	hasDepth := false
-	hasTimeControl := false
+	depth := 1000 // "infinite"
+
 	timeLeft := 0
 	moveTime := 0
 	increment := 0
@@ -201,22 +200,18 @@ func (e *Engine) handleGo(args []string, w io.Writer) {
 		case "movetime":
 			if v, ok := intArg(i); ok {
 				moveTime = v
-				hasTimeControl = true
 			}
 		case "nodes":
 			if v, ok := intArg(i); ok {
 				state.MaxNodes = uint64(v)
-				hasTimeControl = true
 			}
 		case "wtime":
 			if v, ok := intArg(i); ok && pos.SideToMove == board.White {
 				timeLeft = v
-				hasTimeControl = true
 			}
 		case "btime":
 			if v, ok := intArg(i); ok && pos.SideToMove == board.Black {
 				timeLeft = v
-				hasTimeControl = true
 			}
 		case "winc":
 			if v, ok := intArg(i); ok && pos.SideToMove == board.White {
@@ -229,11 +224,9 @@ func (e *Engine) handleGo(args []string, w io.Writer) {
 		case "depth":
 			if v, ok := intArg(i); ok {
 				depth = v
-				hasDepth = true
 			}
 		case "infinite":
 			depth = 1000
-			hasDepth = true
 		}
 	}
 
@@ -241,15 +234,13 @@ func (e *Engine) handleGo(args []string, w io.Writer) {
 	case moveTime > 0:
 		state.MaxTime = state.StartTime.Add(time.Duration(moveTime) * time.Millisecond)
 	case timeLeft > 0 || increment > 0:
-		// TODO: add soft bound and safety margin
+		// TODO: add safety margin
 		hard := timeLeft/3 + (increment*7)/10
 		if hard > 0 {
+			soft := timeLeft/30 + (increment*7)/10
+			state.SoftTime = state.StartTime.Add(time.Duration(soft) * time.Millisecond)
 			state.MaxTime = state.StartTime.Add(time.Duration(hard) * time.Millisecond)
 		}
-	}
-
-	if hasTimeControl && !hasDepth {
-		depth = 4
 	}
 
 	e.mu.Lock()

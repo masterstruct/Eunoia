@@ -11,25 +11,37 @@ import (
 const InfinityInt16 int16 = math.MaxInt16
 
 func (ss *SearchState) SearchBestMove(pos board.Position, depth int) board.Move {
-	var movelist movegen.Movelist
-	movegen.GeneratePseudolegalMoves(&pos, &movelist)
-	mover := pos.SideToMove
-
 	var bestMove board.Move
-	bestScore := -InfinityInt16
 
-	for i := range movelist.Len {
-		move := movelist.Moves[i]
-		newPos := pos.MakeMove(move)
-
-		if movegen.InCheck(&newPos, mover) {
-			continue
+	// iterative deepening
+	for d := 1; d <= depth; d++ {
+		if (ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) || (!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime)) {
+			break
 		}
-		score := -ss.Negamax(newPos, depth-1, -InfinityInt16, InfinityInt16)
+		bestScore := -InfinityInt16
 
-		if score > bestScore {
-			bestScore = score
-			bestMove = move
+		var movelist movegen.Movelist
+		movegen.GeneratePseudolegalMoves(&pos, &movelist)
+		mover := pos.SideToMove
+
+		for i := range movelist.Len {
+			if ss.searchStopped() {
+				return bestMove
+			}
+
+			move := movelist.Moves[i]
+			newPos := pos.MakeMove(move)
+
+			if movegen.InCheck(&newPos, mover) {
+				continue
+			}
+
+			score := -ss.Negamax(newPos, d-1, -InfinityInt16, InfinityInt16)
+
+			if score > bestScore {
+				bestScore = score
+				bestMove = move
+			}
 		}
 	}
 	return bestMove
