@@ -73,7 +73,10 @@ func (pos *Position) MakeMove(move Move) Position {
 			newPos.HalfmoveClock = 0
 		}
 		if move.IsDoublePush() {
-			newPos.EnPassant = epSquare
+			oppPawns := newPos.PieceBB(Piece{Type: Pawn, Color: color.Opponent()})
+			if oppPawns.IsBitSet(to.Left()) || oppPawns.IsBitSet(to.Right()) {
+				newPos.EnPassant = epSquare
+			}
 		}
 
 		// king moved - remove castling rights

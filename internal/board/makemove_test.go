@@ -22,10 +22,10 @@ func TestMakeMove(t *testing.T) {
 			wantFEN: "rnbqkb1r/pp1ppppp/5n2/2pP4/8/5N2/PPP1PPPP/RNBQKB1R b KQkq - 1 3",
 		},
 		{
-			name:    "white double push sets en passant",
+			name:    "white double push does not set en passant",
 			fen:     StartingFEN,
 			move:    NewDoublePush(E2, E4),
-			wantFEN: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+			wantFEN: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
 		},
 		{
 			name:    "black double push sets en passant",
