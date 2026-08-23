@@ -99,9 +99,8 @@ func Loop(r io.Reader, w io.Writer) {
 
 		case "d":
 			eng.mu.Lock()
-			board := eng.pos.String()
+			fmt.Fprintln(w, eng.pos.String())
 			eng.mu.Unlock()
-			fmt.Fprintln(w, board)
 
 		case "flip":
 			eng.mu.Lock()
