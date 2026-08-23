@@ -12,3 +12,29 @@ func (p *PRNG) Next() uint64 {
 	z = (z ^ (z >> 27)) * 0x94d049bb133111eb
 	return z ^ (z >> 31)
 }
+
+type Zobrist struct {
+	Piece      [2][6][64]uint64 // [color][pieceType][sq]
+	Castling   [16]uint64
+	EnPassant  [8]uint64
+	SideToMove uint64
+}
+
+func NewZobrist(rng *PRNG) *Zobrist {
+	z := &Zobrist{}
+	for color := range NoColor {
+		for pt := range PieceTypes() {
+			for sq := range NoSquare {
+				z.Piece[color][pt][sq] = rng.Next()
+			}
+		}
+	}
+	for i := range 16 {
+		z.Castling[i] = rng.Next()
+	}
+	for i := range 8 {
+		z.EnPassant[i] = rng.Next()
+	}
+	z.SideToMove = rng.Next()
+	return z
+}
