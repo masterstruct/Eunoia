@@ -124,5 +124,8 @@ func (pos *Position) MakeMove(move Move) Position {
 	newPos.SideToMove = color.Opponent()
 	newPos.Ply++
 
+	// TODO: update zobrist incrementally
+	newPos.Hash = ZobristTable.ComputeHash(&newPos)
+
 	return newPos
 }
