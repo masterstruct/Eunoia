@@ -14,10 +14,10 @@ func (p *PRNG) Next() uint64 {
 }
 
 type Zobrist struct {
-	Piece      [2][6][64]uint64 // [color][pieceType][sq]
-	Castling   [16]uint64
-	EnPassant  [8]uint64
-	SideToMove uint64
+	piece      [2][6][64]uint64 // [color][pieceType][sq]
+	castling   [16]uint64
+	enPassant  [8]uint64
+	sideToMove uint64
 }
 
 func NewZobrist(rng *PRNG) *Zobrist {
@@ -25,16 +25,32 @@ func NewZobrist(rng *PRNG) *Zobrist {
 	for color := range NoColor {
 		for pt := range PieceTypes() {
 			for sq := range NoSquare {
-				z.Piece[color][pt][sq] = rng.Next()
+				z.piece[color][pt][sq] = rng.Next()
 			}
 		}
 	}
 	for i := range 16 {
-		z.Castling[i] = rng.Next()
+		z.castling[i] = rng.Next()
 	}
 	for i := range 8 {
-		z.EnPassant[i] = rng.Next()
+		z.enPassant[i] = rng.Next()
 	}
-	z.SideToMove = rng.Next()
+	z.sideToMove = rng.Next()
 	return z
+}
+
+func (z *Zobrist) PieceKey(color Color, piece PieceType, square Square) uint64 {
+	return z.piece[color][piece][square]
+}
+
+func (z *Zobrist) CastlingKey(cr CastlingRights) uint64 {
+	return z.castling[cr]
+}
+
+func (z *Zobrist) EnPassantKey(file File) uint64 {
+	return z.enPassant[file]
+}
+
+func (z *Zobrist) SideToMoveKey() uint64 {
+	return z.sideToMove
 }
