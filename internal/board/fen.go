@@ -141,6 +141,8 @@ func ParseFEN(fen string) (Position, error) {
 		pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
 	}
 
+	pos.Hash = ZobristTable.ComputeHash(&pos)
+
 	return pos, nil
 }
 

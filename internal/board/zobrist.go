@@ -22,15 +22,15 @@ func (p *PRNG) Next() uint64 {
 	return z ^ (z >> 31)
 }
 
-type Zobrist struct {
+type zobrist struct {
 	piece      [2][6][64]uint64 // [color][pieceType][sq]
 	castling   [16]uint64
 	enPassant  [8]uint64
 	sideToMove uint64
 }
 
-func NewZobrist(rng *PRNG) *Zobrist {
-	z := &Zobrist{}
+func NewZobrist(rng *PRNG) *zobrist {
+	z := &zobrist{}
 	for color := range NoColor {
 		for pt := range PieceTypes() {
 			for sq := range NoSquare {
@@ -48,18 +48,48 @@ func NewZobrist(rng *PRNG) *Zobrist {
 	return z
 }
 
-func (z *Zobrist) PieceKey(color Color, piece PieceType, square Square) uint64 {
+func (z *zobrist) PieceKey(color Color, piece PieceType, square Square) uint64 {
 	return z.piece[color][piece][square]
 }
 
-func (z *Zobrist) CastlingKey(cr CastlingRights) uint64 {
+func (z *zobrist) CastlingKey(cr CastlingRights) uint64 {
 	return z.castling[cr]
 }
 
-func (z *Zobrist) EnPassantKey(file File) uint64 {
+func (z *zobrist) EnPassantKey(file File) uint64 {
 	return z.enPassant[file]
 }
 
-func (z *Zobrist) SideToMoveKey() uint64 {
+func (z *zobrist) SideToMoveKey() uint64 {
 	return z.sideToMove
+}
+
+func (z *zobrist) ComputeHash(pos *Position) uint64 {
+	var hash uint64
+
+	occupied := pos.Occupied()
+	for occupied != 0 {
+		sq := occupied.PopLSB()
+
+		piece, ok := pos.PieceOn(sq)
+		if !ok {
+			// looping over occupied, thus
+			// the piece cannot be NoPiece.
+			// panics if pos.Occupied() and
+			// pos.Board are out of sync.
+			panic("unreachable")
+		}
+
+		hash ^= z.PieceKey(piece.Color, piece.Type, sq)
+	}
+
+	hash ^= z.CastlingKey(pos.CastlingRights)
+	epSq := pos.EnPassant
+	if epSq != NoSquare {
+		hash ^= z.EnPassantKey(epSq.File())
+	}
+
+	hash ^= z.SideToMoveKey()
+
+	return hash
 }

@@ -33,3 +33,13 @@ func TestPRNGNext_Reproducible(t *testing.T) {
 		}
 	}
 }
+
+func TestComputeHash(t *testing.T) {
+	pos := StartingPosition()
+	want := uint64(7919113891313680416)
+	got := ZobristTable.ComputeHash(&pos)
+
+	if got != want {
+		t.Fatalf("got %d want %d", got, want)
+	}
+}

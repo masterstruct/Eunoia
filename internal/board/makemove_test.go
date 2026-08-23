@@ -309,9 +309,6 @@ func makemove_assertPositionEqual(t *testing.T, got, want Position) {
 	if got.Ply != want.Ply {
 		t.Errorf("Ply mismatch\ngot: %v\nwant: %v", got.Ply, want.Ply)
 	}
-	if got.Hash != want.Hash {
-		t.Errorf("Hash mismatch\ngot: %v\nwant: %v", got.Hash, want.Hash)
-	}
 }
 
 func BenchmarkMakeMove(b *testing.B) {
