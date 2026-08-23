@@ -1,7 +1,16 @@
 package board
 
+// just a random value
+const zobristSeed uint64 = 16812629825545983742
+
+var ZobristTable = NewZobrist(NewPRNG(zobristSeed))
+
 type PRNG struct {
 	state uint64
+}
+
+func NewPRNG(seed uint64) *PRNG {
+	return &PRNG{state: seed}
 }
 
 // Splitmix64 pseudorandom number generator
