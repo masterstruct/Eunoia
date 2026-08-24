@@ -29,10 +29,15 @@ const Mask uint = Size - 1
 type Table [Size]Entry
 
 func (tt *Table) Clear() {
-	*tt = Table{}
+	if tt != nil {
+		*tt = Table{}
+	}
 }
 
 func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, flag Flag) {
+	if tt == nil {
+		return
+	}
 	entry := &tt[tt.index(key)]
 	if entry.Key != key || depth >= entry.Depth {
 		entry.Key = key
@@ -44,6 +49,9 @@ func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, fl
 }
 
 func (tt *Table) Probe(key uint64) (Entry, bool) {
+	if tt == nil {
+		return Entry{}, false
+	}
 	entry := tt[tt.index(key)]
 	return entry, entry.Key == key
 }
