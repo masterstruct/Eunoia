@@ -1,14 +1,16 @@
 package search
 
 import (
-	"math"
 	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
-const InfinityInt16 int16 = math.MaxInt16
+const (
+	MATE int16 = 30000
+	INF  int16 = 32000
+)
 
 func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Move {
 	var bestMove board.Move
@@ -18,7 +20,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 		if (ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) || (!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime)) {
 			break
 		}
-		bestScore := -InfinityInt16
+		bestScore := -INF
 
 		var movelist movegen.Movelist
 		movegen.GeneratePseudolegalMoves(&pos, &movelist)
@@ -36,7 +38,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 				continue
 			}
 
-			score := -ss.Negamax(newPos, depth-1, -InfinityInt16, InfinityInt16)
+			score := -ss.Negamax(newPos, depth-1, -INF, INF)
 
 			if score > bestScore {
 				bestScore = score
@@ -53,12 +55,16 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 	}
 	ss.Nodes++
 
+	if depth <= 0 {
+		return evaluate(pos)
+	}
+
+	bestValue := -INF
+	legalMoves := 0
+
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
-
-	bestValue := int16(math.MinInt16)
-	legalMoves := 0
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
@@ -69,11 +75,6 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 
 		legalMoves++
 
-		if depth <= 0 {
-			// count legal moves without recursing
-			continue
-		}
-
 		score := -ss.Negamax(newPos, depth-1, -beta, -alpha)
 		if score > bestValue {
 			bestValue = score
@@ -82,22 +83,19 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 			}
 		}
 		if score >= beta {
-			return bestValue
+			break
 		}
 	}
 
 	if legalMoves == 0 {
 		if movegen.InCheck(&pos, mover) {
 			// checkmate
-			return -30000 + int16(pos.Ply)
+			return -MATE + int16(pos.Ply)
 		}
 		// stalemate
 		return 0
 	}
 
-	if depth <= 0 {
-		return evaluate(pos)
-	}
 	return bestValue
 }
 
