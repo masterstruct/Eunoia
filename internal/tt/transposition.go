@@ -23,7 +23,16 @@ type Entry struct {
 	Flag  Flag
 }
 
-func TTSizeFromMB(mb uint) uint {
+const Size uint = 1 << 22 // 64MiB
+const Mask uint = Size - 1
+
+type Table [Size]Entry
+
+func (tt *Table) Clear() {
+	*tt = Table{}
+}
+
+func SizeFromMB(mb uint) uint {
 	bytes := mb * 1024 * 1024
 	entries := bytes / uint(unsafe.Sizeof(Entry{}))
 	return nextPow2(entries)

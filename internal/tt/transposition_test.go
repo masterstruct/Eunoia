@@ -68,7 +68,7 @@ func TestTTSizeFromMB(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := TTSizeFromMB(tt.mb)
+			got := SizeFromMB(tt.mb)
 			if got != tt.want {
 				t.Fatalf("%d: got %d, want %d", tt.mb, got, tt.want)
 			}
