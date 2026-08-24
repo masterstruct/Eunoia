@@ -5,6 +5,7 @@ import (
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
+	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
 const (
@@ -55,11 +56,36 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 	}
 	ss.Nodes++
 
+	alphaOrig := alpha
+	betaOrig := beta
+
+	// TT lookup
+	entry, ok := ss.tt.Probe(pos.Hash)
+	if ok && entry.Depth >= uint8(depth) {
+		// TT hit
+		switch entry.Flag {
+		case tt.Exact:
+			return entry.Score
+		case tt.Lower:
+			if entry.Score > alpha {
+				alpha = entry.Score
+			}
+		case tt.Upper:
+			if entry.Score < beta {
+				beta = entry.Score
+			}
+		}
+		if alpha >= beta {
+			return entry.Score
+		}
+	}
+
 	if depth <= 0 {
 		return evaluate(pos)
 	}
 
 	bestValue := -INF
+	var bestMove board.Move
 	legalMoves := 0
 
 	var movelist movegen.Movelist
@@ -78,6 +104,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 		score := -ss.Negamax(newPos, depth-1, -beta, -alpha)
 		if score > bestValue {
 			bestValue = score
+			bestMove = move
 			if score > alpha {
 				alpha = score
 			}
@@ -95,6 +122,15 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 		// stalemate
 		return 0
 	}
+
+	flag := tt.Exact
+	if bestValue <= alphaOrig {
+		flag = tt.Upper
+	} else if bestValue >= betaOrig {
+		flag = tt.Lower
+	}
+
+	ss.tt.Store(pos.Hash, bestMove, bestValue, uint8(depth), flag)
 
 	return bestValue
 }
