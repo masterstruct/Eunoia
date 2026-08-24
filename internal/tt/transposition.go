@@ -32,6 +32,21 @@ func (tt *Table) Clear() {
 	*tt = Table{}
 }
 
+func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, flag Flag) {
+	entry := &tt[tt.index(key)]
+	if entry.Key != key || depth >= entry.Depth {
+		entry.Key = key
+		entry.Move = move
+		entry.Score = score
+		entry.Depth = depth
+		entry.Flag = flag
+	}
+}
+
+func (t *Table) index(key uint64) uint64 {
+	return key & uint64(Mask)
+}
+
 func SizeFromMB(mb uint) uint {
 	bytes := mb * 1024 * 1024
 	entries := bytes / uint(unsafe.Sizeof(Entry{}))
