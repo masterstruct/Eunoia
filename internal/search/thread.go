@@ -31,3 +31,7 @@ func (ss *SearchState) Reset() {
 func (ss *SearchState) ClearTT() {
 	ss.tt.Clear()
 }
+
+func (ss *SearchState) Init() {
+	ss.tt = &tt.Table{}
+}

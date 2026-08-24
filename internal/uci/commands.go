@@ -9,7 +9,6 @@ import (
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
-	"github.com/masterstruct/Eunoia/internal/search"
 )
 
 func (e *Engine) handleGo(w io.Writer, args []string) {
@@ -19,10 +18,9 @@ func (e *Engine) handleGo(w io.Writer, args []string) {
 
 	e.running.Wait()
 
-	state := &search.SearchState{} // TODO: creating a new SearchState clears the tt
-	state.Reset()
-
 	e.mu.Lock()
+	state := e.state
+	state.Reset()
 	pos := e.pos
 	e.mu.Unlock()
 
@@ -88,10 +86,6 @@ func (e *Engine) handleGo(w io.Writer, args []string) {
 			state.MaxTime = state.StartTime.Add(time.Duration(hard) * time.Millisecond)
 		}
 	}
-
-	e.mu.Lock()
-	e.state = state
-	e.mu.Unlock()
 
 	e.running.Go(func() {
 		move := state.SearchBestMove(pos, depth)

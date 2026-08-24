@@ -20,11 +20,13 @@ type Engine struct {
 	running sync.WaitGroup
 }
 
-func NewEngine() Engine {
-	return Engine{
+func NewEngine() *Engine {
+	e := &Engine{
 		pos:   board.StartingPosition(),
 		state: &search.SearchState{},
 	}
+	e.state.Init()
+	return e
 }
 
 func Loop(r io.Reader, w io.Writer) {
@@ -100,8 +102,9 @@ func Loop(r io.Reader, w io.Writer) {
 
 		case "d":
 			eng.mu.Lock()
-			fmt.Fprintln(w, eng.pos.String())
+			s := eng.pos.String()
 			eng.mu.Unlock()
+			fmt.Fprintln(w, s)
 
 		case "flip":
 			eng.mu.Lock()
