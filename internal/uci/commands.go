@@ -19,8 +19,8 @@ func (e *Engine) handleGo(w io.Writer, args []string) {
 
 	e.running.Wait()
 
-	state := &search.SearchState{}
-	state.Reset() // TODO: once have TT, do not clear on go command
+	state := &search.SearchState{} // TODO: creating a new SearchState clears the tt
+	state.Reset()
 
 	e.mu.Lock()
 	pos := e.pos

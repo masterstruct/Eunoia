@@ -70,6 +70,7 @@ func Loop(r io.Reader, w io.Writer) {
 			eng.running.Wait()
 			eng.mu.Lock()
 			eng.state.Reset()
+			eng.state.ClearTT()
 			eng.mu.Unlock()
 
 		case "isready":

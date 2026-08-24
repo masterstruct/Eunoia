@@ -1,6 +1,10 @@
 package search
 
-import "time"
+import (
+	"time"
+
+	"github.com/masterstruct/Eunoia/internal/tt"
+)
 
 type SearchState struct {
 	Stop      bool
@@ -10,6 +14,8 @@ type SearchState struct {
 	StartTime time.Time
 	MaxTime   time.Time
 	SoftTime  time.Time
+
+	tt *tt.Table
 }
 
 func (ss *SearchState) Reset() {
@@ -20,4 +26,8 @@ func (ss *SearchState) Reset() {
 	ss.StartTime = time.Now()
 	ss.MaxTime = time.Time{}
 	ss.SoftTime = time.Time{}
+}
+
+func (ss *SearchState) ClearTT() {
+	ss.tt.Clear()
 }
