@@ -67,16 +67,13 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 		case tt.Exact:
 			return entry.Score
 		case tt.Lower:
-			if entry.Score > alpha {
-				alpha = entry.Score
+			if entry.Score >= beta {
+				return entry.Score
 			}
 		case tt.Upper:
-			if entry.Score < beta {
-				beta = entry.Score
+			if entry.Score <= alpha {
+				return entry.Score
 			}
-		}
-		if alpha >= beta {
-			return entry.Score
 		}
 	}
 
