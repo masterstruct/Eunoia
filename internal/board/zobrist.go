@@ -89,7 +89,9 @@ func (z *zobrist) ComputeHash(pos *Position) uint64 {
 		hash ^= z.EnPassantKey(epSq.File())
 	}
 
-	hash ^= z.SideToMoveKey()
+	if pos.SideToMove == Black {
+		hash ^= z.SideToMoveKey()
+	}
 
 	return hash
 }
