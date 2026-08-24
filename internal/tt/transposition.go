@@ -1,6 +1,11 @@
 package tt
 
-import "github.com/masterstruct/Eunoia/internal/board"
+import (
+	"math/bits"
+	"unsafe"
+
+	"github.com/masterstruct/Eunoia/internal/board"
+)
 
 type Flag uint8
 
@@ -16,4 +21,17 @@ type Entry struct {
 	Score int16
 	Depth uint8
 	Flag  Flag
+}
+
+func TTSizeFromMB(mb uint) uint {
+	bytes := mb * 1024 * 1024
+	entries := bytes / uint(unsafe.Sizeof(Entry{}))
+	return nextPow2(entries)
+}
+
+func nextPow2(x uint) uint {
+	if x <= 1 {
+		return 1
+	}
+	return 1 << bits.Len(x-1)
 }
