@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,6 +31,10 @@ func NewEngine() *Engine {
 }
 
 func Loop(r io.Reader, w io.Writer) {
+	if len(os.Args) > 1 && os.Args[1] == "bench" {
+		Bench()
+	}
+
 	scanner := bufio.NewScanner(r)
 
 	eng := NewEngine()
