@@ -20,8 +20,9 @@ func Bench() {
 	var totalNodes uint64
 	var totalTime time.Duration
 
+	fmt.Println("Benchmarking...")
+
 	for _, benchStruct := range benchPositions {
-		fmt.Println(benchStruct.fen)
 		eng.state.Reset()
 		eng.state.Init()
 
