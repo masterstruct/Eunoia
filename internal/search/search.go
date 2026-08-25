@@ -25,6 +25,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 
 		var movelist movegen.Movelist
 		movegen.GeneratePseudolegalMoves(&pos, &movelist)
+		ss.OrderMoves(&pos, &movelist)
 		mover := pos.SideToMove
 
 		for i := range movelist.Len {
@@ -59,9 +60,8 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 	alphaOrig := alpha
 
 	// TT lookup
-	entry, ok := ss.tt.Probe(pos.Hash)
-	if ok && entry.Depth >= uint8(depth) {
-		// TT hit
+	entry, ttHit := ss.tt.Probe(pos.Hash)
+	if ttHit && entry.Depth >= uint8(depth) {
 		switch entry.Flag {
 		case tt.Exact:
 			return entry.Score
@@ -86,7 +86,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
-	OrderMoves(&pos, &movelist)
+	ss.OrderMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
 	for i := range movelist.Len {
@@ -185,10 +185,17 @@ func (ss *SearchState) searchStopped() bool {
 	return false
 }
 
-func OrderMoves(pos *board.Position, movelist *movegen.Movelist) {
+func (ss *SearchState) OrderMoves(pos *board.Position, movelist *movegen.Movelist) {
 	n := movelist.Len
 	if n == 0 {
 		return
+	}
+
+	// TT lookup
+	entry, ttHit := ss.tt.Probe(pos.Hash)
+	var ttMove board.Move
+	if ttHit {
+		ttMove = entry.Move
 	}
 
 	// score moves
@@ -196,6 +203,12 @@ func OrderMoves(pos *board.Position, movelist *movegen.Movelist) {
 	var scores [movegen.MaxMoves]int16
 	for i := range n {
 		move := movelist.Moves[i]
+
+		if ttHit && move == ttMove {
+			scores[i] = 32000
+			continue
+		}
+
 		if move.IsCapture() {
 			attacker, _ := pos.PieceOn(move.From())
 			victim, _ := pos.PieceOn(move.To())
