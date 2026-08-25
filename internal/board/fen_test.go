@@ -48,6 +48,10 @@ func assertPositionEqual(t *testing.T, got, want Position, fen string) {
 	if got.Ply != want.Ply {
 		t.Errorf("%q: ply: got %v want %v", fen, got.Ply, want.Ply)
 	}
+	wantHash := ZobristTable.ComputeHash(&want)
+	if got.Hash != wantHash {
+		t.Errorf("%q: hash: got %v want %v", fen, got.Hash, wantHash)
+	}
 }
 
 func TestParseFEN_Valid(t *testing.T) {
