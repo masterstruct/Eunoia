@@ -194,7 +194,7 @@ type Position struct {
 	Board          [64]Piece
 	SideToMove     Color
 	CastlingRights CastlingRights
-	CastlingRookSq CastlingRookSquares
+	CastlingRookSq CastlingRookSquares // TODO: move out of Position, breaks equality checks
 	EnPassant      Square
 	HalfmoveClock  uint8
 	Ply            uint16
