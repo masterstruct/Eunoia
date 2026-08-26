@@ -237,6 +237,10 @@ func (pos *Position) String() string {
 	// this will fix the colors of the pretty board
 
 	var sb strings.Builder
+
+	// fen
+	fmt.Fprintln(&sb, pos.FEN())
+
 	for rank := Rank8; rank >= Rank1; rank-- {
 		// ranks
 		sb.WriteString(ForegroundRGB(235, 160, 172))
