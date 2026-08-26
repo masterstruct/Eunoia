@@ -53,7 +53,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 
 func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16) int16 {
 	if ss.searchStopped() {
-		return evaluate(pos)
+		return evaluate(&pos)
 	}
 	ss.Nodes++
 
@@ -77,7 +77,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 	}
 
 	if depth <= 0 {
-		return evaluate(pos)
+		return evaluate(&pos)
 	}
 
 	bestValue := -INF
@@ -132,7 +132,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 	return bestValue
 }
 
-func evaluate(pos board.Position) int16 {
+func evaluate(pos *board.Position) int16 {
 	// piece count
 	blackPieceCount := pos.Bitboards.Colors[board.Black].CountBits()
 	whitePieceCount := pos.Bitboards.Colors[board.White].CountBits()
@@ -148,21 +148,21 @@ func evaluate(pos board.Position) int16 {
 	// mobility
 	var whiteMoves, blackMoves movegen.Movelist
 
-	wPos := pos
+	wPos := *pos
 	wPos.SideToMove = board.White
 	movegen.GeneratePseudolegalMoves(&wPos, &whiteMoves)
 
-	bPos := pos
+	bPos := *pos
 	bPos.SideToMove = board.Black
 	movegen.GeneratePseudolegalMoves(&bPos, &blackMoves)
 
 	score += 5 * (whiteMoves.Len - blackMoves.Len)
 
 	// giving checks is good
-	if movegen.InCheck(&pos, board.Black) {
+	if movegen.InCheck(pos, board.Black) {
 		score += 50
 	}
-	if movegen.InCheck(&pos, board.White) {
+	if movegen.InCheck(pos, board.White) {
 		score -= 50
 	}
 
