@@ -57,7 +57,7 @@ func InCheck(pos *board.Position, color board.Color) bool {
 	)
 }
 
-func genKnightMoves(pos *board.Position, movelist *Movelist) {
+func GenKnightMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -82,7 +82,7 @@ func genKnightMoves(pos *board.Position, movelist *Movelist) {
 	}
 }
 
-func genBishopMoves(pos *board.Position, movelist *Movelist) {
+func GenBishopMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -107,7 +107,7 @@ func genBishopMoves(pos *board.Position, movelist *Movelist) {
 	}
 }
 
-func genRookMoves(pos *board.Position, movelist *Movelist) {
+func GenRookMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -132,7 +132,7 @@ func genRookMoves(pos *board.Position, movelist *Movelist) {
 	}
 }
 
-func genQueenMoves(pos *board.Position, movelist *Movelist) {
+func GenQueenMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]
 	occupied := pos.Occupied()
@@ -157,7 +157,7 @@ func genQueenMoves(pos *board.Position, movelist *Movelist) {
 	}
 }
 
-func genPawnMoves(pos *board.Position, movelist *Movelist) {
+func GenPawnMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 	enemyColor := color.Opponent()
 	occupied := pos.Occupied()
@@ -240,7 +240,7 @@ func genPawnMoves(pos *board.Position, movelist *Movelist) {
 	}
 }
 
-func genKingMoves(pos *board.Position, movelist *Movelist) {
+func GenKingMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 
 	castlingRights := pos.CastlingRights
@@ -341,10 +341,10 @@ func canCastle(pos *board.Position, kingSq, rookSq board.Square) bool {
 }
 
 func GeneratePseudolegalMoves(pos *board.Position, movelist *Movelist) {
-	genKnightMoves(pos, movelist)
-	genBishopMoves(pos, movelist)
-	genRookMoves(pos, movelist)
-	genQueenMoves(pos, movelist)
-	genPawnMoves(pos, movelist)
-	genKingMoves(pos, movelist)
+	GenKnightMoves(pos, movelist)
+	GenBishopMoves(pos, movelist)
+	GenRookMoves(pos, movelist)
+	GenQueenMoves(pos, movelist)
+	GenPawnMoves(pos, movelist)
+	GenKingMoves(pos, movelist)
 }

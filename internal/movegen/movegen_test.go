@@ -215,7 +215,7 @@ func TestGenKnightMoves(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
 			var movelist Movelist
-			genKnightMoves(&pos, &movelist)
+			GenKnightMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -263,7 +263,7 @@ func TestGenBishopMoves(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
 			var movelist Movelist
-			genBishopMoves(&pos, &movelist)
+			GenBishopMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -310,7 +310,7 @@ func TestGenRookMoves(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
 			var movelist Movelist
-			genRookMoves(&pos, &movelist)
+			GenRookMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -357,7 +357,7 @@ func TestGenQueenMoves(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
 			var movelist Movelist
-			genQueenMoves(&pos, &movelist)
+			GenQueenMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -424,7 +424,7 @@ func TestGenPawnMoves(t *testing.T) {
 			}
 
 			var movelist Movelist
-			genPawnMoves(&pos, &movelist)
+			GenPawnMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -478,7 +478,7 @@ func TestGenPawnMoves_EnPassant(t *testing.T) {
 			}
 
 			var movelist Movelist
-			genPawnMoves(&pos, &movelist)
+			GenPawnMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -575,7 +575,7 @@ func TestGenPawnMoves_Promotion(t *testing.T) {
 			}
 
 			var movelist Movelist
-			genPawnMoves(&pos, &movelist)
+			GenPawnMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.wantMoves, move) {
@@ -692,7 +692,7 @@ func TestGenKingMoves(t *testing.T) {
 			pos, _ := board.ParseFEN(tt.fen)
 
 			var movelist Movelist
-			genKingMoves(&pos, &movelist)
+			GenKingMoves(&pos, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -970,6 +970,6 @@ func BenchmarkGenMoves(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		var movelist Movelist
 		pos := positions[i%len(positions)]
-		genPawnMoves(pos, &movelist)
+		GenPawnMoves(pos, &movelist)
 	}
 }

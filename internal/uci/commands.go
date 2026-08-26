@@ -156,15 +156,37 @@ func (e *Engine) handlePosition(args []string) error {
 }
 
 func applyMoves(pos *board.Position, moves []string) (board.Position, error) {
+	// TODO: if capture, don't generate non-captures with staged movegen
+
 	newPos := *pos
 
 	for _, move := range moves {
 		success := false
 
 		var movelist movegen.Movelist
-		// TODO: make this faster by only generating the moves
-		// of pieces that are on the FROM square
-		movegen.GeneratePseudolegalMoves(&newPos, &movelist)
+		from, err := board.ParseSquare(move[:2])
+		if err != nil {
+			return *pos, fmt.Errorf("uci: failed to parse move %q", move)
+		}
+		piece, ok := newPos.PieceOn(from)
+		if !ok {
+			return *pos, fmt.Errorf("uci: illegal move %q", move)
+		}
+
+		switch piece.Type {
+		case board.Pawn:
+			movegen.GenPawnMoves(&newPos, &movelist)
+		case board.Knight:
+			movegen.GenKnightMoves(&newPos, &movelist)
+		case board.Bishop:
+			movegen.GenBishopMoves(&newPos, &movelist)
+		case board.Rook:
+			movegen.GenRookMoves(&newPos, &movelist)
+		case board.Queen:
+			movegen.GenQueenMoves(&newPos, &movelist)
+		case board.King:
+			movegen.GenKingMoves(&newPos, &movelist)
+		}
 
 		for i := range movelist.Len {
 			m := movelist.Moves[i]
