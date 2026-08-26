@@ -53,7 +53,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 
 func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16) int16 {
 	if ss.searchStopped() {
-		return evaluate(&pos)
+		return ss.qsearch(&pos, alpha, beta)
 	}
 	ss.Nodes++
 
@@ -130,6 +130,47 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 	ss.tt.Store(pos.Hash, bestMove, bestValue, uint8(depth), flag)
 
 	return bestValue
+}
+
+func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
+	standPat := evaluate(pos)
+
+	if standPat >= beta {
+		return standPat
+	}
+	if standPat > alpha {
+		alpha = standPat
+	}
+
+	ss.Nodes++
+
+	var movelist movegen.Movelist
+	movegen.GeneratePseudolegalMoves(pos, &movelist)
+	ss.OrderMoves(pos, &movelist)
+	mover := pos.SideToMove
+
+	for i := range movelist.Len {
+		move := movelist.Moves[i]
+		if !move.IsCapture() {
+			continue
+		}
+
+		newPos := pos.MakeMove(move)
+		if movegen.InCheck(&newPos, mover) {
+			continue
+		}
+
+		score := -ss.qsearch(&newPos, -beta, -alpha)
+
+		if score >= beta {
+			return score
+		}
+		if score > alpha {
+			alpha = score
+		}
+	}
+
+	return alpha
 }
 
 func evaluate(pos *board.Position) int16 {
