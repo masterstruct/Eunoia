@@ -179,13 +179,6 @@ func evaluate(pos *board.Position) int16 {
 	whitePieceCount := pos.Bitboards.Colors[board.White].CountBits()
 	score := 50 * (whitePieceCount - blackPieceCount)
 
-	// material count
-	score += 100 * (pos.PieceBB(board.WhitePawn).CountBits() - pos.PieceBB(board.BlackPawn).CountBits())
-	score += 300 * (pos.PieceBB(board.WhiteKnight).CountBits() - pos.PieceBB(board.BlackKnight).CountBits())
-	score += 300 * (pos.PieceBB(board.WhiteBishop).CountBits() - pos.PieceBB(board.BlackBishop).CountBits())
-	score += 500 * (pos.PieceBB(board.WhiteRook).CountBits() - pos.PieceBB(board.BlackRook).CountBits())
-	score += 900 * (pos.PieceBB(board.WhiteQueen).CountBits() - pos.PieceBB(board.BlackQueen).CountBits())
-
 	// mobility
 	var whiteMoves, blackMoves movegen.Movelist
 

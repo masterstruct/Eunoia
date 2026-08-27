@@ -2,7 +2,7 @@ package search
 
 import "github.com/masterstruct/Eunoia/internal/board"
 
-// All values are taken from PeSTO:
+// All PSQT values and evaluation are taken from PeSTO:
 // https://chessprogramming.org/PeSTO's_Evaluation_Function
 
 var gamePhaseInc [6]int = [6]int{0, 1, 1, 2, 4, 0}
@@ -29,9 +29,11 @@ func evaluatePSQT(pos *board.Position) int {
 	for occupied != 0 {
 		sq := occupied.PopLSB()
 		piece, _ := pos.PieceOn(sq)
-		mg[piece.Color] += mgTable[piece.Color][piece.Type][sq]
-		eg[piece.Color] += egTable[piece.Color][piece.Type][sq]
-		gamePhase += gamePhaseInc[piece.Type]
+		pieceColor := piece.Color
+		pieceType := piece.Type
+		mg[pieceColor] += mgTable[pieceColor][pieceType][sq] + mgPieceValues[pieceType]
+		eg[pieceColor] += egTable[pieceColor][pieceType][sq] + egPieceValues[pieceType]
+		gamePhase += gamePhaseInc[pieceType]
 	}
 
 	// tapered eval
@@ -42,6 +44,9 @@ func evaluatePSQT(pos *board.Position) int {
 	egPhase := 24 - mgPhase
 	return (mgScore*mgPhase + egScore*egPhase) / 24
 }
+
+var mgPieceValues [6]int = [6]int{82, 337, 365, 477, 1025, 0}
+var egPieceValues [6]int = [6]int{94, 281, 297, 512, 936, 0}
 
 var mgPieceSquareTable [6][64]int = [6][64]int{
 	mgPawnTable,
