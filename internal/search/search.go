@@ -176,14 +176,6 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 func evaluate(pos *board.Position) int16 {
 	var score int
 
-	// giving checks is good
-	if movegen.InCheck(pos, board.Black) {
-		score += 50
-	}
-	if movegen.InCheck(pos, board.White) {
-		score -= 50
-	}
-
 	// PSQT
 	score += evaluatePSQT(pos)
 
