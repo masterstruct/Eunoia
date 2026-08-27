@@ -207,6 +207,14 @@ func evaluate(pos *board.Position) int16 {
 		score -= 50
 	}
 
+	// PSQT
+	occupied := pos.Occupied()
+	for occupied != 0 {
+		sq := occupied.PopLSB()
+		piece, _ := pos.PieceOn(sq)
+		score += mgTable[piece.Color][piece.Type][sq]
+	}
+
 	if pos.SideToMove == board.Black {
 		return int16(-score)
 	}
