@@ -5,18 +5,42 @@ import "github.com/masterstruct/Eunoia/internal/board"
 // All values are taken from PeSTO:
 // https://chessprogramming.org/PeSTO's_Evaluation_Function
 
+var gamePhaseInc [6]int = [6]int{0, 1, 1, 2, 4, 0}
 var mgTable [2][6][64]int // [color][pieceType][square]
 var egTable [2][6][64]int // [color][pieceType][square]
 
 func init() {
 	for pieceType := range board.PieceTypes() {
 		for sq := range board.NoSquare {
-			mgTable[board.Black][pieceType][sq] = -mgPieceSquareTable[pieceType][sq]
-			egTable[board.Black][pieceType][sq] = -egPieceSquareTable[pieceType][sq]
+			mgTable[board.Black][pieceType][sq] = mgPieceSquareTable[pieceType][sq]
+			egTable[board.Black][pieceType][sq] = egPieceSquareTable[pieceType][sq]
 			mgTable[board.White][pieceType][sq] = mgPieceSquareTable[pieceType][sq^56]
 			egTable[board.White][pieceType][sq] = egPieceSquareTable[pieceType][sq^56]
 		}
 	}
+}
+
+func evaluatePSQT(pos *board.Position) int {
+	var mg [2]int
+	var eg [2]int
+	gamePhase := 0
+
+	occupied := pos.Occupied()
+	for occupied != 0 {
+		sq := occupied.PopLSB()
+		piece, _ := pos.PieceOn(sq)
+		mg[piece.Color] += mgTable[piece.Color][piece.Type][sq]
+		eg[piece.Color] += egTable[piece.Color][piece.Type][sq]
+		gamePhase += gamePhaseInc[piece.Type]
+	}
+
+	// tapered eval
+	mgScore := mg[board.White] - mg[board.Black]
+	egScore := eg[board.White] - eg[board.Black]
+	mgPhase := gamePhase
+	mgPhase = min(mgPhase, 24)
+	egPhase := 24 - mgPhase
+	return (mgScore*mgPhase + egScore*egPhase) / 24
 }
 
 var mgPieceSquareTable [6][64]int = [6][64]int{
