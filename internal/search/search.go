@@ -176,19 +176,6 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 func evaluate(pos *board.Position) int16 {
 	var score int
 
-	// mobility
-	var whiteMoves, blackMoves movegen.Movelist
-
-	wPos := *pos
-	wPos.SideToMove = board.White
-	movegen.GeneratePseudolegalMoves(&wPos, &whiteMoves)
-
-	bPos := *pos
-	bPos.SideToMove = board.Black
-	movegen.GeneratePseudolegalMoves(&bPos, &blackMoves)
-
-	score += 5 * (whiteMoves.Len - blackMoves.Len)
-
 	// giving checks is good
 	if movegen.InCheck(pos, board.Black) {
 		score += 50
