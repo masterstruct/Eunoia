@@ -174,38 +174,10 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 }
 
 func evaluate(pos *board.Position) int16 {
-	// piece count
-	blackPieceCount := pos.Bitboards.Colors[board.Black].CountBits()
-	whitePieceCount := pos.Bitboards.Colors[board.White].CountBits()
-	score := 50 * (whitePieceCount - blackPieceCount)
+	var score int
 
-	// material count
-	score += 100 * (pos.PieceBB(board.WhitePawn).CountBits() - pos.PieceBB(board.BlackPawn).CountBits())
-	score += 300 * (pos.PieceBB(board.WhiteKnight).CountBits() - pos.PieceBB(board.BlackKnight).CountBits())
-	score += 300 * (pos.PieceBB(board.WhiteBishop).CountBits() - pos.PieceBB(board.BlackBishop).CountBits())
-	score += 500 * (pos.PieceBB(board.WhiteRook).CountBits() - pos.PieceBB(board.BlackRook).CountBits())
-	score += 900 * (pos.PieceBB(board.WhiteQueen).CountBits() - pos.PieceBB(board.BlackQueen).CountBits())
-
-	// mobility
-	var whiteMoves, blackMoves movegen.Movelist
-
-	wPos := *pos
-	wPos.SideToMove = board.White
-	movegen.GeneratePseudolegalMoves(&wPos, &whiteMoves)
-
-	bPos := *pos
-	bPos.SideToMove = board.Black
-	movegen.GeneratePseudolegalMoves(&bPos, &blackMoves)
-
-	score += 5 * (whiteMoves.Len - blackMoves.Len)
-
-	// giving checks is good
-	if movegen.InCheck(pos, board.Black) {
-		score += 50
-	}
-	if movegen.InCheck(pos, board.White) {
-		score -= 50
-	}
+	// PSQT
+	score += evaluatePSQT(pos)
 
 	if pos.SideToMove == board.Black {
 		return int16(-score)
