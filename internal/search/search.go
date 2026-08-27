@@ -174,10 +174,7 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 }
 
 func evaluate(pos *board.Position) int16 {
-	// piece count
-	blackPieceCount := pos.Bitboards.Colors[board.Black].CountBits()
-	whitePieceCount := pos.Bitboards.Colors[board.White].CountBits()
-	score := 50 * (whitePieceCount - blackPieceCount)
+	var score int
 
 	// mobility
 	var whiteMoves, blackMoves movegen.Movelist
