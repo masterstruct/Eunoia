@@ -45,6 +45,10 @@ func (pv *PVTable) Line() []board.Move {
 }
 
 func (ss *SearchState) printPV(w io.Writer, depth int, score int16) {
+	if ss.Quiet {
+		return
+	}
+
 	var buf bytes.Buffer
 
 	nodes := ss.Nodes

@@ -7,7 +7,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-const benchDepth = 4
+const benchDepth = 5
 
 type benchResult struct {
 	nodes uint64
@@ -25,6 +25,7 @@ func Bench() {
 	for _, benchStruct := range benchPositions {
 		eng.state.Reset()
 		eng.state.Init()
+		eng.state.Quiet = true
 
 		board.SetChess960(benchStruct.frc)
 		pos, err := board.ParseFEN(benchStruct.fen)

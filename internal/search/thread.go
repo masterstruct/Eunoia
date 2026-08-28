@@ -7,6 +7,8 @@ import (
 )
 
 type SearchState struct {
+	Quiet bool // avoid printing output
+
 	Stop      bool
 	Nodes     uint64
 	MaxNodes  uint64
@@ -20,6 +22,7 @@ type SearchState struct {
 }
 
 func (ss *SearchState) Reset() {
+	ss.Quiet = false
 	ss.Stop = false
 	ss.Nodes = 0
 	ss.MaxNodes = 0
