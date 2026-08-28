@@ -16,6 +16,7 @@ type SearchState struct {
 	SoftTime  time.Time
 
 	tt *tt.Table
+	pv *PVTable
 }
 
 func (ss *SearchState) Reset() {
@@ -34,4 +35,5 @@ func (ss *SearchState) ClearTT() {
 
 func (ss *SearchState) Init() {
 	ss.tt = &tt.Table{}
+	ss.pv = &PVTable{}
 }
