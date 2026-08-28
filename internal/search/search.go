@@ -61,6 +61,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 	if ss.searchStopped() {
 		return ss.qsearch(&pos, alpha, beta)
 	}
+
 	ss.Nodes++
 
 	alphaOrig := alpha
@@ -105,6 +106,11 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 		legalMoves++
 
 		score := -ss.Negamax(newPos, depth-1, ply+1, -beta, -alpha)
+
+		if ss.searchStopped() {
+			return 0
+		}
+
 		if score > bestValue {
 			bestValue = score
 			bestMove = move
