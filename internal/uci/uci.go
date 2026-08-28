@@ -33,6 +33,7 @@ func NewEngine() *Engine {
 func Loop(r io.Reader, w io.Writer) {
 	if len(os.Args) > 1 && os.Args[1] == "bench" {
 		Bench()
+		return
 	}
 
 	scanner := bufio.NewScanner(r)
