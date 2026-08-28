@@ -1,6 +1,7 @@
 package search
 
 import (
+	"os"
 	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -49,6 +50,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 				ss.pv.Store(0, move)
 			}
 		}
+		ss.printPV(os.Stdout, depth, bestScore)
 	}
 	return bestMove
 }

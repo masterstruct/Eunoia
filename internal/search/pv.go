@@ -1,6 +1,12 @@
 package search
 
-import "github.com/masterstruct/Eunoia/internal/board"
+import (
+	"fmt"
+	"io"
+	"time"
+
+	"github.com/masterstruct/Eunoia/internal/board"
+)
 
 const MaxPly = 128
 
@@ -35,4 +41,18 @@ func (pv *PVTable) Store(ply int, move board.Move) {
 
 func (pv *PVTable) Line() []board.Move {
 	return pv.line[0][:pv.length[0]]
+}
+
+func (ss *SearchState) printPV(w io.Writer, depth int, score int16) {
+	line := ss.pv.Line()
+
+	nodes := ss.Nodes
+	elapsed := max(time.Since(ss.StartTime).Milliseconds(), 1)
+	nps := 1000 * nodes / uint64(elapsed)
+
+	s := fmt.Sprint(line)
+	s = s[1 : len(s)-1]
+
+	fmt.Fprintf(w, "info depth %d score cp %d nodes %d nps %d time %d pv %s\n",
+		depth, score, nodes, nps, elapsed, s)
 }
