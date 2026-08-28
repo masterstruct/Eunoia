@@ -15,3 +15,24 @@ func (pv *PVTable) Init(ply int) {
 	}
 	pv.length[ply] = ply
 }
+
+func (pv *PVTable) Store(ply int, move board.Move) {
+	if ply >= MaxPly {
+		return
+	}
+	pv.line[ply][ply] = move
+
+	child := ply + 1
+	if child >= MaxPly {
+		pv.length[ply] = child
+		return
+	}
+	for next := child; next < pv.length[child]; next++ {
+		pv.line[ply][next] = pv.line[child][next]
+	}
+	pv.length[ply] = pv.length[child]
+}
+
+func (pv *PVTable) Line() []board.Move {
+	return pv.line[0][:pv.length[0]]
+}
