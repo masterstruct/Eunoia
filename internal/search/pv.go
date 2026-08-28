@@ -1,8 +1,9 @@
 package search
 
 import (
-	"fmt"
+	"bytes"
 	"io"
+	"strconv"
 	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -44,15 +45,51 @@ func (pv *PVTable) Line() []board.Move {
 }
 
 func (ss *SearchState) printPV(w io.Writer, depth int, score int16) {
-	line := ss.pv.Line()
+	var buf bytes.Buffer
 
 	nodes := ss.Nodes
 	elapsed := max(time.Since(ss.StartTime).Milliseconds(), 1)
 	nps := 1000 * nodes / uint64(elapsed)
 
-	s := fmt.Sprint(line)
-	s = s[1 : len(s)-1]
+	buf.WriteString("info depth ")
+	buf.WriteString(strconv.Itoa(depth))
+	buf.WriteString(" score cp ")
+	buf.WriteString(strconv.Itoa(int(score)))
+	buf.WriteString(" nodes ")
+	buf.WriteString(strconv.FormatUint(nodes, 10))
+	buf.WriteString(" nps ")
+	buf.WriteString(strconv.FormatUint(nps, 10))
+	buf.WriteString(" time ")
+	buf.WriteString(strconv.FormatInt(elapsed, 10))
+	buf.WriteString(" pv")
 
-	fmt.Fprintf(w, "info depth %d score cp %d nodes %d nps %d time %d pv %s\n",
-		depth, score, nodes, nps, elapsed, s)
+	chess960 := board.IsChess960()
+	for _, move := range ss.pv.Line() {
+		buf.WriteByte(' ')
+		writeMove(&buf, move, chess960)
+	}
+
+	buf.WriteByte('\n')
+	w.Write(buf.Bytes())
+}
+
+func writeSquare(buf *bytes.Buffer, sq board.Square) {
+	if sq == board.NoSquare {
+		buf.WriteByte('-')
+		return
+	}
+	buf.WriteByte('a' + byte(sq.File()))
+	buf.WriteByte('1' + byte(sq.Rank()))
+}
+
+func writeMove(buf *bytes.Buffer, move board.Move, chess960 bool) {
+	writeSquare(buf, move.From())
+	to := move.To()
+	if move.IsCastle() && !chess960 {
+		to = board.FischerRandomToStandardCastling(move)
+	}
+	writeSquare(buf, to)
+	if move.IsPromo() {
+		buf.WriteByte(move.Promo().String())
+	}
 }
