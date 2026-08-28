@@ -9,6 +9,8 @@
 *.dylib
 dev
 base
+eunoia
+Eunoia
 
 # fastchess
 config.json
@@ -34,5 +36,5 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
