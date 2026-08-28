@@ -22,6 +22,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 			break
 		}
 		bestScore := -INF
+		ss.pv.Init(0)
 
 		var movelist movegen.Movelist
 		movegen.GeneratePseudolegalMoves(&pos, &movelist)
@@ -40,18 +41,21 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 				continue
 			}
 
-			score := -ss.Negamax(newPos, depth-1, -INF, INF)
+			score := -ss.Negamax(newPos, depth-1, 1, -INF, INF)
 
 			if score > bestScore {
 				bestScore = score
 				bestMove = move
+				ss.pv.Store(0, move)
 			}
 		}
 	}
 	return bestMove
 }
 
-func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16) int16 {
+func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta int16) int16 {
+	ss.pv.Init(ply)
+
 	if ss.searchStopped() {
 		return ss.qsearch(&pos, alpha, beta)
 	}
@@ -98,12 +102,13 @@ func (ss *SearchState) Negamax(pos board.Position, depth int, alpha, beta int16)
 
 		legalMoves++
 
-		score := -ss.Negamax(newPos, depth-1, -beta, -alpha)
+		score := -ss.Negamax(newPos, depth-1, ply+1, -beta, -alpha)
 		if score > bestValue {
 			bestValue = score
 			bestMove = move
 			if score > alpha {
 				alpha = score
+				ss.pv.Store(ply, move)
 			}
 		}
 		if score >= beta {
