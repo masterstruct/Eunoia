@@ -89,7 +89,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 	}
 
 	if depth <= 0 {
-		return evaluate(&pos)
+		return ss.qsearch(&pos, alpha, beta)
 	}
 
 	bestValue := -INF
@@ -151,6 +151,8 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 }
 
 func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
+	ss.Nodes++
+
 	standPat := evaluate(pos)
 
 	if standPat >= beta {
@@ -159,8 +161,6 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 	if standPat > alpha {
 		alpha = standPat
 	}
-
-	ss.Nodes++
 
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(pos, &movelist)
