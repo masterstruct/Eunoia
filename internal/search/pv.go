@@ -57,8 +57,13 @@ func (ss *SearchState) printPV(w io.Writer, depth int, score int16) {
 
 	buf.WriteString("info depth ")
 	buf.WriteString(strconv.Itoa(depth))
-	buf.WriteString(" score cp ")
-	buf.WriteString(strconv.Itoa(int(score)))
+	if isMateScore(score) {
+		buf.WriteString(" score mate ")
+		buf.WriteString(strconv.Itoa(mateInMoves(score)))
+	} else {
+		buf.WriteString(" score cp ")
+		buf.WriteString(strconv.Itoa(int(score)))
+	}
 	buf.WriteString(" nodes ")
 	buf.WriteString(strconv.FormatUint(nodes, 10))
 	buf.WriteString(" nps ")
@@ -96,4 +101,25 @@ func writeMove(buf *bytes.Buffer, move board.Move, chess960 bool) {
 	if move.IsPromo() {
 		buf.WriteByte(move.Promo().String())
 	}
+}
+
+func isMateScore(score int16) bool {
+	return score >= MATE-int16(MaxPly) || score <= -MATE+int16(MaxPly)
+}
+
+func mateInMoves(score int16) int {
+	var plies int16
+	if score > 0 {
+		plies = MATE - score
+	} else {
+		plies = MATE + score
+	}
+	if plies <= 0 {
+		plies = 1
+	}
+	moves, _ := board.PlyToFullmoves(uint16(plies - 1))
+	if score < 0 {
+		return -int(moves)
+	}
+	return int(moves)
 }

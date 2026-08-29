@@ -74,16 +74,17 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
 	if ttHit && entry.Depth >= uint8(depth) {
+		score := scoreFromTT(entry.Score, ply)
 		switch entry.Flag {
 		case tt.Exact:
-			return entry.Score
+			return score
 		case tt.Lower:
-			if entry.Score >= beta {
-				return entry.Score
+			if score >= beta {
+				return score
 			}
 		case tt.Upper:
-			if entry.Score <= alpha {
-				return entry.Score
+			if score <= alpha {
+				return score
 			}
 		}
 	}
@@ -132,7 +133,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 	if legalMoves == 0 {
 		if movegen.InCheck(&pos, mover) {
 			// checkmate
-			return -MATE + int16(pos.Ply)
+			return -MATE + int16(ply)
 		}
 		// stalemate
 		return 0
@@ -145,9 +146,29 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 		flag = tt.Lower
 	}
 
-	ss.tt.Store(pos.Hash, bestMove, bestValue, uint8(depth), flag)
+	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestValue, ply), uint8(depth), flag)
 
 	return bestValue
+}
+
+func scoreToTT(score int16, ply int) int16 {
+	if score >= MATE-int16(MaxPly) {
+		return score + int16(ply)
+	}
+	if score <= -MATE+int16(MaxPly) {
+		return score - int16(ply)
+	}
+	return score
+}
+
+func scoreFromTT(score int16, ply int) int16 {
+	if score >= MATE-int16(MaxPly) {
+		return score - int16(ply)
+	}
+	if score <= -MATE+int16(MaxPly) {
+		return score + int16(ply)
+	}
+	return score
 }
 
 func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
