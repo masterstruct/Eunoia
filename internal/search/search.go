@@ -22,40 +22,21 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 		if (ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) || (!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime)) {
 			break
 		}
-		bestScore := -INF
-		ss.pv.Init(0)
 
-		var movelist movegen.Movelist
-		movegen.GeneratePseudolegalMoves(&pos, &movelist)
-		ss.OrderMoves(&pos, &movelist)
-		mover := pos.SideToMove
+		score := ss.Negamax(pos, depth, 0, -INF, INF)
 
-		for i := range movelist.Len {
-			if ss.searchStopped() {
-				return bestMove
-			}
-
-			move := movelist.Moves[i]
-			newPos := pos.MakeMove(move)
-
-			if movegen.InCheck(&newPos, mover) {
-				continue
-			}
-
-			score := -ss.Negamax(newPos, depth-1, 1, -INF, INF)
-
-			if ss.searchStopped() {
-				ss.printPV(os.Stdout, depth, bestScore)
-				return bestMove
-			}
-
-			if score > bestScore {
-				bestScore = score
-				bestMove = move
-				ss.pv.Store(0, move)
-			}
+		if len(ss.pv.Line()) == 0 {
+			// interruped before first move search completed,
+			// use bestMove from previous depth
+			break
 		}
-		ss.printPV(os.Stdout, depth, bestScore)
+
+		bestMove = ss.pv.Line()[0]
+		ss.printPV(os.Stdout, depth, score)
+
+		if ss.searchStopped() {
+			break
+		}
 	}
 	return bestMove
 }
@@ -73,7 +54,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
-	if ttHit && entry.Depth >= uint8(depth) {
+	if ttHit && ply > 0 && entry.Depth >= uint8(depth) {
 		score := scoreFromTT(entry.Score, ply)
 		switch entry.Flag {
 		case tt.Exact:
