@@ -120,7 +120,7 @@ func TestParseFEN_Valid(t *testing.T) {
 		},
 		{
 			name: "kiwipete",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			fen:  KiwipeteFEN,
 			placements: []placement{
 				{BlackRook, A8}, {BlackKing, E8}, {BlackRook, H8},
 				{BlackPawn, A7}, {BlackPawn, C7}, {BlackPawn, D7}, {BlackQueen, E7}, {BlackPawn, F7}, {BlackBishop, G7},
@@ -173,7 +173,7 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 15 70",
-		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+		KiwipeteFEN,
 		"8/2p3p1/2p1ppp1/rk4P1/3P1K1P/R1P5/2P2P2/8 w - - 0 32",
 		"8/8/6K1/5B2/7p/6b1/3k4/4q3 b - - 17 121",
 	}
@@ -198,7 +198,7 @@ func BenchmarkFEN(b *testing.B) {
 		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
-		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+		KiwipeteFEN,
 	}
 
 	// parse once so the benchmark measures only Position.FEN()
@@ -229,7 +229,7 @@ func BenchmarkParseFEN(b *testing.B) {
 		"k7/8/8/8/8/8/8/7K w - - 0 1",
 		"rnbqkb1r/pppp1ppp/5n2/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 3",
 		"K6k/8/8/8/8/8/8/n6B w - - 0 1",
-		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+		KiwipeteFEN,
 		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w AHah - 0 1",
 		"4krbb/p2ppp2/1nr4p/1Q3Np1/2p1qP2/2P3P1/P1NP3P/1R1K1RB1 w f - 2 15",
 		"1r2krbb/p2ppp1p/8/2n3p1/nNp1P3/2P1N1P1/P2P1P1P/2R1KRBB w CFf - 0 11",
@@ -265,7 +265,7 @@ func TestParseFEN_FieldCount(t *testing.T) {
 		{"too many fields", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 extra", true},
 		{"extra trailing space", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ", false},
 		{"double space between fields", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w  KQkq - 0 1", false},
-		{"kiwipete", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", false},
+		{"kiwipete", KiwipeteFEN, false},
 	}
 
 	for _, tt := range tests {
@@ -284,18 +284,18 @@ func TestParseFEN_PiecePlacement(t *testing.T) {
 		fen     string
 		wantErr error
 	}{
-		{"too few ranks", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP w KQkq - 0 1", ErrInvalidRankCount},
-		{"too many ranks", "rnbqkbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankCount},
-		{"rank too short", "rnbqkbn/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
-		{"rank too long", "rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
-		{"rank too long, digit overflow", "rnbqkbn9/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankDigit},
-		{"rank sums over 8 with pieces and digit", "rnbqkbnr1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankLength},
-		{"digit zero forbidden", "rnbqkbnr/pppppppp/0/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankDigit},
-		{"digit 9 invalid", "9/8/8/8/8/8/8/8 w - - 0 1", ErrInvalidRankDigit},
-		{"invalid piece letter", "xnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidPieceChar},
-		{"empty rank string", "//8/8/8/8/8/8 w - - 0 1", ErrInvalidRankLength},
-		{"trailing slash", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR/ w KQkq - 0 1", ErrInvalidRankCount},
-		{"leading slash", "/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", ErrInvalidRankCount},
+		{"too few ranks", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP w KQkq - 0 1", errInvalidRankCount},
+		{"too many ranks", "rnbqkbnr/pppppppp/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidRankCount},
+		{"rank too short", "rnbqkbn/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidRankLength},
+		{"rank too long", "rnbqkbnrr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidRankLength},
+		{"rank too long, digit overflow", "rnbqkbn9/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidRankDigit},
+		{"rank sums over 8 with pieces and digit", "rnbqkbnr1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidRankLength},
+		{"digit zero forbidden", "rnbqkbnr/pppppppp/0/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidRankDigit},
+		{"digit 9 invalid", "9/8/8/8/8/8/8/8 w - - 0 1", errInvalidRankDigit},
+		{"invalid piece letter", "xnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidPieceChar},
+		{"empty rank string", "//8/8/8/8/8/8 w - - 0 1", errInvalidRankLength},
+		{"trailing slash", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR/ w KQkq - 0 1", errInvalidRankCount},
+		{"leading slash", "/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", errInvalidRankCount},
 	}
 
 	for _, tt := range tests {
@@ -347,9 +347,9 @@ func TestParseFEN_Castling(t *testing.T) {
 		fen     string
 		wantErr error
 	}{
-		{"invalid char propagates", "k7/8/8/8/8/8/8/7K w X - 0 1", ErrInvalidCastlingChar},
-		{"duplicate propagates", "k7/8/8/8/8/8/8/7K w KK - 0 1", ErrDuplicateCastlingChar},
-		{"too long propagates", "k7/8/8/8/8/8/8/7K w KQkqK - 0 1", ErrInvalidCastlingLength},
+		{"invalid char propagates", "k7/8/8/8/8/8/8/7K w X - 0 1", errInvalidCastlingChar},
+		{"duplicate propagates", "k7/8/8/8/8/8/8/7K w KK - 0 1", errDuplicateCastlingChar},
+		{"too long propagates", "k7/8/8/8/8/8/8/7K w KQkqK - 0 1", errInvalidCastlingLength},
 	}
 
 	for _, tt := range tests {

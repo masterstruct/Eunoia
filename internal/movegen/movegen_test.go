@@ -128,7 +128,7 @@ func TestInCheck(t *testing.T) {
 		},
 		{
 			name: "white king not in check in kiwipete position",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+			fen:  board.KiwipeteFEN,
 			want: false,
 		},
 		{
@@ -163,7 +163,7 @@ func TestInCheck(t *testing.T) {
 func BenchmarkInCheck(b *testing.B) {
 	fens := []string{
 		"4k3/8/8/8/8/8/4r3/4K3 w - - 0 1",
-		"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
+		board.KiwipeteFEN,
 		"8/5k2/8/8/2B5/5K2/8/8 b - - 0 1",
 		"4k3/8/3r4/1b6/8/5q2/1n6/4K3 w - - 0 1",
 		"8/3k4/8/8/8/8/4R3/4K3 b - - 0 1",
@@ -199,7 +199,7 @@ func TestGenKnightMoves(t *testing.T) {
 		},
 		{
 			name: "kiwipete for white has 11 knight moves",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			fen:  board.KiwipeteFEN,
 			to: []board.Square{board.B1, board.D1, board.A4, board.B5,
 				board.D3, board.C4, board.G4, board.C6, board.G6, board.D7, board.F7},
 		},
@@ -247,7 +247,7 @@ func TestGenBishopMoves(t *testing.T) {
 		},
 		{
 			name: "kiwipete for white has 11 bishop moves",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			fen:  board.KiwipeteFEN,
 			to: []board.Square{board.C1, board.E3, board.F4, board.G5, board.H6,
 				board.A6, board.B5, board.C4, board.D3, board.D1, board.F1},
 		},
@@ -295,7 +295,7 @@ func TestGenRookMoves(t *testing.T) {
 		},
 		{
 			name: "kiwipete for white has 5 rook moves",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			fen:  board.KiwipeteFEN,
 			to:   []board.Square{board.B1, board.C1, board.D1, board.F1, board.G1},
 		},
 		{
@@ -342,7 +342,7 @@ func TestGenQueenMoves(t *testing.T) {
 		},
 		{
 			name: "kiwipete for white has 9 queen moves",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			fen:  board.KiwipeteFEN,
 			to: []board.Square{board.D3, board.E3, board.F4, board.F5,
 				board.F6, board.G3, board.G4, board.H3, board.H5},
 		},
@@ -395,7 +395,7 @@ func TestGenPawnMoves(t *testing.T) {
 		},
 		{
 			name: "kiwipete for white has 8 pawn moves",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			fen:  board.KiwipeteFEN,
 			to: []board.Square{board.A3, board.A4, board.B3,
 				board.D6, board.E6, board.G3, board.G4, board.H3},
 		},
@@ -608,7 +608,7 @@ func TestGenKingMoves(t *testing.T) {
 		},
 		{
 			name: "kiwipete for white has 4 king moves",
-			fen:  "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+			fen:  board.KiwipeteFEN,
 			to:   []board.Square{board.A1, board.D1, board.F1, board.H1},
 		},
 		{

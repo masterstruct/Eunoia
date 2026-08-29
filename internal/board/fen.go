@@ -7,18 +7,21 @@ import (
 	"strings"
 )
 
-const StartingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+const (
+	StartingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+	KiwipeteFEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+)
 
 var (
-	ErrInvalidFieldCount     = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
-	ErrInvalidRankCount      = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
-	ErrInvalidPieceChar      = errors.New("fen: piece placement contains an unrecognized character")
-	ErrInvalidRankDigit      = errors.New("fen: empty-square digit must be between 1 and 8")
-	ErrInvalidRankLength     = errors.New("fen: each rank must total exactly 8 squares")
-	ErrInvalidSideToMove     = errors.New("fen: side to move must be 'w' or 'b'")
-	ErrInvalidHalfmoveClock  = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 100")
-	ErrInvalidFullmoveNumber = errors.New("fen: fullmove number must be a positive integer starting from 1")
-	ErrInvalidKingCount      = errors.New("fen: each side must have exactly one king")
+	errInvalidFieldCount     = errors.New("fen: expected 4 to 6 space-separated fields (piece placement, side to move, castling, en passant, [halfmove clock], [fullmove number])")
+	errInvalidRankCount      = errors.New("fen: piece placement must have exactly 8 ranks separated by '/'")
+	errInvalidPieceChar      = errors.New("fen: piece placement contains an unrecognized character")
+	errInvalidRankDigit      = errors.New("fen: empty-square digit must be between 1 and 8")
+	errInvalidRankLength     = errors.New("fen: each rank must total exactly 8 squares")
+	errInvalidSideToMove     = errors.New("fen: side to move must be 'w' or 'b'")
+	errInvalidHalfmoveClock  = errors.New("fen: halfmove clock must be a non-negative integer between 0 and 100")
+	errInvalidFullmoveNumber = errors.New("fen: fullmove number must be a positive integer starting from 1")
+	errInvalidKingCount      = errors.New("fen: each side must have exactly one king")
 )
 
 func ParseFEN(fen string) (Position, error) {
@@ -27,16 +30,16 @@ func ParseFEN(fen string) (Position, error) {
 	pos := NewPosition()
 
 	if n < 4 || n > 6 {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidFieldCount, fen)
+		return pos, fmt.Errorf("%w: %q", errInvalidFieldCount, fen)
 	}
 
 	ranks := strings.Split(splits[0], "/")
 	if len(ranks) != 8 {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidRankCount, fen)
+		return pos, fmt.Errorf("%w: %q", errInvalidRankCount, fen)
 	}
 	for _, r := range ranks {
 		if len(r) > 8 {
-			return pos, fmt.Errorf("%w: %q", ErrInvalidRankLength, fen)
+			return pos, fmt.Errorf("%w: %q", errInvalidRankLength, fen)
 		}
 	}
 
@@ -49,7 +52,7 @@ func ParseFEN(fen string) (Position, error) {
 			// check how many files were processed
 			// in this rank -- must be exactly 8
 			if file-1 != FileH {
-				return pos, fmt.Errorf("%w: %q", ErrInvalidRankLength, fen)
+				return pos, fmt.Errorf("%w: %q", errInvalidRankLength, fen)
 			}
 
 			file = FileA
@@ -63,7 +66,7 @@ func ParseFEN(fen string) (Position, error) {
 		if err == nil {
 			// number
 			if skip < 1 || skip > 8 {
-				return pos, fmt.Errorf("%w: %q", ErrInvalidRankDigit, fen)
+				return pos, fmt.Errorf("%w: %q", errInvalidRankDigit, fen)
 			}
 			file += skip
 			continue
@@ -85,13 +88,13 @@ func ParseFEN(fen string) (Position, error) {
 			continue
 		}
 		// character isn't a number or a valid piece
-		return pos, fmt.Errorf("%w: %q", ErrInvalidPieceChar, fen)
+		return pos, fmt.Errorf("%w: %q", errInvalidPieceChar, fen)
 	}
 
 	// side to move
 	sideToMove := ParseColor(splits[1][0])
 	if sideToMove == NoColor {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidSideToMove, splits[1][0])
+		return pos, fmt.Errorf("%w: %q", errInvalidSideToMove, splits[1][0])
 	}
 	pos.SideToMove = sideToMove
 
@@ -99,7 +102,7 @@ func ParseFEN(fen string) (Position, error) {
 	whiteKingBB := pos.PieceBB(WhiteKing)
 	blackKingBB := pos.PieceBB(BlackKing)
 	if whiteKingBB.CountBits() != 1 || blackKingBB.CountBits() != 1 {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidKingCount, fen)
+		return pos, fmt.Errorf("%w: %q", errInvalidKingCount, fen)
 	}
 
 	// king squares
@@ -127,7 +130,7 @@ func ParseFEN(fen string) (Position, error) {
 	if n >= 5 {
 		halfMove, err := strconv.Atoi(splits[4])
 		if err != nil || halfMove < 0 || halfMove > 100 {
-			return pos, fmt.Errorf("%w: %q", ErrInvalidHalfmoveClock, splits[4])
+			return pos, fmt.Errorf("%w: %q", errInvalidHalfmoveClock, splits[4])
 		}
 		pos.HalfmoveClock = uint8(halfMove)
 	}
@@ -136,7 +139,7 @@ func ParseFEN(fen string) (Position, error) {
 	if n >= 6 {
 		fullmoves, err := strconv.Atoi(splits[5])
 		if err != nil || fullmoves <= 0 || fullmoves > 10000 {
-			return pos, fmt.Errorf("%w: %q", ErrInvalidFullmoveNumber, splits[5])
+			return pos, fmt.Errorf("%w: %q", errInvalidFullmoveNumber, splits[5])
 		}
 		pos.Ply = FullmovesToPly(uint16(fullmoves), pos.SideToMove)
 	}
