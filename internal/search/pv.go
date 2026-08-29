@@ -44,9 +44,13 @@ func (pv *PVTable) Line() []board.Move {
 	return pv.line[0][:pv.length[0]]
 }
 
-func (ss *SearchState) printPV(w io.Writer, depth int, score int16) {
+func (ss *SearchState) printPV(w io.Writer, depth int, score int16, sideToMove board.Color) {
 	if ss.Quiet {
 		return
+	}
+
+	if sideToMove == board.Black {
+		score = -score
 	}
 
 	var buf bytes.Buffer

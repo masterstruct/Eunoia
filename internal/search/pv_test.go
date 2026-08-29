@@ -30,6 +30,6 @@ func BenchmarkPrintPV(b *testing.B) {
 	ss.Nodes = 25461085
 
 	for b.Loop() {
-		ss.printPV(io.Discard, 8, 38)
+		ss.printPV(io.Discard, 8, 38, board.White)
 	}
 }
