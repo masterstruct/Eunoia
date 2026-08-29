@@ -53,7 +53,6 @@ func TestOpponent(t *testing.T) {
 	}{
 		{"white opponent is black", White, Black},
 		{"black opponent is white", Black, White},
-		{"no color opponent is no color", NoColor, NoColor},
 	}
 
 	for _, tt := range tests {
@@ -122,7 +121,7 @@ func TestParsePieceType(t *testing.T) {
 }
 
 func TestPieceTypes(t *testing.T) {
-	got := PieceTypes()
+	got := PieceTypes
 	want := []PieceType{Pawn, Knight, Bishop, Rook, Queen, King}
 
 	if len(got) != len(want) {

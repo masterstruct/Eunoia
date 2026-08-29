@@ -31,14 +31,8 @@ func ParseColor(b byte) Color {
 }
 
 func (color Color) Opponent() Color {
-	switch color {
-	case Black:
-		return White
-	case White:
-		return Black
-	default:
-		return NoColor
-	}
+	// pls don't do NoColor.Opponent()
+	return color ^ 1
 }
 
 type PieceType uint8
@@ -91,9 +85,7 @@ func ParsePieceType(b byte) PieceType {
 	}
 }
 
-func PieceTypes() [6]PieceType {
-	return [6]PieceType{Pawn, Knight, Bishop, Rook, Queen, King}
-}
+var PieceTypes = [6]PieceType{Pawn, Knight, Bishop, Rook, Queen, King}
 
 type Piece struct {
 	Type  PieceType
