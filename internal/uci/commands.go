@@ -162,6 +162,10 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, error) {
 
 	for _, move := range moves {
 		success := false
+		n := len(move)
+		if n < 4 || n > 5 {
+			return *pos, fmt.Errorf("uci: illegal move %q", move)
+		}
 
 		var movelist movegen.Movelist
 		from, err := board.ParseSquare(move[:2])

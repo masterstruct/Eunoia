@@ -23,6 +23,7 @@ type Entry struct {
 	Flag  Flag
 }
 
+// TODO: variable size TT
 const Size uint = 1 << 22 // 64MiB
 const Mask uint = Size - 1
 
@@ -60,7 +61,7 @@ func (t *Table) index(key uint64) uint64 {
 	return key & uint64(Mask)
 }
 
-func SizeFromMB(mb uint) uint {
+func sizeFromMiB(mb uint) uint {
 	bytes := mb * 1024 * 1024
 	entries := bytes / uint(unsafe.Sizeof(Entry{}))
 	return nextPow2(entries)

@@ -62,7 +62,7 @@ func Loop(r io.Reader, w io.Writer) {
 		case "uci":
 			fmt.Fprintln(w, "id name Eunoia")
 			fmt.Fprintln(w, "id author Master Struct")
-			fmt.Fprintln(w, "option name Hash type spin default 1 min 1 max 1")
+			fmt.Fprintln(w, "option name Hash type spin default 64 min 64 max 64")
 			fmt.Fprintln(w, "option name Threads type spin default 1 min 1 max 1")
 			fmt.Fprintln(w, "uciok")
 
