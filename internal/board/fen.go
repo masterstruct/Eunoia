@@ -198,7 +198,7 @@ func (pos *Position) FEN() string {
 	sb.WriteString(pos.SideToMove.String())
 	sb.WriteByte(' ')
 	if IsChess960() {
-		sb.WriteString(pos.shredderCastlingString())
+		sb.WriteString(pos.CastlingRights.ShredderString(pos.CastlingRookSq))
 	} else {
 		sb.WriteString(pos.CastlingRights.String())
 	}
@@ -210,27 +210,6 @@ func (pos *Position) FEN() string {
 	fullmoves, _ := PlyToFullmoves(pos.Ply)
 	sb.WriteString(strconv.Itoa(int(fullmoves)))
 	return sb.String()
-}
-
-func (pos *Position) shredderCastlingString() string {
-	if pos.CastlingRights == NoCastling {
-		return "-"
-	}
-	rooks := pos.CastlingRookSq
-	s := ""
-	if pos.CastlingRights.Has(WhiteQueenside) {
-		s += strings.ToUpper(rooks.WhiteQueenside.File().String())
-	}
-	if pos.CastlingRights.Has(WhiteKingside) {
-		s += strings.ToUpper(rooks.WhiteKingside.File().String())
-	}
-	if pos.CastlingRights.Has(BlackQueenside) {
-		s += rooks.BlackQueenside.File().String()
-	}
-	if pos.CastlingRights.Has(BlackKingside) {
-		s += rooks.BlackKingside.File().String()
-	}
-	return s
 }
 
 func PlyToFullmoves(ply uint16) (fullmoves uint16, sideToMove Color) {

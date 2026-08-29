@@ -91,7 +91,29 @@ func (cr CastlingRights) String() string {
 	return s
 }
 
+func (cr CastlingRights) ShredderString(rooks CastlingRookSquares) string {
+	if cr == NoCastling {
+		return "-"
+	}
+
+	s := ""
+	if cr.Has(WhiteQueenside) {
+		s += strings.ToUpper(rooks.WhiteQueenside.File().String())
+	}
+	if cr.Has(WhiteKingside) {
+		s += strings.ToUpper(rooks.WhiteKingside.File().String())
+	}
+	if cr.Has(BlackQueenside) {
+		s += rooks.BlackQueenside.File().String()
+	}
+	if cr.Has(BlackKingside) {
+		s += rooks.BlackKingside.File().String()
+	}
+	return s
+}
+
 func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (CastlingRights, error) {
+	// TODO: add X-fen support
 	n := len(s)
 	if n == 0 || n > 4 {
 		return NoCastling, fmt.Errorf("%w: %q", errInvalidCastlingLength, s)
