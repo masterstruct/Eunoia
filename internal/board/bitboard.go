@@ -97,7 +97,7 @@ func (bb Bitboard) String() string {
 				sb.WriteString(ForegroundRGB(243, 139, 168))
 				sb.WriteString(". ")
 			}
-			sb.WriteString(ResetColor)
+			sb.WriteString(resetColor)
 		}
 
 		sb.WriteByte('\n')
@@ -106,7 +106,7 @@ func (bb Bitboard) String() string {
 	// files
 	sb.WriteString(ForegroundRGB(116, 199, 236))
 	sb.WriteString("  a b c d e f g h\n")
-	sb.WriteString(ResetColor)
+	sb.WriteString(resetColor)
 
 	return sb.String()
 }

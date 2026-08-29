@@ -84,21 +84,21 @@ func TestParseCastlingRights(t *testing.T) {
 		{"mixed all", "KQkq", AllCastling, nil},
 		{"mixed unordered", "qKkQ", AllCastling, nil},
 
-		{"empty string", "", NoCastling, ErrInvalidCastlingLength},
-		{"too long", "KQkq-", NoCastling, ErrInvalidCastlingLength},
-		{"invalid none and black kingside", "-k", NoCastling, ErrInvalidCastlingChar},
-		{"invalid black kingside and none", "k-", NoCastling, ErrInvalidCastlingChar},
+		{"empty string", "", NoCastling, errInvalidCastlingLength},
+		{"too long", "KQkq-", NoCastling, errInvalidCastlingLength},
+		{"invalid none and black kingside", "-k", NoCastling, errInvalidCastlingChar},
+		{"invalid black kingside and none", "k-", NoCastling, errInvalidCastlingChar},
 
-		{"invalid char letter", "X", NoCastling, ErrInvalidCastlingChar},
-		{"invalid char digit", "1", NoCastling, ErrInvalidCastlingChar},
-		{"invalid char symbol", "?", NoCastling, ErrInvalidCastlingChar},
+		{"invalid char letter", "X", NoCastling, errInvalidCastlingChar},
+		{"invalid char digit", "1", NoCastling, errInvalidCastlingChar},
+		{"invalid char symbol", "?", NoCastling, errInvalidCastlingChar},
 
-		{"duplicate white king", "KK", NoCastling, ErrDuplicateCastlingChar},
-		{"duplicate white queen", "QQ", NoCastling, ErrDuplicateCastlingChar},
-		{"duplicate black king", "kk", NoCastling, ErrDuplicateCastlingChar},
-		{"duplicate black queen", "qq", NoCastling, ErrDuplicateCastlingChar},
-		{"duplicate mixed", "KQK", NoCastling, ErrDuplicateCastlingChar},
-		{"duplicate across order", "qkq", NoCastling, ErrDuplicateCastlingChar},
+		{"duplicate white king", "KK", NoCastling, errDuplicateCastlingChar},
+		{"duplicate white queen", "QQ", NoCastling, errDuplicateCastlingChar},
+		{"duplicate black king", "kk", NoCastling, errDuplicateCastlingChar},
+		{"duplicate black queen", "qq", NoCastling, errDuplicateCastlingChar},
+		{"duplicate mixed", "KQK", NoCastling, errDuplicateCastlingChar},
+		{"duplicate across order", "qkq", NoCastling, errDuplicateCastlingChar},
 	}
 
 	for _, tt := range tests {
@@ -664,7 +664,7 @@ func setBits(sqs []Square) Bitboard {
 
 func allPieceBB(pos *Position) Bitboard {
 	b := EmptyBB
-	for _, pt := range PieceTypes() {
+	for _, pt := range PieceTypes {
 		b |= pos.Pieces[pt]
 	}
 	return b
