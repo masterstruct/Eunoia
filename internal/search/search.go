@@ -44,6 +44,11 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 
 			score := -ss.Negamax(newPos, depth-1, 1, -INF, INF)
 
+			if ss.searchStopped() {
+				ss.printPV(os.Stdout, depth, bestScore)
+				return bestMove
+			}
+
 			if score > bestScore {
 				bestScore = score
 				bestMove = move
@@ -59,7 +64,7 @@ func (ss *SearchState) Negamax(pos board.Position, depth, ply int, alpha, beta i
 	ss.pv.Init(ply)
 
 	if ss.searchStopped() {
-		return ss.qsearch(&pos, alpha, beta)
+		return 0
 	}
 
 	ss.Nodes++
@@ -174,6 +179,10 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 		}
 
 		score := -ss.qsearch(&newPos, -beta, -alpha)
+
+		if ss.searchStopped() {
+			return 0
+		}
 
 		if score >= beta {
 			return score
