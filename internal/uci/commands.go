@@ -11,7 +11,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
-func (e *Engine) handleGo(w io.Writer, args []string) {
+func (e *engine) handleGo(w io.Writer, args []string) {
 	e.mu.Lock()
 	e.state.Stop = true
 	e.mu.Unlock()
@@ -104,7 +104,7 @@ func (e *Engine) handleGo(w io.Writer, args []string) {
 }
 
 // position [fen <fenstring> | startpos] [moves <move1> ... <movei>]
-func (e *Engine) handlePosition(args []string) error {
+func (e *engine) handlePosition(args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("uci: position requires arguments")
 	}

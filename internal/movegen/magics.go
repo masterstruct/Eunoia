@@ -25,7 +25,7 @@ func RookMask(sq board.Square) board.Bitboard {
 
 func BishopMask(sq board.Square) board.Bitboard {
 	var mask board.Bitboard
-	mask = BishopAttacksSlow(sq, board.EmptyBB)
+	mask = bishopAttacksSlow(sq, board.EmptyBB)
 	return mask &^ board.EdgesBB
 }
 
@@ -99,9 +99,9 @@ func TryMakeTable(isRook bool, sq board.Square, entry *MagicEntry) ([]board.Bitb
 	var moves board.Bitboard
 	for blockers := range Subsets(entry.Mask) {
 		if isRook {
-			moves = RookAttacksSlow(sq, blockers)
+			moves = rookAttacksSlow(sq, blockers)
 		} else {
-			moves = BishopAttacksSlow(sq, blockers)
+			moves = bishopAttacksSlow(sq, blockers)
 		}
 
 		index := MagicIndex(entry, blockers)

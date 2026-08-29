@@ -15,7 +15,7 @@ type benchResult struct {
 }
 
 func Bench() {
-	eng := NewEngine()
+	eng := newEngine()
 
 	var totalNodes uint64
 	var totalTime time.Duration
@@ -46,7 +46,7 @@ func Bench() {
 	fmt.Println("-==-==-==-==-==-==-==-==-")
 }
 
-func (e *Engine) searchBenchPos() benchResult {
+func (e *engine) searchBenchPos() benchResult {
 	start := time.Now()
 
 	e.state.SearchBestMove(e.pos, benchDepth)

@@ -14,15 +14,15 @@ import (
 	"github.com/masterstruct/Eunoia/internal/search"
 )
 
-type Engine struct {
+type engine struct {
 	mu      sync.Mutex
 	pos     board.Position
 	state   *search.SearchState
 	running sync.WaitGroup
 }
 
-func NewEngine() *Engine {
-	e := &Engine{
+func newEngine() *engine {
+	e := &engine{
 		pos:   board.StartingPosition(),
 		state: &search.SearchState{},
 	}
@@ -38,7 +38,7 @@ func Loop(r io.Reader, w io.Writer) {
 
 	scanner := bufio.NewScanner(r)
 
-	eng := NewEngine()
+	eng := newEngine()
 
 	for scanner.Scan() {
 		_ = scanner.Err()

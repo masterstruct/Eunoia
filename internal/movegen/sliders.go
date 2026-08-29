@@ -15,16 +15,12 @@ var (
 	}
 )
 
-func RookAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func rookAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
 	return rayAttacks(sq, rookDirs, occupied)
 }
 
-func BishopAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func bishopAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
 	return rayAttacks(sq, bishopDirs, occupied)
-}
-
-func QueenAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
-	return rayAttacks(sq, rookDirs, occupied) | rayAttacks(sq, bishopDirs, occupied)
 }
 
 func rayAttacks(sq board.Square, dirs [][2]int, occupied board.Bitboard) board.Bitboard {

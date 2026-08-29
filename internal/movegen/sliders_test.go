@@ -189,7 +189,7 @@ func TestMagicAttacksCorrect(t *testing.T) {
 
 		for blockers := range Subsets(mask) {
 			got := RookAttacks(sq, blockers)
-			want := RookAttacksSlow(sq, blockers)
+			want := rookAttacksSlow(sq, blockers)
 
 			if got != want {
 				t.Fatalf("square %v blockers %v: got %v want %v",
