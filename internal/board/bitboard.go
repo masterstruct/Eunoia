@@ -84,17 +84,17 @@ func (bb Bitboard) String() string {
 
 	for rank := Rank8; rank >= Rank1; rank-- {
 		// ranks
-		sb.WriteString(ForegroundRGB(250, 179, 135))
+		sb.WriteString(fgRGB(250, 179, 135))
 		sb.WriteString(strconv.Itoa(int(rank + 1)))
 		sb.WriteByte(' ')
 
 		for file := FileA; file <= FileH; file++ {
 			sq := NewSquare(file, rank)
 			if bb.IsBitSet(sq) {
-				sb.WriteString(ForegroundRGB(166, 227, 161))
+				sb.WriteString(fgRGB(166, 227, 161))
 				sb.WriteString("1 ")
 			} else {
-				sb.WriteString(ForegroundRGB(243, 139, 168))
+				sb.WriteString(fgRGB(243, 139, 168))
 				sb.WriteString(". ")
 			}
 			sb.WriteString(resetColor)
@@ -104,7 +104,7 @@ func (bb Bitboard) String() string {
 	}
 
 	// files
-	sb.WriteString(ForegroundRGB(116, 199, 236))
+	sb.WriteString(fgRGB(116, 199, 236))
 	sb.WriteString("  a b c d e f g h\n")
 	sb.WriteString(resetColor)
 

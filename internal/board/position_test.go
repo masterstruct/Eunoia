@@ -671,7 +671,7 @@ func allPieceBB(pos *Position) Bitboard {
 }
 
 func TestNewBoard(t *testing.T) {
-	board := NewBoard()
+	board := newBoard()
 
 	for sq, piece := range board {
 		if piece != NoPiece {
