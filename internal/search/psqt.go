@@ -10,12 +10,12 @@ var mgTable [2][6][64]int // [color][pieceType][square]
 var egTable [2][6][64]int // [color][pieceType][square]
 
 func init() {
-	for pieceType := range board.PieceTypes() {
+	for pieceType := range board.PieceTypes {
 		for sq := range board.NoSquare {
-			mgTable[board.Black][pieceType][sq] = mgPieceSquareTable[pieceType][sq]
-			egTable[board.Black][pieceType][sq] = egPieceSquareTable[pieceType][sq]
-			mgTable[board.White][pieceType][sq] = mgPieceSquareTable[pieceType][sq^56]
-			egTable[board.White][pieceType][sq] = egPieceSquareTable[pieceType][sq^56]
+			mgTable[board.Black][pieceType][sq] = mgPieceSquareTable[pieceType][sq] + mgPieceValues[pieceType]
+			egTable[board.Black][pieceType][sq] = egPieceSquareTable[pieceType][sq] + egPieceValues[pieceType]
+			mgTable[board.White][pieceType][sq] = mgPieceSquareTable[pieceType][sq^56] + mgPieceValues[pieceType]
+			egTable[board.White][pieceType][sq] = egPieceSquareTable[pieceType][sq^56] + egPieceValues[pieceType]
 		}
 	}
 }
@@ -31,8 +31,8 @@ func evaluatePSQT(pos *board.Position) int {
 		piece, _ := pos.PieceOn(sq)
 		pieceColor := piece.Color
 		pieceType := piece.Type
-		mg[pieceColor] += mgTable[pieceColor][pieceType][sq] + mgPieceValues[pieceType]
-		eg[pieceColor] += egTable[pieceColor][pieceType][sq] + egPieceValues[pieceType]
+		mg[pieceColor] += mgTable[pieceColor][pieceType][sq]
+		eg[pieceColor] += egTable[pieceColor][pieceType][sq]
 		gamePhase += gamePhaseInc[pieceType]
 	}
 
