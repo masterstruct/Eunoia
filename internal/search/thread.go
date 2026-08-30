@@ -19,6 +19,9 @@ type SearchState struct {
 
 	tt *tt.Table
 	pv *PVTable
+
+	history     []uint64
+	rootHistLen int
 }
 
 func (ss *SearchState) Reset() {
@@ -39,4 +42,9 @@ func (ss *SearchState) ClearTT() {
 func (ss *SearchState) Init() {
 	ss.tt = &tt.Table{}
 	ss.pv = &PVTable{}
+}
+
+func (ss *SearchState) SetHistory(gameHistory []uint64) {
+	ss.history = append(ss.history[:0], gameHistory...)
+	ss.rootHistLen = len(ss.history)
 }

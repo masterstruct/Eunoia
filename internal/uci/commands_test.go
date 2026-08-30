@@ -11,7 +11,7 @@ var fen string = "8/8/1R2b3/4pkp1/7p/3K1P1P/6P1/8 w - - 99 113"
 
 func TestApplyMoves(t *testing.T) {
 	pos := board.StartingPosition()
-	got, err := applyMoves(&pos, moves)
+	got, _, err := applyMoves(&pos, moves)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -35,7 +35,7 @@ func TestApplyMoves(t *testing.T) {
 func BenchmarkApplyMoves(b *testing.B) {
 	pos := board.StartingPosition()
 	for b.Loop() {
-		got, _ := applyMoves(&pos, moves)
+		got, _, _ := applyMoves(&pos, moves)
 		_ = got
 	}
 }
