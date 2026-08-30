@@ -15,10 +15,11 @@ import (
 )
 
 type engine struct {
-	mu      sync.Mutex
-	pos     board.Position
-	state   *search.SearchState
-	running sync.WaitGroup
+	mu          sync.Mutex
+	pos         board.Position
+	gameHistory []uint64
+	state       *search.SearchState
+	running     sync.WaitGroup
 }
 
 func newEngine() *engine {
@@ -26,6 +27,7 @@ func newEngine() *engine {
 		pos:   board.StartingPosition(),
 		state: &search.SearchState{},
 	}
+	e.gameHistory = []uint64{e.pos.Hash}
 	e.state.Init()
 	return e
 }

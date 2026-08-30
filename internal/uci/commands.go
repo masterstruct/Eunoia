@@ -22,6 +22,7 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 	state := e.state
 	state.Reset()
 	pos := e.pos
+	state.SetHistory(e.gameHistory)
 	e.mu.Unlock()
 
 	depth := 1000 // "infinite"
@@ -139,6 +140,8 @@ func (e *engine) handlePosition(args []string) error {
 		return fmt.Errorf("uci: unknown position type %q", args[0])
 	}
 
+	e.gameHistory = append(e.gameHistory[:0], e.pos.Hash)
+
 	if len(rest) == 0 {
 		return nil
 	}
@@ -146,35 +149,36 @@ func (e *engine) handlePosition(args []string) error {
 		return fmt.Errorf("uci: expected \"moves\", got %q", rest[0])
 	}
 
-	p, err := applyMoves(&e.pos, rest[1:])
+	p, hashes, err := applyMoves(&e.pos, rest[1:])
 	if err != nil {
 		return err
-	} else {
-		e.pos = p
 	}
+	e.pos = p
+	e.gameHistory = append(e.gameHistory, hashes...)
 	return nil
 }
 
-func applyMoves(pos *board.Position, moves []string) (board.Position, error) {
+func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, error) {
 	// TODO: if capture, don't generate non-captures with staged movegen
 
 	newPos := *pos
+	hashes := make([]uint64, 0, len(moves))
 
 	for _, move := range moves {
 		success := false
 		n := len(move)
 		if n < 4 || n > 5 {
-			return *pos, fmt.Errorf("uci: illegal move %q", move)
+			return *pos, nil, fmt.Errorf("uci: illegal move %q", move)
 		}
 
 		var movelist movegen.Movelist
 		from, err := board.ParseSquare(move[:2])
 		if err != nil {
-			return *pos, fmt.Errorf("uci: failed to parse move %q", move)
+			return *pos, nil, fmt.Errorf("uci: failed to parse move %q", move)
 		}
 		piece, ok := newPos.PieceOn(from)
 		if !ok {
-			return *pos, fmt.Errorf("uci: illegal move %q", move)
+			return *pos, nil, fmt.Errorf("uci: illegal move %q", move)
 		}
 
 		switch piece.Type {
@@ -196,13 +200,14 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, error) {
 			m := movelist.Moves[i]
 			if m.String() == move {
 				newPos = newPos.MakeMove(m)
+				hashes = append(hashes, newPos.Hash)
 				success = true
 				break
 			}
 		}
 		if !success {
-			return *pos, fmt.Errorf("uci: illegal or unknown move %q", move)
+			return *pos, nil, fmt.Errorf("uci: illegal or unknown move %q", move)
 		}
 	}
-	return newPos, nil
+	return newPos, hashes, nil
 }

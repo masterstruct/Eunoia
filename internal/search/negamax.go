@@ -15,11 +15,17 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 	ss.Nodes++
 
+	isRoot := ply == 0
+
+	if !isRoot && ss.isDraw(&pos) {
+		return 0
+	}
+
 	alphaOrig := alpha
 
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
-	if ttHit && ply > 0 && entry.Depth >= uint8(depth) {
+	if ttHit && !isRoot && entry.Depth >= uint8(depth) {
 		score := scoreFromTT(entry.Score, ply)
 		switch entry.Flag {
 		case tt.Exact:
@@ -57,7 +63,9 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 		legalMoves++
 
+		ss.history = append(ss.history, newPos.Hash)
 		score := -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
+		ss.history = ss.history[:len(ss.history)-1]
 
 		if ss.searchStopped() {
 			return 0
