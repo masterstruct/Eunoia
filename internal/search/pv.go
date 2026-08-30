@@ -61,9 +61,6 @@ func (ss *SearchState) printPV(w io.Writer, depth int, score int16, sideToMove b
 		buf.WriteString(" score mate ")
 		buf.WriteString(strconv.Itoa(mateInMoves(score)))
 	} else {
-		if sideToMove == board.Black {
-			score = -score
-		}
 		buf.WriteString(" score cp ")
 		buf.WriteString(strconv.Itoa(int(score)))
 	}
