@@ -54,6 +54,8 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	ss.orderMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
+	var score int16
+
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
@@ -64,7 +66,17 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		legalMoves++
 
 		ss.history = append(ss.history, newPos.Hash)
-		score := -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
+		if i == 0 {
+			// full window search for principal variation
+			score = -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
+		} else {
+			// null window search for non-PV line
+			score = -ss.negamax(newPos, depth-1, ply+1, -alpha-1, -alpha)
+			if alpha < score && score < beta {
+				// null window failed, re-search with full window
+				score = -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
+			}
+		}
 		ss.history = ss.history[:len(ss.history)-1]
 
 		if ss.searchStopped() {
