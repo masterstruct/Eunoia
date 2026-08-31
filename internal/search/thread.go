@@ -20,8 +20,10 @@ type SearchState struct {
 	tt *tt.Table
 	pv *PVTable
 
-	history     []uint64
+	keyHistory  []uint64 // history of position hashes for 3fold detection
 	rootHistLen int
+
+	butterflyHistory *[2][64][64]int
 }
 
 func (ss *SearchState) Reset() {
@@ -39,12 +41,17 @@ func (ss *SearchState) ClearTT() {
 	ss.tt.Clear()
 }
 
+func (ss *SearchState) ClearButterflyHistory() {
+	ss.butterflyHistory = &[2][64][64]int{}
+}
+
 func (ss *SearchState) Init() {
 	ss.tt = &tt.Table{}
 	ss.pv = &PVTable{}
+	ss.butterflyHistory = &[2][64][64]int{}
 }
 
 func (ss *SearchState) SetHistory(gameHistory []uint64) {
-	ss.history = append(ss.history[:0], gameHistory...)
-	ss.rootHistLen = len(ss.history)
+	ss.keyHistory = append(ss.keyHistory[:0], gameHistory...)
+	ss.rootHistLen = len(ss.keyHistory)
 }

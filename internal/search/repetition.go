@@ -7,7 +7,7 @@ func (ss *SearchState) isDraw(pos *board.Position) bool {
 }
 
 func (ss *SearchState) isRepetition(hash uint64, halfmoveClock uint8) bool {
-	n := len(ss.history)
+	n := len(ss.keyHistory)
 	if n == 0 {
 		return false
 	}
@@ -15,7 +15,7 @@ func (ss *SearchState) isRepetition(hash uint64, halfmoveClock uint8) bool {
 	reps := 0
 	for d := 4; d <= int(halfmoveClock) && d <= cur; d += 2 {
 		idx := cur - d
-		if ss.history[idx] != hash {
+		if ss.keyHistory[idx] != hash {
 			continue
 		}
 		if idx >= ss.rootHistLen {

@@ -65,7 +65,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 		legalMoves++
 
-		ss.history = append(ss.history, newPos.Hash)
+		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
 		if i == 0 {
 			// full window search for principal variation
 			score = -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
@@ -77,7 +77,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 				score = -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
 			}
 		}
-		ss.history = ss.history[:len(ss.history)-1]
+		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
 
 		if ss.searchStopped() {
 			return 0
@@ -91,7 +91,10 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 				ss.pv.Store(ply, move)
 			}
 		}
-		if score >= beta {
+		if score >= beta { // beta cutoff
+			if !move.IsCapture() {
+				ss.butterflyHistory[mover][move.From()][move.To()] += depth * depth
+			}
 			break
 		}
 	}
