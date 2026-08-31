@@ -16,6 +16,8 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 		return
 	}
 
+	color := pos.SideToMove
+
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
 	var ttMove board.Move
@@ -27,16 +29,18 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 	var scores [movegen.MaxMoves]int
 	for i := range n {
 		move := movelist.Moves[i]
+		from := move.From()
+		to := move.To()
 
-		var score int
+		score := ss.butterflyHistory[color][from][to]
 
 		if ttHit && move == ttMove {
 			score += ttMoveBonus
 		}
 
 		if move.IsCapture() {
-			attacker, _ := pos.PieceOn(move.From())
-			victim, _ := pos.PieceOn(move.To())
+			attacker, _ := pos.PieceOn(from)
+			victim, _ := pos.PieceOn(to)
 
 			victimType := victim.Type
 			if move.IsEnPassant() {
