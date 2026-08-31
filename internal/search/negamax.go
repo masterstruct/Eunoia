@@ -95,7 +95,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		}
 		if score >= beta { // beta cutoff
 			if !move.IsCapture() {
-				bonus := depth * depth
+				bonus := 300*depth - 250
 				ss.updateButterflyHistory(mover, move.From(), move.To(), bonus)
 
 				for _, quietMove := range quietsTried {
