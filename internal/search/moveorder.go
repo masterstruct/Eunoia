@@ -19,13 +19,14 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 	}
 
 	// score moves
-	var scores [movegen.MaxMoves]int16
+	var scores [movegen.MaxMoves]int
 	for i := range n {
 		move := movelist.Moves[i]
 
+		var score int
+
 		if ttHit && move == ttMove {
-			scores[i] = 32000
-			continue
+			score += 32000
 		}
 
 		if move.IsCapture() {
@@ -37,8 +38,10 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 				victimType = board.Pawn
 			}
 
-			scores[i] = mvvlvaScore(victimType, attacker.Type)
+			score += mvvlvaScore(victimType, attacker.Type)
 		}
+
+		scores[i] = score
 	}
 
 	// reverse insertion sort
@@ -59,6 +62,6 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 }
 
 // formula from https://asteri.sm/files/2023-02-20-viri-wiki#mvvlva
-func mvvlvaScore(victim, attacker board.PieceType) int16 {
-	return int16(victim)*1000 + 60 - int16(attacker)*10
+func mvvlvaScore(victim, attacker board.PieceType) int {
+	return int(victim)*1000 + 60 - int(attacker)*10
 }
