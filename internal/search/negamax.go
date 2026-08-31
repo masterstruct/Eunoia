@@ -96,11 +96,11 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		if score >= beta { // beta cutoff
 			if !move.IsCapture() {
 				bonus := depth * depth
-				ss.butterflyHistory[mover][move.From()][move.To()] += bonus
+				ss.updateButterflyHistory(mover, move.From(), move.To(), bonus)
 
 				for _, quietMove := range quietsTried {
 					// penalize quiets that didn't cause beta cutoff
-					ss.butterflyHistory[mover][quietMove.From()][quietMove.To()] -= bonus
+					ss.updateButterflyHistory(mover, quietMove.From(), quietMove.To(), -bonus)
 				}
 			}
 			break

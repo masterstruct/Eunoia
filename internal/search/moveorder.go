@@ -8,6 +8,8 @@ import (
 const (
 	ttMoveBonus  = 1_000_000
 	captureBonus = 100_000
+
+	maxHistory = 2 << 13
 )
 
 func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelist) {
@@ -73,4 +75,23 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 // formula from https://asteri.sm/files/2023-02-20-viri-wiki#mvvlva
 func mvvlvaScore(victim, attacker board.PieceType) int {
 	return int(victim)*1000 + 60 - int(attacker)*10
+}
+
+func (ss *SearchState) updateButterflyHistory(sideToMove board.Color, from, to board.Square, bonus int) {
+	// history gravity
+	// https://chessprogramming.org/History_Heuristic#history-bonuses
+
+	clampedBonus := bonus
+	if clampedBonus > maxHistory {
+		clampedBonus = maxHistory
+	} else if clampedBonus < -maxHistory {
+		clampedBonus = -maxHistory
+	}
+
+	absBonus := clampedBonus
+	if absBonus < 0 {
+		absBonus = -absBonus
+	}
+
+	ss.butterflyHistory[sideToMove][from][to] += clampedBonus - ss.butterflyHistory[sideToMove][from][to]*absBonus/maxHistory
 }

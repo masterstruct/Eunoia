@@ -30,7 +30,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 		}
 
 		bestMove = ss.pv.Line()[0]
-		ss.printPV(os.Stdout, depth, score, pos.SideToMove)
+		ss.printPV(os.Stdout, depth, score)
 
 		if ss.searchStopped() {
 			break
