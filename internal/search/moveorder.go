@@ -5,6 +5,11 @@ import (
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
+const (
+	ttMoveBonus  = 1_000_000
+	captureBonus = 100_000
+)
+
 func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelist) {
 	n := movelist.Len
 	if n == 0 {
@@ -26,7 +31,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 		var score int
 
 		if ttHit && move == ttMove {
-			score += 32000
+			score += ttMoveBonus
 		}
 
 		if move.IsCapture() {
@@ -38,7 +43,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 				victimType = board.Pawn
 			}
 
-			score += mvvlvaScore(victimType, attacker.Type)
+			score += captureBonus + mvvlvaScore(victimType, attacker.Type)
 		}
 
 		scores[i] = score
