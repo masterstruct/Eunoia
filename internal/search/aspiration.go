@@ -12,18 +12,18 @@ type aspirationWindow struct {
 }
 
 func (aw *aspirationWindow) widenDown() {
-	aw.alpha -= aw.delta
+	aw.alpha = max(aw.alpha-aw.delta, -MATE)
 	aw.delta *= 2
 }
 
 func (aw *aspirationWindow) widenUp() {
-	aw.beta += aw.delta
+	aw.beta = min(aw.beta+aw.delta, MATE)
 	aw.delta *= 2
 }
 
 func (aw *aspirationWindow) centerAround(score int16) {
-	aw.alpha = score - windowSize
-	aw.beta = score + windowSize
+	aw.alpha = max(score-windowSize, -MATE)
+	aw.beta = min(score+windowSize, MATE)
 	aw.delta = initialDelta
 }
 
