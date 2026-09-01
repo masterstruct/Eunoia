@@ -7,7 +7,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-const benchDepth = 5
+const benchDepth = 6
 
 type benchResult struct {
 	nodes uint64
