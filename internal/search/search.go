@@ -25,7 +25,9 @@ iterativeDeepening:
 			break
 		}
 
-		if depth > 1 {
+		if depth > 5 {
+			// for the first 5 depths the evaluation
+			// is unstable, so search without bounds
 			aw.centerAround(lastScore)
 		}
 
