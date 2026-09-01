@@ -49,7 +49,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	// reverse futility pruning
 	eval := evaluate(&pos)
 	margin := 150 * int16(depth)
-	if !isPV && !ttHit && eval >= beta+margin {
+	if !isPV && (!ttHit || !entry.Move.IsCapture()) && eval >= beta+margin {
 		return eval
 	}
 
