@@ -81,6 +81,18 @@ func (ss *SearchState) updateButterflyHistory(sideToMove board.Color, from, to b
 	// history gravity
 	// https://chessprogramming.org/History_Heuristic#history-bonuses
 
+	// 	_____________________
+	// /        scaler       \
+	// | 25k: -1.61 +- 3.63  |
+	// | STC: -0.97 +- 9.20  |
+	// \ LTC: 35.39 +- 12.74 /
+	//  ---------------------
+	//         \   ^__^
+	//          \  (oo)\_______
+	//             (__)\       )\/\
+	//                 ||----w |
+	//                 ||     ||
+
 	clampedBonus := bonus
 	if clampedBonus > maxHistory {
 		clampedBonus = maxHistory
