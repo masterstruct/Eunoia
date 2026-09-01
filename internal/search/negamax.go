@@ -16,6 +16,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	ss.Nodes++
 
 	isRoot := ply == 0
+	isPV := beta > alpha+1
 
 	if !isRoot && ss.isDraw(&pos) {
 		return 0
@@ -48,7 +49,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	// reverse futility pruning
 	eval := evaluate(&pos)
 	margin := 150 * int16(depth)
-	if eval >= beta+margin {
+	if !isPV && eval >= beta+margin {
 		return eval
 	}
 
