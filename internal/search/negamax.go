@@ -45,6 +45,13 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		return ss.qsearch(&pos, alpha, beta)
 	}
 
+	// reverse futility pruning
+	eval := evaluate(&pos)
+	margin := 150 * int16(depth)
+	if eval >= beta+margin {
+		return eval
+	}
+
 	bestValue := -INF
 	var bestMove board.Move
 	legalMoves := 0
