@@ -19,7 +19,6 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 	aw := newAspirationWindow() // [-INF; +INF]
 
 	// iterative deepening
-
 iterativeDeepening:
 	for depth := 1; depth <= maxDepth; depth++ {
 		if (ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) || (!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime)) {
@@ -34,9 +33,7 @@ iterativeDeepening:
 		for {
 			score := ss.negamax(pos, depth, 0, aw.alpha, aw.beta)
 
-			if len(ss.pv.Line()) == 0 {
-				// interruped before first move search completed,
-				// discard results from this depth
+			if ss.searchStopped() {
 				break iterativeDeepening
 			}
 
@@ -52,10 +49,6 @@ iterativeDeepening:
 			bestMove = ss.pv.Line()[0]
 			ss.printPV(os.Stdout, depth, score)
 			lastScore = score
-			break
-		}
-
-		if ss.searchStopped() {
 			break
 		}
 	}
