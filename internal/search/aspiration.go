@@ -1,6 +1,6 @@
 package search
 
-const windowSize = 35
+const windowSize = 50
 
 type aspirationWindow struct {
 	alpha int16
