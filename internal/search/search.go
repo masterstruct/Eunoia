@@ -39,12 +39,15 @@ iterativeDeepening:
 				break iterativeDeepening
 			}
 
+			// TODO: widen gradually
 			if score <= aw.alpha {
-				aw.widenDown()
+				// aw.widenDown()
+				aw.alpha = -INF
 				continue
 			}
 			if score >= aw.beta {
-				aw.widenUp()
+				// aw.widenUp()
+				aw.beta = INF
 				continue
 			}
 
