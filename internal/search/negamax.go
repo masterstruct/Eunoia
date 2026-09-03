@@ -46,11 +46,14 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		return ss.qsearch(&pos, alpha, beta)
 	}
 
+	mover := pos.SideToMove
+	inCheck := movegen.InCheck(&pos, mover)
+
 	// reverse futility pruning
-	eval := evaluate(&pos)
+	staticEval := evaluate(&pos)
 	margin := 150 * int16(depth)
-	if !isPV && !ttHit && eval >= beta+margin {
-		return eval
+	if !isPV && !ttHit && !inCheck && staticEval >= beta+margin {
+		return staticEval
 	}
 
 	bestValue := -INF
@@ -60,7 +63,6 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	ss.orderMoves(&pos, &movelist)
-	mover := pos.SideToMove
 
 	var score int16
 
@@ -120,7 +122,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	}
 
 	if legalMoves == 0 {
-		if movegen.InCheck(&pos, mover) {
+		if inCheck {
 			// checkmate
 			return -MATE + int16(ply)
 		}
