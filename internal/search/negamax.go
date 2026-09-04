@@ -56,6 +56,16 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		return staticEval
 	}
 
+	// null move pruning
+	if !inCheck {
+		reduction := 3
+		newPos := pos.MakeNullMove()
+		score := -ss.negamax(newPos, depth-reduction, ply+1, -beta, -beta+1)
+		if score >= beta {
+			return score
+		}
+	}
+
 	bestValue := -INF
 	var bestMove board.Move
 	legalMoves := 0
