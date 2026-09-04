@@ -57,7 +57,9 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	}
 
 	// null move pruning
-	if !inCheck {
+	majorPieceBB := pos.Colors[mover] &^ pos.PieceBB(board.NewPiece(board.Pawn, mover))
+	majorPieceBB.ClearBit(pos.KingSq[mover])
+	if !inCheck && majorPieceBB.CountBits() > 0 {
 		reduction := 3
 		newPos := pos.MakeNullMove()
 		score := -ss.negamax(newPos, depth-reduction, ply+1, -beta, -beta+1)
