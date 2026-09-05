@@ -8,6 +8,9 @@ import (
 
 const (
 	nmpMinDepth = 3
+
+	lmrMinDepth = 3
+	lmrMinMoves = 2
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta int16) int16 {
@@ -91,16 +94,30 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 		legalMoves++
 
+		newDepth := depth - 1
+		reduction := 0
+		// late move reductions
+		if i >= lmrMinMoves && depth >= lmrMinDepth {
+			reduction = 1
+		}
+		reducedDepth := max(newDepth-reduction, 0)
+
 		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
 		if i == 0 {
 			// full window search for principal variation
-			score = -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
+			score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
 		} else {
-			// null window search for non-PV line
-			score = -ss.negamax(newPos, depth-1, ply+1, -alpha-1, -alpha)
+			// LMR: search "late" moves with a
+			// reduced depth, in a null window
+			score = -ss.negamax(newPos, reducedDepth, ply+1, -alpha-1, -alpha)
+			if reduction > 0 && score > alpha {
+				// reduced search failed high, re-search with full depth
+				score = -ss.negamax(newPos, newDepth, ply+1, -alpha-1, -alpha)
+			}
+
 			if alpha < score && score < beta {
 				// null window failed, re-search with full window
-				score = -ss.negamax(newPos, depth-1, ply+1, -beta, -alpha)
+				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
 			}
 		}
 		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
