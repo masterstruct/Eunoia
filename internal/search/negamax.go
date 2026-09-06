@@ -92,18 +92,16 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			continue
 		}
 
-		legalMoves++
-
 		newDepth := depth - 1
 		reduction := 0
 		// late move reductions
-		if i >= lmrMinMoves && depth >= lmrMinDepth {
+		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth {
 			reduction = 1
 		}
 		reducedDepth := max(newDepth-reduction, 0)
 
 		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
-		if i == 0 {
+		if legalMoves == 0 {
 			// full window search for principal variation
 			score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
 		} else {
@@ -125,6 +123,8 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		if ss.searchStopped() {
 			return 0
 		}
+
+		legalMoves++
 
 		if score > bestValue {
 			bestValue = score
