@@ -1,6 +1,8 @@
 package search
 
 import (
+	"math"
+
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
 	"github.com/masterstruct/Eunoia/internal/tt"
@@ -98,7 +100,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		// late move reductions
 		isReduced := false
 		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth {
-			reduction := 1
+			reduction := int(0.99 + math.Log(float64(newDepth))*math.Log(float64(legalMoves))/3.14)
 
 			if reduction > 0 {
 				reducedDepth := max(newDepth-reduction, 1)
