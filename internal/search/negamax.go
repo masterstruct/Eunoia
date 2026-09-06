@@ -92,30 +92,40 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			continue
 		}
 
-		newDepth := depth - 1
-		reduction := 0
-		// late move reductions
-		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth {
-			reduction = 1
-		}
-		reducedDepth := max(newDepth-reduction, 0)
-
 		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
-		if legalMoves == 0 {
-			// full window search for principal variation
-			score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
-		} else {
-			// LMR: search "late" moves with a
-			// reduced depth, in a null window
-			score = -ss.negamax(newPos, reducedDepth, ply+1, -alpha-1, -alpha)
-			if reduction > 0 && score > alpha {
-				// reduced search failed high, re-search with full depth
-				score = -ss.negamax(newPos, newDepth, ply+1, -alpha-1, -alpha)
-			}
+		newDepth := depth - 1
 
-			if alpha < score && score < beta {
-				// null window failed, re-search with full window
+		// late move reductions
+		isReduced := false
+		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth {
+			reduction := 1
+
+			if reduction > 0 {
+				reducedDepth := max(newDepth-reduction, 1)
+
+				// search "late" moves with a
+				// reduced depth, in a null window
+				score = -ss.negamax(newPos, reducedDepth, ply+1, -alpha-1, -alpha)
+
+				if score <= alpha {
+					// this move is trash, don't search it in PVS
+					isReduced = true
+				}
+			}
+		}
+
+		// principal variation search
+		if !isReduced {
+			if legalMoves == 0 {
+				// full window search for principal variation
 				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
+			} else {
+				// null window search for non-PV line
+				score = -ss.negamax(newPos, newDepth, ply+1, -alpha-1, -alpha)
+				if alpha < score && score < beta {
+					// null window failed, re-search with full window
+					score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
+				}
 			}
 		}
 		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
