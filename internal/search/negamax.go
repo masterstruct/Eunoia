@@ -35,7 +35,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
-	if ttHit && !isRoot && entry.Depth >= uint8(depth) {
+	if ttHit && !isRoot && !isPV && entry.Depth >= uint8(depth) {
 		score := scoreFromTT(entry.Score, ply)
 		switch entry.Flag {
 		case tt.Exact:
