@@ -99,7 +99,8 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 		// late move reductions
 		isReduced := false
-		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth {
+		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth &&
+			!move.IsCapture() {
 			reduction := int(0.99 + math.Log(float64(newDepth))*math.Log(float64(legalMoves))/3.14)
 
 			if reduction > 0 {
