@@ -211,3 +211,31 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 	}
 	return newPos, hashes, nil
 }
+
+func (e *engine) handleSetOption(args []string) {
+	n := len(args)
+	if n < 2 || args[0] != "name" {
+		return
+	}
+
+	end := n
+	valueStart := -1
+	for i := 1; i < n; i++ {
+		if args[i] == "value" {
+			end = i
+			valueStart = i + 1
+			break
+		}
+	}
+	name := strings.Join(args[1:end], " ")
+
+	value := ""
+	if valueStart >= 0 && valueStart < n {
+		value = strings.Join(args[valueStart:], " ")
+	}
+
+	switch name {
+	case "UCI_Chess960":
+		board.SetChess960(value == "true")
+	}
+}
