@@ -19,11 +19,13 @@ make linux
 ```
 
 ## Credits
-- Stockfish, Alpha-Beta and Engine Programming Discord servers
+- Stockfish and Alpha-Beta Discord servers
 - [Chess Programming Wiki](https://chessprogramming.org/)
-- [@87flowers](https://github.com/87flowers/) for chess move flag [scheme](https://87flowers.com/chess-moveflags/)
+- [@Lily](https://github.com/87flowers/) for chess move flag [scheme](https://87flowers.com/chess-moveflags/)
 - [@Cosmo](https://github.com/cosmobobak) for helpful [chess technique overview](https://asteri.sm/files/2023-02-20-viri-wiki)
-- [@Deez](https://github.com/Dejon51) for help and [OpenBench instance](https://deez.pythonanywhere.com/)
+- [@Deez](https://github.com/Dejon51) for help
+- [@Matt](https://github.com/nocturn9x) for [OpenBench instance](https://chess.n9x.co/)
+- [Ronald Friederich](https://chessprogramming.org/Ronald_Friederich) for [PeSTO's Evaluation Function](https://chessprogramming.org/PeSTO's_Evaluation_Function)
 
 In no particular order, engines used for ideas or inspiration:
 - [Rodent V](https://github.com/nescitus/Rodent-V)
