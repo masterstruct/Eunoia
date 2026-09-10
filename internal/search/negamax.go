@@ -13,6 +13,10 @@ const (
 
 	lmrMinDepth = 3
 	lmrMinMoves = 2
+
+	lmpBase       = 4
+	lmpMultiplier = 3
+	lmpMaxDepth   = 4
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta int16) int16 {
@@ -77,7 +81,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 	bestValue := -INF
 	var bestMove board.Move
-	legalMoves := 0
+	movesSearched := 0
 
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
@@ -94,14 +98,22 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			continue
 		}
 
+		isCapture := move.IsCapture()
+
+		// late move pruning
+		if !isPV && !isRoot && !isCapture && !inCheck && !isMateScore(bestValue) &&
+			depth <= lmpMaxDepth && movesSearched >= lmpBase+lmpMultiplier*depth*depth {
+			continue
+		}
+
 		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
 		newDepth := depth - 1
 
 		// late move reductions
 		isReduced := false
-		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth &&
-			!move.IsCapture() {
-			reduction := int(0.99 + math.Log(float64(newDepth))*math.Log(float64(legalMoves))/3.14)
+		if movesSearched >= lmrMinMoves && depth >= lmrMinDepth &&
+			!isCapture {
+			reduction := int(0.99 + math.Log(float64(newDepth))*math.Log(float64(movesSearched))/3.14)
 
 			if reduction > 0 {
 				reducedDepth := max(newDepth-reduction, 1)
@@ -119,7 +131,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 		// principal variation search
 		if !isReduced {
-			if legalMoves == 0 {
+			if movesSearched == 0 {
 				// full window search for principal variation
 				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
 			} else {
@@ -137,7 +149,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			return 0
 		}
 
-		legalMoves++
+		movesSearched++
 
 		if score > bestValue {
 			bestValue = score
@@ -148,7 +160,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			}
 		}
 		if score >= beta { // beta cutoff
-			if !move.IsCapture() {
+			if !isCapture {
 				bonus := 300*depth - 250
 				ss.updateButterflyHistory(mover, move.From(), move.To(), bonus)
 
@@ -160,12 +172,12 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			break
 		}
 
-		if !move.IsCapture() {
+		if !isCapture {
 			quietsTried = append(quietsTried, move)
 		}
 	}
 
-	if legalMoves == 0 {
+	if movesSearched == 0 {
 		if inCheck {
 			// checkmate
 			return -MATE + int16(ply)
