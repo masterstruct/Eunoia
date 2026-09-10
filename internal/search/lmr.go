@@ -6,15 +6,18 @@ import (
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
-var lmr [MaxPly][movegen.MaxMoves]int // [depth][move]
+var lmr [MaxPly + 1][movegen.MaxMoves]int // [depth][move]
 
 func init() {
 	initLMRTable()
 }
 
 func initLMRTable() {
-	for depth := range MaxPly {
+	for depth := 0; depth <= MaxPly; depth++ {
 		for move := range movegen.MaxMoves {
+			if depth < lmrMinDepth || move < lmrMinMoves {
+				continue
+			}
 			lmr[depth][move] = computeLMR(depth, move)
 		}
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
+	"github.com/masterstruct/Eunoia/internal/search"
 )
 
 func (e *engine) handleGo(w io.Writer, args []string) {
@@ -25,7 +26,7 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 	state.SetHistory(e.gameHistory)
 	e.mu.Unlock()
 
-	depth := 1000 // "infinite"
+	depth := search.MaxPly
 
 	timeLeft := 0
 	moveTime := 0

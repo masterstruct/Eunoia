@@ -99,7 +99,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		isReduced := false
 		if legalMoves >= lmrMinMoves && depth >= lmrMinDepth &&
 			!move.IsCapture() {
-			reduction := lmr[newDepth][legalMoves]
+			reduction := lmr[depth][legalMoves]
 
 			if reduction > 0 {
 				reducedDepth := max(newDepth-reduction, 1)
