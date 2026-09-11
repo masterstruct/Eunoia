@@ -237,5 +237,12 @@ func (e *engine) handleSetOption(args []string) {
 	switch name {
 	case "UCI_Chess960":
 		board.SetChess960(value == "true")
+	case "Hash":
+		mib, err := strconv.Atoi(value)
+		if err == nil && mib > 0 {
+			e.mu.Lock()
+			e.state.ResizeTT(uint(mib))
+			e.mu.Unlock()
+		}
 	}
 }

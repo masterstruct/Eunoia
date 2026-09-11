@@ -45,8 +45,12 @@ func (ss *SearchState) ClearButterflyHistory() {
 	ss.butterflyHistory = &[2][64][64]int{}
 }
 
-func (ss *SearchState) Init() {
-	ss.tt = &tt.Table{}
+func (ss *SearchState) ResizeTT(sizeMiB uint) {
+	ss.tt = tt.NewTable(sizeMiB)
+}
+
+func (ss *SearchState) Init(ttSizeMiB uint) {
+	ss.tt = tt.NewTable(ttSizeMiB)
 	ss.pv = &PVTable{}
 	ss.butterflyHistory = &[2][64][64]int{}
 }

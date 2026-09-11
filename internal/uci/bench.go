@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
+	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
 const benchDepth = 8
@@ -15,7 +16,7 @@ type benchResult struct {
 }
 
 func Bench() {
-	eng := newEngine()
+	eng := newEngine(tt.DefaultSizeMiB)
 
 	var totalNodes uint64
 	var totalTime time.Duration
@@ -26,7 +27,7 @@ func Bench() {
 		eng.state.Reset()
 		eng.state.ClearTT()
 		eng.state.ClearButterflyHistory()
-		eng.state.Init()
+		eng.state.Init(tt.DefaultSizeMiB)
 		eng.state.Quiet = true
 
 		board.SetChess960(benchStruct.frc)
