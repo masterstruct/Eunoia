@@ -35,6 +35,10 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		return 0
 	}
 
+	if depth <= 0 {
+		return ss.qsearch(&pos, ply, alpha, beta)
+	}
+
 	alphaOrig := alpha
 
 	// TT lookup
@@ -53,10 +57,6 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 				return score
 			}
 		}
-	}
-
-	if depth <= 0 {
-		return ss.qsearch(&pos, alpha, beta)
 	}
 
 	mover := pos.SideToMove
@@ -85,7 +85,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
-	ss.orderMoves(&pos, &movelist)
+	ss.orderMoves(&pos, &movelist, entry.Move)
 
 	var score int16
 

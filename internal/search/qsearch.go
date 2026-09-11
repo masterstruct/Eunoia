@@ -3,10 +3,32 @@ package search
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
+	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
-func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
+func (ss *SearchState) qsearch(pos *board.Position, ply int, alpha, beta int16) int16 {
 	ss.Nodes++
+
+	isPV := beta > alpha+1
+
+	// TT lookup
+	// TODO: tt.Store?
+	entry, ttHit := ss.tt.Probe(pos.Hash)
+	if ttHit && !isPV {
+		score := scoreFromTT(entry.Score, ply)
+		switch entry.Flag {
+		case tt.Exact:
+			return score
+		case tt.Lower:
+			if score >= beta {
+				return score
+			}
+		case tt.Upper:
+			if score <= alpha {
+				return score
+			}
+		}
+	}
 
 	standPat := evaluate(pos)
 
@@ -19,7 +41,7 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 
 	var movelist movegen.Movelist
 	movegen.GeneratePseudolegalMoves(pos, &movelist)
-	ss.orderMoves(pos, &movelist)
+	ss.orderMoves(pos, &movelist, entry.Move)
 	mover := pos.SideToMove
 
 	for i := range movelist.Len {
@@ -33,7 +55,7 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 			continue
 		}
 
-		score := -ss.qsearch(&newPos, -beta, -alpha)
+		score := -ss.qsearch(&newPos, ply+1, -beta, -alpha)
 
 		if ss.searchStopped() {
 			return 0

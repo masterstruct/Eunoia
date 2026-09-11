@@ -12,7 +12,7 @@ const (
 	maxHistory = 2 << 13
 )
 
-func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelist) {
+func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelist, ttMove board.Move) {
 	n := movelist.Len
 	if n == 0 {
 		return
@@ -20,12 +20,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 
 	color := pos.SideToMove
 
-	// TT lookup
-	entry, ttHit := ss.tt.Probe(pos.Hash)
-	var ttMove board.Move
-	if ttHit {
-		ttMove = entry.Move
-	}
+	ttHit := ttMove != board.NullMove
 
 	// score moves
 	var scores [movegen.MaxMoves]int
