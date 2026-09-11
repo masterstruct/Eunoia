@@ -17,6 +17,10 @@ const (
 	lmpBase       = 4
 	lmpMultiplier = 3
 	lmpMaxDepth   = 4
+
+	fpMaxDepth = 3
+	fpBase     = 50
+	fpScale    = 100
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta int16) int16 {
@@ -91,6 +95,8 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 	var quietsTried []board.Move
 
+	fpMargin := int16(fpBase + depth*fpScale)
+
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
@@ -99,6 +105,12 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		}
 
 		isCapture := move.IsCapture()
+
+		// futility pruning
+		if !isRoot && !isPV && !isCapture && !inCheck && movesSearched > 0 &&
+			!isMateScore(alpha) && depth < fpMaxDepth && staticEval+fpMargin <= alpha {
+			continue
+		}
 
 		// late move pruning
 		if !isPV && !isRoot && !isCapture && !inCheck && !isMateScore(bestValue) &&
