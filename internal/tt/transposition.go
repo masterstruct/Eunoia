@@ -28,6 +28,10 @@ const DefaultSizeMiB uint = 64
 type Table struct {
 	entries []Entry
 	mask    uint64
+
+	// for hashfull
+	totalEntries uint64
+	usedEntries  uint64
 }
 
 func NewTable(sizeMiB uint) *Table {
@@ -36,8 +40,9 @@ func NewTable(sizeMiB uint) *Table {
 	}
 	size := sizeFromMiB(sizeMiB)
 	return &Table{
-		entries: make([]Entry, size),
-		mask:    uint64(size - 1),
+		entries:      make([]Entry, size),
+		mask:         uint64(size - 1),
+		totalEntries: uint64(size),
 	}
 }
 
@@ -48,11 +53,14 @@ func (tt *Table) Resize(sizeMiB uint) {
 	size := sizeFromMiB(sizeMiB)
 	tt.entries = make([]Entry, size)
 	tt.mask = uint64(size - 1)
+	tt.totalEntries = uint64(size)
+	tt.usedEntries = 0
 }
 
 func (tt *Table) Clear() {
 	if tt != nil {
 		clear(tt.entries)
+		tt.usedEntries = 0
 	}
 }
 
@@ -62,6 +70,9 @@ func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, fl
 	}
 	entry := &tt.entries[tt.index(key)]
 	if entry.Key != key || depth >= entry.Depth {
+		if entry.Key == 0 {
+			tt.usedEntries++
+		}
 		entry.Key = key
 		entry.Move = move
 		entry.Score = score
@@ -93,4 +104,8 @@ func nextPow2(x uint) uint {
 		return 1
 	}
 	return 1 << bits.Len(x-1)
+}
+
+func (tt *Table) Hashfull() uint64 {
+	return (tt.usedEntries * 1000) / tt.totalEntries
 }
