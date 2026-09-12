@@ -107,5 +107,8 @@ func nextPow2(x uint) uint {
 }
 
 func (tt *Table) Hashfull() uint64 {
+	if tt == nil || len(tt.entries) == 0 {
+		return 0
+	}
 	return (tt.usedEntries * 1000) / tt.totalEntries
 }

@@ -25,8 +25,6 @@ func Bench() {
 
 	for _, benchStruct := range benchPositions {
 		eng.state.Reset()
-		eng.state.ClearTT()
-		eng.state.ClearButterflyHistory()
 		eng.state.Init(tt.DefaultSizeMiB)
 		eng.state.Quiet = true
 
