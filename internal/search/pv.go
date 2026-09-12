@@ -16,6 +16,10 @@ type PVTable struct {
 	line   [MaxPly][MaxPly]board.Move
 }
 
+func NewPVTable() *PVTable {
+	return &PVTable{}
+}
+
 func (pv *PVTable) Init(ply int) {
 	if ply >= MaxPly {
 		return
@@ -68,6 +72,8 @@ func (ss *SearchState) printPV(w io.Writer, depth int, score int16) {
 	buf.WriteString(strconv.FormatUint(nodes, 10))
 	buf.WriteString(" nps ")
 	buf.WriteString(strconv.FormatUint(nps, 10))
+	buf.WriteString(" hashfull ")
+	buf.WriteString(strconv.FormatUint(ss.tt.Hashfull(), 10))
 	buf.WriteString(" time ")
 	buf.WriteString(strconv.FormatInt(elapsed, 10))
 	buf.WriteString(" pv")

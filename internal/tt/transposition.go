@@ -2,6 +2,7 @@ package tt
 
 import (
 	"math/bits"
+	"runtime/debug"
 	"unsafe"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -23,24 +24,69 @@ type Entry struct {
 	Flag  Flag
 }
 
-// TODO: variable size TT
-const Size uint = 1 << 22 // 64MiB
-const Mask uint = Size - 1
+const DefaultSizeMiB uint = 64
 
-type Table [Size]Entry
+type Table struct {
+	entries []Entry
+	mask    uint64
 
-func (tt *Table) Clear() {
-	if tt != nil {
-		*tt = Table{}
+	// for hashfull
+	totalEntries uint64
+	usedEntries  uint64
+}
+
+func NewTable(sizeMiB uint) *Table {
+	if sizeMiB == 0 {
+		sizeMiB = DefaultSizeMiB
+	}
+	size := sizeFromMiB(sizeMiB)
+
+	return &Table{
+		entries:      make([]Entry, size),
+		mask:         size - 1,
+		totalEntries: size,
 	}
 }
 
-func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, flag Flag) {
-	if tt == nil {
+func (tt *Table) Resize(sizeMiB uint) {
+	if sizeMiB == 0 {
+		sizeMiB = DefaultSizeMiB
+	}
+	size := sizeFromMiB(sizeMiB)
+
+	if size == tt.totalEntries {
+		// TT is already correct size - clear
+		// it instead of allocating a new one
+		tt.Clear()
 		return
 	}
-	entry := &tt[tt.index(key)]
+
+	tt.entries = make([]Entry, size)
+	tt.mask = size - 1
+	tt.totalEntries = size
+	tt.usedEntries = 0
+
+	// garbage collect the old TT.entries slice
+	debug.FreeOSMemory()
+}
+
+func (tt *Table) Clear() {
+	if tt == nil || tt.usedEntries == 0 {
+		return
+	}
+	clear(tt.entries)
+	tt.usedEntries = 0
+}
+
+func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, flag Flag) {
+	if tt == nil || tt.totalEntries == 0 {
+		return
+	}
+	entry := &tt.entries[tt.index(key)]
 	if entry.Key != key || depth >= entry.Depth {
+		if entry.Key == 0 {
+			tt.usedEntries++
+		}
 		entry.Key = key
 		entry.Move = move
 		entry.Score = score
@@ -50,26 +96,33 @@ func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, fl
 }
 
 func (tt *Table) Probe(key uint64) (Entry, bool) {
-	if tt == nil {
+	if tt == nil || tt.totalEntries == 0 {
 		return Entry{}, false
 	}
-	entry := tt[tt.index(key)]
+	entry := tt.entries[tt.index(key)]
 	return entry, entry.Key == key
 }
 
-func (t *Table) index(key uint64) uint64 {
-	return key & uint64(Mask)
+func (tt *Table) index(key uint64) uint64 {
+	return key & tt.mask
 }
 
-func sizeFromMiB(mb uint) uint {
+func sizeFromMiB(mb uint) uint64 {
 	bytes := mb * 1024 * 1024
 	entries := bytes / uint(unsafe.Sizeof(Entry{}))
 	return nextPow2(entries)
 }
 
-func nextPow2(x uint) uint {
+func nextPow2(x uint) uint64 {
 	if x <= 1 {
 		return 1
 	}
 	return 1 << bits.Len(x-1)
+}
+
+func (tt *Table) Hashfull() uint64 {
+	if tt == nil || tt.totalEntries == 0 {
+		return 0
+	}
+	return (tt.usedEntries * 1000) / tt.totalEntries
 }

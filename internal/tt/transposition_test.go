@@ -10,7 +10,7 @@ import (
 func TestNextPow2(t *testing.T) {
 	tests := []struct {
 		in   uint
-		want uint
+		want uint64
 	}{
 		{0, 1},
 		{1, 1},
@@ -39,7 +39,7 @@ func TestTTSizeFromMB(t *testing.T) {
 	tests := []struct {
 		name string
 		mb   uint
-		want uint
+		want uint64
 	}{
 		{
 			name: "0mb",
@@ -79,7 +79,7 @@ func TestTTSizeFromMB(t *testing.T) {
 }
 
 func TestStoreAndProbe(t *testing.T) {
-	var tt Table
+	tt := NewTable(1)
 	var move board.Move
 	key := uint64(42)
 
@@ -95,7 +95,7 @@ func TestStoreAndProbe(t *testing.T) {
 }
 
 func TestProbeMiss(t *testing.T) {
-	var tt Table
+	tt := NewTable(1)
 	_, hit := tt.Probe(999999)
 	if hit {
 		t.Errorf("expected miss on empty table")
@@ -103,7 +103,7 @@ func TestProbeMiss(t *testing.T) {
 }
 
 func TestStoreOverwrites(t *testing.T) {
-	var tt Table
+	tt := NewTable(1)
 	var move board.Move
 	key := uint64(7)
 
@@ -117,7 +117,7 @@ func TestStoreOverwrites(t *testing.T) {
 }
 
 func TestStoreKeeps(t *testing.T) {
-	var tt Table
+	tt := NewTable(1)
 	var move board.Move
 	key := uint64(7)
 
@@ -131,10 +131,10 @@ func TestStoreKeeps(t *testing.T) {
 }
 
 func TestStoreCollision(t *testing.T) {
-	var tt Table
+	tt := NewTable(1)
 	var move board.Move
 	keyA := uint64(11)
-	keyB := keyA + uint64(Size) // same index, different key
+	keyB := keyA + uint64(len(tt.entries)) // same index, different key
 
 	if tt.index(keyA) != tt.index(keyB) {
 		t.Fatalf("keys do not collide")
@@ -155,7 +155,7 @@ func TestStoreCollision(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-	var tt Table
+	tt := NewTable(1)
 	var move board.Move
 	key := uint64(123)
 

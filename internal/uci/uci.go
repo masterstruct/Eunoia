@@ -12,6 +12,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
 	"github.com/masterstruct/Eunoia/internal/search"
+	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
 type engine struct {
@@ -28,7 +29,6 @@ func newEngine() *engine {
 		state: &search.SearchState{},
 	}
 	e.gameHistory = []uint64{e.pos.Hash}
-	e.state.Init()
 	return e
 }
 
@@ -41,6 +41,7 @@ func Loop(r io.Reader, w io.Writer) {
 	scanner := bufio.NewScanner(r)
 
 	eng := newEngine()
+	eng.state.Init(tt.DefaultSizeMiB)
 
 	for scanner.Scan() {
 		_ = scanner.Err()
@@ -65,7 +66,8 @@ func Loop(r io.Reader, w io.Writer) {
 			fmt.Fprintln(w, "id name Eunoia")
 			fmt.Fprintln(w, "id author Master Struct")
 			fmt.Fprintln(w, "option name Threads type spin default 1 min 1 max 1")
-			fmt.Fprintln(w, "option name Hash type spin default 64 min 64 max 64")
+			fmt.Fprintln(w, "option name Hash type spin default 64 min 1 max 33554432")
+			fmt.Fprintln(w, "option name Clear Hash type button")
 			fmt.Fprintln(w, "option name UCI_Chess960 type check default false")
 			fmt.Fprintln(w, "uciok")
 
@@ -83,9 +85,8 @@ func Loop(r io.Reader, w io.Writer) {
 			eng.mu.Unlock()
 			eng.running.Wait()
 			eng.mu.Lock()
-			eng.state.Reset()
-			eng.state.ClearButterflyHistory()
-			eng.state.ClearTT()
+			eng.state.PrepareForSearch()
+			eng.state.ClearTables()
 			eng.mu.Unlock()
 
 		case "isready":

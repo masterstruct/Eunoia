@@ -9,6 +9,7 @@ import (
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
+	"github.com/masterstruct/Eunoia/internal/search"
 )
 
 func (e *engine) handleGo(w io.Writer, args []string) {
@@ -20,12 +21,12 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 
 	e.mu.Lock()
 	state := e.state
-	state.Reset()
+	state.PrepareForSearch()
 	pos := e.pos
 	state.SetHistory(e.gameHistory)
 	e.mu.Unlock()
 
-	depth := 1000 // "infinite"
+	depth := search.MaxPly
 
 	timeLeft := 0
 	moveTime := 0
@@ -237,5 +238,26 @@ func (e *engine) handleSetOption(args []string) {
 	switch name {
 	case "UCI_Chess960":
 		board.SetChess960(value == "true")
+	case "Hash":
+		mib, err := strconv.Atoi(value)
+		if err == nil && mib > 0 {
+			e.mu.Lock()
+			e.state.Stop = true
+			e.mu.Unlock()
+			e.running.Wait()
+
+			e.mu.Lock()
+			e.state.ResizeTT(uint(mib))
+			e.mu.Unlock()
+		}
+	case "Clear Hash":
+		e.mu.Lock()
+		e.state.Stop = true
+		e.mu.Unlock()
+		e.running.Wait()
+
+		e.mu.Lock()
+		e.state.ClearTT()
+		e.mu.Unlock()
 	}
 }
