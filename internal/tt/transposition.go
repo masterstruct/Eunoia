@@ -2,6 +2,7 @@ package tt
 
 import (
 	"math/bits"
+	"runtime/debug"
 	"unsafe"
 
 	"github.com/masterstruct/Eunoia/internal/board"
@@ -39,6 +40,7 @@ func NewTable(sizeMiB uint) *Table {
 		sizeMiB = DefaultSizeMiB
 	}
 	size := sizeFromMiB(sizeMiB)
+	setMemoryLimit(sizeMiB)
 	return &Table{
 		entries:      make([]Entry, size),
 		mask:         uint64(size - 1),
@@ -51,17 +53,30 @@ func (tt *Table) Resize(sizeMiB uint) {
 		sizeMiB = DefaultSizeMiB
 	}
 	size := sizeFromMiB(sizeMiB)
+	setMemoryLimit(sizeMiB)
+
 	tt.entries = make([]Entry, size)
 	tt.mask = uint64(size - 1)
 	tt.totalEntries = uint64(size)
 	tt.usedEntries = 0
+
+	// garbage collect the old TT.entries slice
+	debug.FreeOSMemory()
+}
+
+// caps the Go runtime's heap to the hash table
+// size plus overhead for search allocations
+func setMemoryLimit(sizeMiB uint) {
+	const headroomMiB uint = 32
+	debug.SetMemoryLimit(int64(sizeMiB+headroomMiB) * 1024 * 1024)
 }
 
 func (tt *Table) Clear() {
-	if tt != nil {
-		clear(tt.entries)
-		tt.usedEntries = 0
+	if tt == nil || tt.usedEntries == 0 {
+		return
 	}
+	clear(tt.entries)
+	tt.usedEntries = 0
 }
 
 func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, flag Flag) {

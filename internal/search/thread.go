@@ -46,7 +46,7 @@ func (ss *SearchState) ClearButterflyHistory() {
 }
 
 func (ss *SearchState) ResizeTT(sizeMiB uint) {
-	ss.tt = tt.NewTable(sizeMiB)
+	ss.tt.Resize(sizeMiB)
 }
 
 func (ss *SearchState) Init(ttSizeMiB uint) {
