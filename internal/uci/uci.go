@@ -23,13 +23,13 @@ type engine struct {
 	running     sync.WaitGroup
 }
 
-func newEngine(ttSizeMiB uint) *engine {
+func newEngine() *engine {
 	e := &engine{
 		pos:   board.StartingPosition(),
 		state: &search.SearchState{},
 	}
 	e.gameHistory = []uint64{e.pos.Hash}
-	e.state.Init(ttSizeMiB)
+	e.state.Init(tt.DefaultSizeMiB)
 	return e
 }
 
@@ -41,7 +41,7 @@ func Loop(r io.Reader, w io.Writer) {
 
 	scanner := bufio.NewScanner(r)
 
-	eng := newEngine(tt.DefaultSizeMiB)
+	eng := newEngine()
 
 	for scanner.Scan() {
 		_ = scanner.Err()
@@ -85,9 +85,8 @@ func Loop(r io.Reader, w io.Writer) {
 			eng.mu.Unlock()
 			eng.running.Wait()
 			eng.mu.Lock()
-			eng.state.Reset()
-			eng.state.ClearButterflyHistory()
-			eng.state.ClearTT()
+			eng.state.PrepareForSearch()
+			eng.state.ClearTables()
 			eng.mu.Unlock()
 
 		case "isready":

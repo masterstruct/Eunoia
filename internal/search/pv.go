@@ -16,6 +16,10 @@ type PVTable struct {
 	line   [MaxPly][MaxPly]board.Move
 }
 
+func NewPVTable() *PVTable {
+	return &PVTable{}
+}
+
 func (pv *PVTable) Init(ply int) {
 	if ply >= MaxPly {
 		return

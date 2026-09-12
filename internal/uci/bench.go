@@ -8,7 +8,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
-const benchDepth = 8
+const benchDepth = 9
 
 type benchResult struct {
 	nodes uint64
@@ -16,16 +16,18 @@ type benchResult struct {
 }
 
 func Bench() {
-	eng := newEngine(tt.DefaultSizeMiB)
+	eng := newEngine()
 
 	var totalNodes uint64
 	var totalTime time.Duration
 
+	eng.state.Init(tt.DefaultSizeMiB)
+
 	fmt.Println("Benchmarking...")
 
 	for _, benchStruct := range benchPositions {
-		eng.state.Reset()
-		eng.state.Init(tt.DefaultSizeMiB)
+		eng.state.PrepareForSearch()
+		eng.state.ClearTables()
 		eng.state.Quiet = true
 
 		board.SetChess960(benchStruct.frc)

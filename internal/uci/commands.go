@@ -22,7 +22,7 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 
 	e.mu.Lock()
 	state := e.state
-	state.Reset()
+	state.PrepareForSearch()
 	pos := e.pos
 	state.SetHistory(e.gameHistory)
 	e.mu.Unlock()
