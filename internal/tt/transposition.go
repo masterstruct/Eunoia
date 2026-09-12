@@ -40,10 +40,11 @@ func NewTable(sizeMiB uint) *Table {
 		sizeMiB = DefaultSizeMiB
 	}
 	size := sizeFromMiB(sizeMiB)
+
 	return &Table{
 		entries:      make([]Entry, size),
-		mask:         uint64(size - 1),
-		totalEntries: uint64(size),
+		mask:         size - 1,
+		totalEntries: size,
 	}
 }
 
@@ -53,9 +54,16 @@ func (tt *Table) Resize(sizeMiB uint) {
 	}
 	size := sizeFromMiB(sizeMiB)
 
+	if size == tt.totalEntries {
+		// TT is already correct size - clear
+		// it instead of allocating a new one
+		tt.Clear()
+		return
+	}
+
 	tt.entries = make([]Entry, size)
-	tt.mask = uint64(size - 1)
-	tt.totalEntries = uint64(size)
+	tt.mask = size - 1
+	tt.totalEntries = size
 	tt.usedEntries = 0
 
 	// garbage collect the old TT.entries slice
@@ -71,7 +79,7 @@ func (tt *Table) Clear() {
 }
 
 func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, flag Flag) {
-	if tt == nil || len(tt.entries) == 0 {
+	if tt == nil || tt.totalEntries == 0 {
 		return
 	}
 	entry := &tt.entries[tt.index(key)]
@@ -88,7 +96,7 @@ func (tt *Table) Store(key uint64, move board.Move, score int16, depth uint8, fl
 }
 
 func (tt *Table) Probe(key uint64) (Entry, bool) {
-	if tt == nil || len(tt.entries) == 0 {
+	if tt == nil || tt.totalEntries == 0 {
 		return Entry{}, false
 	}
 	entry := tt.entries[tt.index(key)]
@@ -99,13 +107,13 @@ func (tt *Table) index(key uint64) uint64 {
 	return key & tt.mask
 }
 
-func sizeFromMiB(mb uint) uint {
+func sizeFromMiB(mb uint) uint64 {
 	bytes := mb * 1024 * 1024
 	entries := bytes / uint(unsafe.Sizeof(Entry{}))
 	return nextPow2(entries)
 }
 
-func nextPow2(x uint) uint {
+func nextPow2(x uint) uint64 {
 	if x <= 1 {
 		return 1
 	}
@@ -113,7 +121,7 @@ func nextPow2(x uint) uint {
 }
 
 func (tt *Table) Hashfull() uint64 {
-	if tt == nil || len(tt.entries) == 0 {
+	if tt == nil || tt.totalEntries == 0 {
 		return 0
 	}
 	return (tt.usedEntries * 1000) / tt.totalEntries

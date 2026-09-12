@@ -10,7 +10,7 @@ import (
 func TestNextPow2(t *testing.T) {
 	tests := []struct {
 		in   uint
-		want uint
+		want uint64
 	}{
 		{0, 1},
 		{1, 1},
@@ -39,7 +39,7 @@ func TestTTSizeFromMB(t *testing.T) {
 	tests := []struct {
 		name string
 		mb   uint
-		want uint
+		want uint64
 	}{
 		{
 			name: "0mb",
