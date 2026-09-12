@@ -40,7 +40,6 @@ func NewTable(sizeMiB uint) *Table {
 		sizeMiB = DefaultSizeMiB
 	}
 	size := sizeFromMiB(sizeMiB)
-	setMemoryLimit(sizeMiB)
 	return &Table{
 		entries:      make([]Entry, size),
 		mask:         uint64(size - 1),
@@ -53,7 +52,6 @@ func (tt *Table) Resize(sizeMiB uint) {
 		sizeMiB = DefaultSizeMiB
 	}
 	size := sizeFromMiB(sizeMiB)
-	setMemoryLimit(sizeMiB)
 
 	tt.entries = make([]Entry, size)
 	tt.mask = uint64(size - 1)
@@ -62,13 +60,6 @@ func (tt *Table) Resize(sizeMiB uint) {
 
 	// garbage collect the old TT.entries slice
 	debug.FreeOSMemory()
-}
-
-// caps the Go runtime's heap to the hash table
-// size plus overhead for search allocations
-func setMemoryLimit(sizeMiB uint) {
-	const headroomMiB uint = 32
-	debug.SetMemoryLimit(int64(sizeMiB+headroomMiB) * 1024 * 1024)
 }
 
 func (tt *Table) Clear() {

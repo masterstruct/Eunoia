@@ -3,7 +3,6 @@ package uci
 import (
 	"fmt"
 	"io"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -95,7 +94,6 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 
 		if move == board.NullMove {
 			fmt.Fprintln(w, "bestmove 0000")
-			go runtime.GC()
 			return
 		}
 
@@ -104,7 +102,6 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 		e.mu.Unlock()
 
 		fmt.Fprintf(w, "bestmove %s\n", move.String())
-		go runtime.GC()
 	})
 }
 
