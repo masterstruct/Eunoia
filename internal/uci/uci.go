@@ -29,7 +29,6 @@ func newEngine() *engine {
 		state: &search.SearchState{},
 	}
 	e.gameHistory = []uint64{e.pos.Hash}
-	e.state.Init(tt.DefaultSizeMiB)
 	return e
 }
 
@@ -42,6 +41,7 @@ func Loop(r io.Reader, w io.Writer) {
 	scanner := bufio.NewScanner(r)
 
 	eng := newEngine()
+	eng.state.Init(tt.DefaultSizeMiB)
 
 	for scanner.Scan() {
 		_ = scanner.Err()

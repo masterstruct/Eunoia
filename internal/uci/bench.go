@@ -17,11 +17,10 @@ type benchResult struct {
 
 func Bench() {
 	eng := newEngine()
+	eng.state.Init(tt.DefaultSizeMiB)
 
 	var totalNodes uint64
 	var totalTime time.Duration
-
-	eng.state.Init(tt.DefaultSizeMiB)
 
 	fmt.Println("Benchmarking...")
 
