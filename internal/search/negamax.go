@@ -56,7 +56,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	}
 
 	if depth <= 0 {
-		return ss.qsearch(&pos, alpha, beta)
+		return ss.qsearch(pos, alpha, beta)
 	}
 
 	mover := pos.SideToMove
@@ -87,9 +87,9 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	movegen.GeneratePseudolegalMoves(&pos, &movelist)
 	ss.orderMoves(&pos, &movelist)
 
-	var score int16
+	var quietsTried movegen.Movelist
 
-	var quietsTried []board.Move
+	var score int16
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
@@ -164,8 +164,9 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 				bonus := 300*depth - 250
 				ss.updateButterflyHistory(mover, move.From(), move.To(), bonus)
 
-				for _, quietMove := range quietsTried {
+				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
+					quietMove := quietsTried.Moves[i]
 					ss.updateButterflyHistory(mover, quietMove.From(), quietMove.To(), -bonus)
 				}
 			}
@@ -173,7 +174,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		}
 
 		if !isCapture {
-			quietsTried = append(quietsTried, move)
+			quietsTried.Add(move)
 		}
 	}
 
