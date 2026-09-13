@@ -7,17 +7,15 @@ import (
 )
 
 type TimeManager struct {
-	Stop bool
-
+	Stop     bool
 	MaxDepth int
 
-	Nodes     uint64
-	MaxNodes  uint64
-	SoftNodes uint64
+	// set once in ss.Init and changed with `UpdateMoveOverhead`.
+	// should persist between `ucinewgame` calls - do NOT clear
+	MoveOverhead uint
 
-	StartTime time.Time
-	MaxTime   time.Time
-	SoftTime  time.Time
+	Nodes, MaxNodes, SoftNodes   uint64
+	StartTime, MaxTime, SoftTime time.Time
 }
 
 type LimitType int
@@ -25,6 +23,10 @@ type LimitType int
 const (
 	Soft LimitType = iota
 	Hard
+
+	MinMoveOverhead     = 0
+	DefaultMoveOverhead = 20
+	MaxMoveOverhead     = 5000
 )
 
 func (tm *TimeManager) hardLimitReached() bool {
@@ -128,7 +130,7 @@ func (tm *TimeManager) SetLimits(limits GoLimits, sideToMove board.Color) {
 	var hardTime, softTime int64
 
 	if remainingTime > 0 {
-		softTime = max(remainingTime/30+increment*7/10, 1)
+		softTime = max((remainingTime/30+increment*7/10)-int64(tm.MoveOverhead), 1)
 		tm.SoftTime = tm.StartTime.Add(time.Duration(softTime) * time.Millisecond)
 
 		hardTime = max(remainingTime/3+increment*7/10, 1)
@@ -142,5 +144,16 @@ func (tm *TimeManager) SetLimits(limits GoLimits, sideToMove board.Color) {
 		}
 	}
 
+	hardTime = max(hardTime-int64(tm.MoveOverhead), 1)
 	tm.MaxTime = tm.StartTime.Add(time.Duration(hardTime) * time.Millisecond)
+}
+
+func (tm *TimeManager) UpdateMoveOverhead(ms int) {
+	if ms < MinMoveOverhead {
+		ms = MinMoveOverhead
+	} else if ms > MaxMoveOverhead {
+		ms = MaxMoveOverhead
+	}
+
+	tm.MoveOverhead = uint(ms)
 }
