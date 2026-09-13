@@ -1,21 +1,13 @@
 package search
 
 import (
-	"time"
-
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
 type SearchState struct {
 	Quiet bool // avoid printing output
 
-	Stop      bool
-	Nodes     uint64
-	MaxNodes  uint64
-	SoftNodes uint64
-	StartTime time.Time
-	MaxTime   time.Time
-	SoftTime  time.Time
+	TimeManager
 
 	tt *tt.Table
 	pv *PVTable
@@ -34,13 +26,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 
 func (ss *SearchState) PrepareForSearch() {
 	ss.Quiet = false
-	ss.Stop = false
-	ss.Nodes = 0
-	ss.MaxNodes = 0
-	ss.SoftNodes = 0
-	ss.StartTime = time.Now()
-	ss.MaxTime = time.Time{}
-	ss.SoftTime = time.Time{}
+	ss.resetTimeManager()
 }
 
 func (ss *SearchState) ClearTables() {
