@@ -33,3 +33,4 @@ In no particular order, engines used for ideas or inspiration:
 - [Blunder](https://github.com/deanmchris/blunder)
 - [Lacrima](https://github.com/Iron627/Lacrima)
 - [Ethereal](https://github.com/AndyGrant/Ethereal)
+- [Hobbes](https://github.com/kelseyde/hobbes-chess-engine)
