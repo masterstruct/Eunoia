@@ -56,7 +56,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	}
 
 	if depth <= 0 {
-		return ss.qsearch(&pos, alpha, beta)
+		return ss.qsearch(pos, alpha, beta)
 	}
 
 	mover := pos.SideToMove
