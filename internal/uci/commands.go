@@ -5,7 +5,6 @@ import (
 	"io"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/movegen"
@@ -26,18 +25,14 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 	state.SetHistory(e.gameHistory)
 	e.mu.Unlock()
 
-	depth := search.MaxPly
-
-	timeLeft := 0
-	moveTime := 0
-	increment := 0
+	limits := search.GoLimits{}
 
 	// returns the integer following args[i] and ok bool
-	intArg := func(i int) (int, bool) {
+	intArg := func(i int) (int64, bool) {
 		if i+1 >= len(args) {
 			return 0, false
 		}
-		n, err := strconv.Atoi(args[i+1])
+		n, err := strconv.ParseInt(args[i+1], 10, 64)
 		return n, err == nil
 	}
 
@@ -45,52 +40,43 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 		switch arg {
 		case "movetime":
 			if v, ok := intArg(i); ok {
-				moveTime = v
+				limits.MoveTime = v
 			}
 		case "nodes":
 			if v, ok := intArg(i); ok {
-				state.MaxNodes = uint64(v)
+				limits.Nodes = v
 			}
 		case "wtime":
-			if v, ok := intArg(i); ok && pos.SideToMove == board.White {
-				timeLeft = v
+			if v, ok := intArg(i); ok {
+				limits.WTime = v
 			}
 		case "btime":
-			if v, ok := intArg(i); ok && pos.SideToMove == board.Black {
-				timeLeft = v
+			if v, ok := intArg(i); ok {
+				limits.BTime = v
 			}
 		case "winc":
-			if v, ok := intArg(i); ok && pos.SideToMove == board.White {
-				increment = v
+			if v, ok := intArg(i); ok {
+				limits.WInc = v
 			}
 		case "binc":
-			if v, ok := intArg(i); ok && pos.SideToMove == board.Black {
-				increment = v
+			if v, ok := intArg(i); ok {
+				limits.BInc = v
 			}
 		case "depth":
 			if v, ok := intArg(i); ok {
-				depth = v
+				limits.Depth = v
 			}
 		case "infinite":
-			depth = 1000
+			limits.Infinite = true
 		}
 	}
 
-	switch {
-	case moveTime > 0:
-		state.MaxTime = state.StartTime.Add(time.Duration(moveTime) * time.Millisecond)
-	case timeLeft > 0 || increment > 0:
-		// TODO: add safety margin
-		hard := timeLeft/3 + (increment*7)/10
-		if hard > 0 {
-			soft := timeLeft/30 + (increment*7)/10
-			state.SoftTime = state.StartTime.Add(time.Duration(soft) * time.Millisecond)
-			state.MaxTime = state.StartTime.Add(time.Duration(hard) * time.Millisecond)
-		}
-	}
+	e.mu.Lock()
+	e.state.SetLimits(limits, pos.SideToMove)
+	e.mu.Unlock()
 
 	e.running.Go(func() {
-		move := state.SearchBestMove(pos, depth)
+		move := state.SearchBestMove(pos)
 
 		if move == board.NullMove {
 			fmt.Fprintln(w, "bestmove 0000")

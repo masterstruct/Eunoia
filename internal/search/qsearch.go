@@ -35,7 +35,7 @@ func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 
 		score := -ss.qsearch(newPos, -beta, -alpha)
 
-		if ss.searchStopped() {
+		if ss.shouldStop(Hard) {
 			return 0
 		}
 
