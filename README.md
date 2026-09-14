@@ -1,24 +1,30 @@
 # Eunoia
+
 UCI Chess Engine written in Go
 
 Eunoia (/juːˈnɔɪ.ə/) is a Greek word meaning "beautiful thinking".
 
 ## Requirements
+
 - Go 1.26.5 or newer
 - Working computer (optional)
 
 ## Build
+
 Build natively with:
+
 ```bash
 make
 ```
 Cross compile with:
+
 ```bash
 make windows
 make linux
 ```
 
 ## Credits
+
 - Stockfish and Alpha-Beta Discord servers
 - [Chess Programming Wiki](https://chessprogramming.org/)
 - [@Lily](https://github.com/87flowers/) for chess move flag [scheme](https://87flowers.com/chess-moveflags/)
@@ -28,6 +34,7 @@ make linux
 - [Ronald Friederich](https://chessprogramming.org/Ronald_Friederich) for [PeSTO's Evaluation Function](https://chessprogramming.org/PeSTO's_Evaluation_Function)
 
 In no particular order, engines used for ideas or inspiration:
+
 - [Rodent V](https://github.com/nescitus/Rodent-V)
 - [Crustik](https://github.com/Dejon51/Crustik)
 - [Blunder](https://github.com/deanmchris/blunder)
