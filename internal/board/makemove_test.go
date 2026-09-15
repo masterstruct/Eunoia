@@ -292,13 +292,13 @@ func makemove_assertPositionEqual(t *testing.T, got, want Position) {
 	t.Helper()
 
 	if got.FEN() != want.FEN() {
-		t.Errorf("FEN mismatch\ngot: %s\n%v\nwant: %s\n%v", got.FEN(), got, want.FEN(), want)
+		t.Errorf("FEN mismatch\ngot: %s\n%v\nwant: %s\n%v", got.FEN(), got, want.FEN(), want.String())
 	}
 	if got.SideToMove != want.SideToMove {
 		t.Errorf("SideToMove mismatch\ngot: %v\nwant: %v", got.SideToMove, want.SideToMove)
 	}
-	if got.CastlingRights != want.CastlingRights {
-		t.Errorf("CastlingRights mismatch\ngot: %v\nwant: %v", got.CastlingRights, want.CastlingRights)
+	if got.Castling != want.Castling {
+		t.Errorf("CastlingRights mismatch\ngot: %v\nwant: %v", got.Castling, want.Castling)
 	}
 	if got.EnPassant != want.EnPassant {
 		t.Errorf("EnPassant mismatch\ngot: %v\nwant: %v", got.EnPassant, want.EnPassant)
@@ -460,7 +460,7 @@ func TestMakeMove_Chess960(t *testing.T) {
 		},
 		{
 			name:    "Capturing black rook clears correct castling right",
-			fen:     "1r1kr3/8/8/8/8/4R3/2K1R3/8 w bf - 0 1",
+			fen:     "1r1kr3/8/8/8/8/4R3/2K1R3/8 w be - 0 1",
 			move:    NewCapture(E3, E8),
 			wantFEN: "1r1kR3/8/8/8/8/8/2K1R3/8 b b - 0 1",
 		},

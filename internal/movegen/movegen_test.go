@@ -696,7 +696,7 @@ func TestGenKingMoves(t *testing.T) {
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
-					t.Fatalf("unexpected king move: %v\n%v", move, pos)
+					t.Fatalf("unexpected king move: %v\n%v", move, pos.String())
 				}
 			}
 			if movelist.Len != len(tt.to) {

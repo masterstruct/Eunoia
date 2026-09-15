@@ -52,7 +52,7 @@ func (z *zobrist) PieceKey(color Color, piece PieceType, square Square) uint64 {
 	return z.piece[color][piece][square]
 }
 
-func (z *zobrist) CastlingKey(cr CastlingRights) uint64 {
+func (z *zobrist) CastlingKey(cr uint8) uint64 {
 	return z.castling[cr]
 }
 
@@ -83,7 +83,7 @@ func (z *zobrist) ComputeHash(pos *Position) uint64 {
 		hash ^= z.PieceKey(piece.Color, piece.Type, sq)
 	}
 
-	hash ^= z.CastlingKey(pos.CastlingRights)
+	hash ^= z.CastlingKey(pos.Castling.ToIndex())
 	epSq := pos.EnPassant
 	if epSq != NoSquare {
 		hash ^= z.EnPassantKey(epSq.File())
