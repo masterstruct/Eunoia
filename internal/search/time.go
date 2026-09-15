@@ -34,12 +34,10 @@ func (tm *TimeManager) hardLimitReached() bool {
 		return true
 	}
 	if tm.MaxNodes > 0 && tm.Nodes >= tm.MaxNodes {
-		tm.Stop = true
 		return true
 	}
 	if tm.Nodes&2047 == 0 && // check hard time limit every 2048 nodes
 		!tm.MaxTime.IsZero() && time.Now().After(tm.MaxTime) {
-		tm.Stop = true
 		return true
 	}
 	return false
@@ -51,7 +49,7 @@ func (tm *TimeManager) softLimitReached() bool {
 		(!tm.SoftTime.IsZero() && time.Now().After(tm.SoftTime))
 }
 
-func (tm *TimeManager) shouldStop(limitType LimitType) bool {
+func (tm *TimeManager) ShouldStop(limitType LimitType) bool {
 	if tm.Stop {
 		return true
 	}
@@ -121,8 +119,6 @@ func (tm *TimeManager) SetLimits(limits GoLimits, sideToMove board.Color) {
 	// go wtime 60000 btime 60000 movetime 5000
 	// the engine should stop whenever any limit is reached:
 	// 5 seconds (movetime) or internal soft/hard time limits.
-
-	// TODO: add safety margin
 
 	remainingTime = max(remainingTime, 0)
 	increment = max(increment, 0)

@@ -22,7 +22,7 @@ const (
 func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta int16) int16 {
 	ss.pv.Init(ply)
 
-	if ss.shouldStop(Hard) {
+	if ss.ShouldStop(Hard) {
 		return 0
 	}
 
@@ -145,7 +145,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		}
 		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
 
-		if ss.shouldStop(Hard) {
+		if ss.ShouldStop(Hard) {
 			return 0
 		}
 

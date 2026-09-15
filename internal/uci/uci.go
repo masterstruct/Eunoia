@@ -57,10 +57,7 @@ func Loop(r io.Reader, w io.Writer) {
 
 		switch cmd {
 		case "quit":
-			eng.mu.Lock()
-			eng.state.Stop = true
-			eng.mu.Unlock()
-			eng.running.Wait()
+			eng.cancelSearchAndWait()
 			return
 
 		case "uci":
@@ -74,6 +71,7 @@ func Loop(r io.Reader, w io.Writer) {
 			fmt.Fprintln(w, "uciok")
 
 		case "setoption":
+			eng.cancelSearchAndWait()
 			eng.handleSetOption(args)
 
 		case "position":
@@ -82,10 +80,7 @@ func Loop(r io.Reader, w io.Writer) {
 			}
 
 		case "ucinewgame":
-			eng.mu.Lock()
-			eng.state.Stop = true
-			eng.mu.Unlock()
-			eng.running.Wait()
+			eng.cancelSearchAndWait()
 			eng.mu.Lock()
 			eng.state.PrepareForSearch()
 			eng.state.ClearTables()
@@ -95,22 +90,28 @@ func Loop(r io.Reader, w io.Writer) {
 			fmt.Fprintln(w, "readyok")
 
 		case "go":
+			eng.cancelSearchAndWait()
 			eng.handleGo(w, args)
 
 		case "stop":
-			eng.mu.Lock()
-			eng.state.Stop = true
-			eng.mu.Unlock()
-			eng.running.Wait()
+			eng.cancelSearchAndWait()
 
 		case "perft":
-			depth := 0
-			if len(args) > 0 {
-				depth, _ = strconv.Atoi(args[0])
+			if len(args) == 0 {
+				break
 			}
+
+			depth, err := strconv.Atoi(args[0])
+			if err != nil {
+				break
+			}
+
+			eng.cancelSearchAndWait()
+
 			eng.mu.Lock()
 			pos := eng.pos
 			eng.mu.Unlock()
+
 			perftRes := movegen.Perft(&pos, depth)
 			fmt.Fprintln(w, "total:", perftRes.Nodes)
 			fmt.Fprintln(w, "time:", perftRes.Time)
@@ -121,11 +122,18 @@ func Loop(r io.Reader, w io.Writer) {
 			s := eng.pos.String()
 			eng.mu.Unlock()
 			fmt.Fprintln(w, s)
-
-		case "flip":
-			eng.mu.Lock()
-			eng.pos.SideToMove = eng.pos.SideToMove.Opponent()
-			eng.mu.Unlock()
 		}
 	}
+}
+
+func (e *engine) cancelSearch() {
+	e.mu.Lock()
+	e.state.Stop = true
+	e.mu.Unlock()
+}
+
+// cancels and waits until the engine quits the search
+func (e *engine) cancelSearchAndWait() {
+	e.cancelSearch()
+	e.running.Wait()
 }
