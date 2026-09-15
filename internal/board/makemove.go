@@ -139,8 +139,8 @@ func (pos *Position) MakeMove(move Move) Position {
 func (pos *Position) MakeNullMove() Position {
 	newPos := *pos
 	if newPos.EnPassant != NoSquare {
-		newPos.EnPassant = NoSquare
 		newPos.Hash ^= ZobristTable.EnPassantKey(newPos.EnPassant.File())
+		newPos.EnPassant = NoSquare
 	}
 	newPos.SideToMove = pos.SideToMove.Opponent()
 	newPos.Hash ^= ZobristTable.SideToMoveKey()
