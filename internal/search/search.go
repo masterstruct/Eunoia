@@ -16,7 +16,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 
 	// iterative deepening
 	for depth := 1; depth <= ss.MaxDepth; depth++ {
-		if ss.shouldStop(Soft) || ss.shouldStop(Hard) {
+		if ss.ShouldStop(Soft) || ss.ShouldStop(Hard) {
 			break
 		}
 

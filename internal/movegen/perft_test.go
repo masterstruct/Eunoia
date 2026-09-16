@@ -2,18 +2,20 @@ package movegen
 
 import (
 	"fmt"
+	"strings"
+	"sync"
 	"testing"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
 func TestPerft(t *testing.T) {
-	runPerftTests(t, perftPositions, false)
+	runPerftTests(t, perftPositions, false, true)
 }
 
 func TestPerft_Chess960(t *testing.T) {
 	withChess960(t)
-	runPerftTests(t, perftPositionsChess960, false)
+	runPerftTests(t, perftPositionsChess960, false, true)
 }
 
 var perftPositions = []struct {
@@ -121,18 +123,25 @@ func runPerftTests(t *testing.T, positions []struct {
 	fen   string
 	depth int
 	want  []uint64
-}, splitperft bool) {
+}, splitperft bool, parallel bool) {
 	t.Helper()
+
 	var total uint64
 	var n uint64
+	var mu sync.Mutex
+
 	for _, tt := range positions {
-		depth := tt.depth
 		t.Run(tt.name, func(t *testing.T) {
+			if parallel {
+				t.Parallel()
+			}
+
 			pos, err := board.ParseFEN(tt.fen)
 			if err != nil {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
+			depth := tt.depth
 			if depth < 1 {
 				t.Fatalf("depth must be >= 1: %d", depth)
 			}
@@ -146,21 +155,31 @@ func runPerftTests(t *testing.T, positions []struct {
 			} else {
 				got = Perft(&pos, depth)
 			}
-			want := tt.want[depth-1]
 
+			want := tt.want[depth-1]
 			if got.Nodes != want {
 				t.Errorf("depth %d: got %d, want %d", depth, got.Nodes, want)
 			}
 
-			fmt.Println("total:", got.Nodes)
-			fmt.Println("time:", got.Time)
-			fmt.Println("nps:", got.NPS)
+			fmt.Printf(
+				`total: %d
+time: %v
+nps: %d`,
+				got.Nodes, got.Time, got.NPS)
+
+			mu.Lock()
 			total += got.NPS
 			n++
+			mu.Unlock()
 		})
 	}
 
-	if n > 0 {
-		fmt.Println("Average nps:", total/n)
-	}
+	t.Cleanup(func() {
+		if n > 0 {
+			s := fmt.Sprint("Average nps: ", total/n)
+			fmt.Println(strings.Repeat("~", len(s)))
+			fmt.Println(s)
+			fmt.Println(strings.Repeat("~", len(s)))
+		}
+	})
 }

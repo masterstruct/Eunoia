@@ -13,12 +13,6 @@ import (
 
 func (e *engine) handleGo(w io.Writer, args []string) {
 	e.mu.Lock()
-	e.state.Stop = true
-	e.mu.Unlock()
-
-	e.running.Wait()
-
-	e.mu.Lock()
 	state := e.state
 	state.PrepareForSearch()
 	pos := e.pos
@@ -224,35 +218,23 @@ func (e *engine) handleSetOption(args []string) {
 	switch name {
 	case "UCI_Chess960":
 		board.SetChess960(value == "true")
+
 	case "Hash":
 		mib, err := strconv.Atoi(value)
 		if err == nil && mib > 0 {
 			e.mu.Lock()
-			e.state.Stop = true
-			e.mu.Unlock()
-			e.running.Wait()
-
-			e.mu.Lock()
 			e.state.ResizeTT(uint(mib))
 			e.mu.Unlock()
 		}
-	case "Clear Hash":
-		e.mu.Lock()
-		e.state.Stop = true
-		e.mu.Unlock()
-		e.running.Wait()
 
+	case "Clear Hash":
 		e.mu.Lock()
 		e.state.ClearTT()
 		e.mu.Unlock()
+
 	case "Move Overhead":
 		ms, err := strconv.Atoi(value)
 		if err == nil {
-			e.mu.Lock()
-			e.state.Stop = true
-			e.mu.Unlock()
-			e.running.Wait()
-
 			e.mu.Lock()
 			e.state.UpdateMoveOverhead(ms)
 			e.mu.Unlock()

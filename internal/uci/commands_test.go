@@ -15,12 +15,6 @@ func TestApplyMoves(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	got.CastlingRookSq = board.CastlingRookSquares{
-		WhiteKingside:  board.NoSquare,
-		WhiteQueenside: board.NoSquare,
-		BlackKingside:  board.NoSquare,
-		BlackQueenside: board.NoSquare,
-	}
 
 	want, err := board.ParseFEN(fen)
 	if err != nil {

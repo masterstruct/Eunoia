@@ -60,7 +60,7 @@ func (pos *Position) String() string {
 	fullmoves, _ := PlyToFullmoves(pos.Ply)
 
 	fmt.Fprintf(&sb, "%-13s%9s\n", "Side to move:", side)
-	fmt.Fprintf(&sb, "%-16s%6s\n", "Castling rights:", pos.CastlingRights)
+	fmt.Fprintf(&sb, "%-16s%6s\n", "Castling rights:", pos.Castling.String(IsChess960()))
 	fmt.Fprintf(&sb, "%-18s%4s\n", "En passant square:", pos.EnPassant)
 	fmt.Fprintf(&sb, "%-13s%9d\n", "50 move rule:", pos.HalfmoveClock)
 	fmt.Fprintf(&sb, "%-13s%9d\n", "Fullmoves:", fullmoves)

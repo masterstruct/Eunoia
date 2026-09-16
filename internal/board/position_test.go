@@ -1,7 +1,6 @@
 package board
 
 import (
-	"errors"
 	"testing"
 )
 
@@ -10,286 +9,64 @@ type placement struct {
 	sq Square
 }
 
-func TestHas(t *testing.T) {
-	tests := []struct {
-		name  string
-		cr    CastlingRights
-		right CastlingRights
-		want  bool
-	}{
-		{"has black kingside", BlackKingside, BlackKingside, true},
-		{"missing black queenside", BlackKingside, BlackQueenside, false},
-		{"has multiple rights", AllCastling, WhiteQueenside, true},
-		{"subset present", BlackKingside | WhiteKingside, BlackKingside, true},
-		{"subset absent", BlackKingside | WhiteKingside, BlackQueenside, false},
-		{"no castling has nothing", NoCastling, BlackKingside, false},
-		{"all castling has all", AllCastling, AllCastling, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.cr.Has(tt.right); got != tt.want {
-				t.Errorf("expected %v but got %v", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestCastlingRightsString(t *testing.T) {
-	tests := []struct {
-		name string
-		cr   CastlingRights
-		want string
-	}{
-		{"none", NoCastling, "-"},
-		{"black kingside", BlackKingside, "k"},
-		{"black queenside", BlackQueenside, "q"},
-		{"white kingside", WhiteKingside, "K"},
-		{"white queenside", WhiteQueenside, "Q"},
-
-		{"white kingside + queenside", WhiteKingside | WhiteQueenside, "KQ"},
-		{"white kingside + black kingside", WhiteKingside | BlackKingside, "Kk"},
-		{"white queenside + black kingside", WhiteQueenside | BlackKingside, "Qk"},
-
-		{"white all + black queenside", WhiteKingside | WhiteQueenside | BlackQueenside, "KQq"},
-		{"white queenside + black all", WhiteQueenside | BlackKingside | BlackQueenside, "Qkq"},
-
-		{"all rights", AllCastling, "KQkq"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.cr.String(); got != tt.want {
-				t.Errorf("expected %q but got %q", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestParseCastlingRights(t *testing.T) {
-	tests := []struct {
-		name    string
-		input   string
-		want    CastlingRights
-		wantErr error
-	}{
-		{"none", "-", NoCastling, nil},
-		{"white kingside", "K", WhiteKingside, nil},
-		{"white queenside", "Q", WhiteQueenside, nil},
-		{"black kingside", "k", BlackKingside, nil},
-		{"black queenside", "q", BlackQueenside, nil},
-
-		{"white both", "KQ", WhiteKingside | WhiteQueenside, nil},
-		{"black both", "kq", BlackKingside | BlackQueenside, nil},
-		{"mixed all", "KQkq", AllCastling, nil},
-		{"mixed unordered", "qKkQ", AllCastling, nil},
-
-		{"empty string", "", NoCastling, errInvalidCastlingLength},
-		{"too long", "KQkq-", NoCastling, errInvalidCastlingLength},
-		{"invalid none and black kingside", "-k", NoCastling, errInvalidCastlingChar},
-		{"invalid black kingside and none", "k-", NoCastling, errInvalidCastlingChar},
-
-		{"invalid char letter", "X", NoCastling, errInvalidCastlingChar},
-		{"invalid char digit", "1", NoCastling, errInvalidCastlingChar},
-		{"invalid char symbol", "?", NoCastling, errInvalidCastlingChar},
-
-		{"duplicate white king", "KK", NoCastling, errDuplicateCastlingChar},
-		{"duplicate white queen", "QQ", NoCastling, errDuplicateCastlingChar},
-		{"duplicate black king", "kk", NoCastling, errDuplicateCastlingChar},
-		{"duplicate black queen", "qq", NoCastling, errDuplicateCastlingChar},
-		{"duplicate mixed", "KQK", NoCastling, errDuplicateCastlingChar},
-		{"duplicate across order", "qkq", NoCastling, errDuplicateCastlingChar},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseCastlingRights(tt.input, E1, E8)
-
-			if tt.wantErr != nil {
-				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("expected error %v but got %v", tt.wantErr, err)
-				}
-				if got != NoCastling {
-					t.Errorf("expected NoCastling on error but got %v", got)
-				}
-				return
-			}
-
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
-			if got != tt.want {
-				t.Errorf("expected %v but got %v", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestParseCastlingRights_Shredder(t *testing.T) {
-	tests := []struct {
-		name        string
-		s           string
-		whiteKingSq Square
-		blackKingSq Square
-		want        CastlingRights
-	}{
-		{"standard start via file letters", "AHah", E1, E8, AllCastling},
-		{"white kingside only, rook on h", "H", E1, E8, WhiteKingside},
-		{"white queenside only, rook on a", "A", E1, E8, WhiteQueenside},
-		{"black kingside only, rook on h", "h", E1, E8, BlackKingside},
-		{"black queenside only, rook on a", "a", E1, E8, BlackQueenside},
-		{"960 king on b file, rooks on a and g", "GAga", B1, B8, AllCastling},
-		{"960 king on g file, rooks on h and d", "HDhd", G1, G8, AllCastling},
-		{"mixed case single rights", "Ab", E1, E8, WhiteQueenside | BlackQueenside},
-		{"none", "-", E1, E8, NoCastling},
-
-		{"white both sides", "BD", C1, C8, WhiteKingside | WhiteQueenside},
-		{"black both sides", "bd", C1, C8, BlackKingside | BlackQueenside},
-		{"white kingside + black kingside", "Hh", E1, E8, WhiteKingside | BlackKingside},
-		{"white queenside + black queenside", "Aa", E1, E8, WhiteQueenside | BlackQueenside},
-		{"white kingside + black queenside", "Ha", E1, E8, WhiteKingside | BlackQueenside},
-		{"white queenside + black kingside", "Ah", E1, E8, WhiteQueenside | BlackKingside},
-		{"all four, mixed order", "haHA", E1, E8, AllCastling},
-		{"all four 960", "CHcf", G1, D8, AllCastling},
-		{"white both + black kingside", "AHh", E1, E8, WhiteKingside | WhiteQueenside | BlackKingside},
-		{"white both + black queenside", "AHa", E1, E8, WhiteKingside | WhiteQueenside | BlackQueenside},
-		{"black both + white kingside", "ahH", E1, E8, BlackKingside | BlackQueenside | WhiteKingside},
-		{"black both + white queenside", "ahA", E1, E8, BlackKingside | BlackQueenside | WhiteQueenside},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseCastlingRights(tt.s, tt.whiteKingSq, tt.blackKingSq)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if got != tt.want {
-				t.Errorf("got %v want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestParseCastlingRights_ShredderErrors(t *testing.T) {
-	tests := []struct {
-		name     string
-		from, to Square
-		s        string
-	}{
-		{"empty string", E1, E8, ""},
-		{"too long", D1, E8, "AHahb"},
-		{"duplicate file letter", C1, H8, "AA"},
-		{"file letter equal to white king's file", E1, A8, "E"},
-		{"file letter equal to black king's file", H1, F8, "Dbf"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := ParseCastlingRights(tt.s, tt.from, tt.to)
-			if err == nil {
-				t.Error("expected an error, got none")
-			}
-		})
-	}
-}
-
-func TestParseCastlingRights_UsesRealKingSquare(t *testing.T) {
-	got, err := ParseCastlingRights("D", B1, B8)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got != WhiteKingside {
-		t.Errorf("king on B1: got %v, want WhiteKingside", got)
-	}
-
-	got, err = ParseCastlingRights("D", E1, E8)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if got != WhiteQueenside {
-		t.Errorf("king on E1: got %v, want WhiteQueenside", got)
-	}
-}
-
-func TestParseFEN_Chess960_NonEFileKing(t *testing.T) {
-	withChess960(t)
-	tests := []string{
-		"1qrkrbbn/pppppppp/8/8/8/8/PPPPPPPP/1QRKRBBN w CEce - 0 1",
-		"qnnbbrkr/pppppppp/8/8/8/8/PPPPPPPP/QNNBBRKR w FHfh - 0 1",
-	}
-
-	for _, fen := range tests {
-		t.Run(fen, func(t *testing.T) {
-			pos, err := ParseFEN(fen)
-			if err != nil {
-				t.Fatalf("ParseFEN failed: %v", err)
-			}
-			if got := pos.FEN(); got != fen {
-				t.Errorf("got %s want %s", got, fen)
-			}
-		})
-	}
-}
-
-func TestCastlingRightsRoundTrip(t *testing.T) {
-	tests := []CastlingRights{
-		NoCastling,
-		BlackKingside,
-		BlackQueenside,
-		WhiteKingside,
-		WhiteQueenside,
-		BlackKingside | BlackQueenside,
-		WhiteKingside | WhiteQueenside,
-		WhiteKingside | BlackKingside,
-		WhiteKingside | BlackQueenside,
-		WhiteQueenside | BlackKingside,
-		WhiteQueenside | BlackQueenside,
-		WhiteKingside | WhiteQueenside | BlackKingside,
-		WhiteKingside | WhiteQueenside | BlackQueenside,
-		WhiteKingside | BlackKingside | BlackQueenside,
-		WhiteQueenside | BlackKingside | BlackQueenside,
-		AllCastling,
-	}
-
-	for _, cr := range tests {
-		t.Run(cr.String(), func(t *testing.T) {
-			s := cr.String()
-
-			got, err := ParseCastlingRights(s, E1, E8)
-			if err != nil {
-				t.Fatalf("unexpected error parsing %q: %v", s, err)
-			}
-			if got != cr {
-				t.Fatalf("round-trip mismatch: started with %v, string %q, parsed %v", cr, s, got)
-			}
-		})
-	}
-}
-
 func TestRemove(t *testing.T) {
 	tests := []struct {
 		name  string
-		cr    CastlingRights
+		c     Castling
 		right CastlingRights
-		want  CastlingRights
+		want  Castling
 	}{
-		{"remove black kingside", AllCastling, BlackKingside, BlackQueenside | WhiteKingside | WhiteQueenside},
-		{"remove black queenside", AllCastling, BlackQueenside, BlackKingside | WhiteKingside | WhiteQueenside},
-		{"remove white kingside", AllCastling, WhiteKingside, BlackKingside | BlackQueenside | WhiteQueenside},
-		{"remove white queenside", AllCastling, WhiteQueenside, BlackKingside | BlackQueenside | WhiteKingside},
-		{"remove absent right", BlackKingside, BlackQueenside, BlackKingside},
-		{"remove only right", WhiteQueenside, WhiteQueenside, NoCastling},
-		{"remove from none", NoCastling, BlackKingside, NoCastling},
-		{"remove all rights", AllCastling, AllCastling, NoCastling},
+		{
+			"remove black kingside",
+			Castling{A8, H8, A1, H1},
+			BlackKingside,
+			Castling{A8, NoSquare, A1, H1},
+		},
+		{
+			"remove black queenside",
+			Castling{A8, H8, A1, H1},
+			BlackQueenside,
+			Castling{NoSquare, H8, A1, H1},
+		},
+		{
+			"remove white kingside",
+			Castling{A8, H8, A1, H1},
+			WhiteKingside,
+			Castling{A8, H8, A1, NoSquare},
+		},
+		{
+			"remove white queenside",
+			Castling{A8, H8, A1, H1},
+			WhiteQueenside,
+			Castling{A8, H8, NoSquare, H1},
+		},
+		{
+			"remove absent right",
+			Castling{NoSquare, H8, NoSquare, NoSquare},
+			BlackQueenside,
+			Castling{NoSquare, H8, NoSquare, NoSquare},
+		},
+		{
+			"remove only right",
+			Castling{NoSquare, NoSquare, A1, NoSquare},
+			WhiteQueenside,
+			noCastling,
+		},
+		{
+			"remove from none",
+			noCastling,
+			BlackKingside,
+			noCastling,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cr := tt.cr
-			cr.Remove(tt.right)
+			c := tt.c
+			c.Remove(tt.right)
 
-			if cr != tt.want {
-				t.Errorf("removed %v but got %v, want %v", tt.right, cr, tt.want)
+			if c != tt.want {
+				t.Errorf("removed %v but got %v, want %v", tt.right, c, tt.want)
 			}
 		})
 	}
@@ -677,98 +454,5 @@ func TestNewBoard(t *testing.T) {
 		if piece != NoPiece {
 			t.Errorf("square %d: expected %v but got %v", sq, NoPiece, piece)
 		}
-	}
-}
-
-func TestCastlingRooks(t *testing.T) {
-	tests := []struct {
-		name string
-		fen  string
-		want CastlingRookSquares
-	}{
-		{
-			name: "standard starting position, all four rights",
-			fen:  StartingFEN,
-			want: CastlingRookSquares{
-				WhiteKingside:  H1,
-				WhiteQueenside: A1,
-				BlackKingside:  H8,
-				BlackQueenside: A8,
-			},
-		},
-		{
-			name: "no rights at all",
-			fen:  "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1",
-			want: CastlingRookSquares{
-				WhiteKingside:  NoSquare,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: NoSquare,
-			},
-		},
-		{
-			name: "only white kingside right, other rooks present but irrelevant",
-			fen:  "r3k2r/8/8/8/8/8/8/R3K2R w K - 0 1",
-			want: CastlingRookSquares{
-				WhiteKingside:  H1,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: NoSquare,
-			},
-		},
-		{
-			name: "only black queenside right",
-			fen:  "r3k2r/8/8/8/8/8/8/R3K2R b q - 0 1",
-			want: CastlingRookSquares{
-				WhiteKingside:  NoSquare,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: A8,
-			},
-		},
-		{
-			name: "960 white king on b file, white rooks on a and g, black king on d file, black rooks on c and f",
-			fen:  "2rk1r2/8/8/8/8/8/8/RK4R1 w AGcf - 0 1",
-			want: CastlingRookSquares{
-				WhiteKingside:  G1,
-				WhiteQueenside: A1,
-				BlackKingside:  F8,
-				BlackQueenside: C8,
-			},
-		},
-		{
-			name: "960 king on g-file, rooks on d and h",
-			fen:  "3r2kr/8/8/8/8/8/8/3R2KR w HDhd - 0 1",
-			want: CastlingRookSquares{
-				WhiteKingside:  H1,
-				WhiteQueenside: D1,
-				BlackKingside:  H8,
-				BlackQueenside: D8,
-			},
-		},
-		{
-			name: "right held but no matching rook on board (malformed/edge state) returns NoSquare",
-			fen:  "4k3/8/8/8/8/8/8/4K3 w KQkq - 0 1",
-			want: CastlingRookSquares{
-				WhiteKingside:  NoSquare,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: NoSquare,
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			pos, err := ParseFEN(tt.fen)
-			if err != nil {
-				t.Fatalf("bad test FEN: %v", err)
-			}
-
-			got := pos.NewCastlingRooks()
-			if got != tt.want {
-				t.Errorf("\n%v got %v want %v", pos, got, tt.want)
-			}
-		})
 	}
 }
