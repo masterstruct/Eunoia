@@ -2,9 +2,8 @@ package search
 
 const (
 	aspirationMinDepth = 6
-
-	windowSize   = 35
-	initialDelta = 50
+	windowSize         = 35
+	initialDelta       = 50
 )
 
 type aspirationWindow struct {
@@ -13,13 +12,13 @@ type aspirationWindow struct {
 	delta int32 // doubles after every widening
 }
 
-func (aw *aspirationWindow) widenDown() {
-	aw.alpha = max(aw.alpha-aw.delta, -MATE)
+func (aw *aspirationWindow) widenDown(score int32) {
+	aw.alpha = max(score-aw.delta, -MATE)
 	aw.delta *= 2
 }
 
-func (aw *aspirationWindow) widenUp() {
-	aw.beta = min(aw.beta+aw.delta, MATE)
+func (aw *aspirationWindow) widenUp(score int32) {
+	aw.beta = min(score+aw.delta, MATE)
 	aw.delta *= 2
 }
 
