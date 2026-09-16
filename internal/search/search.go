@@ -44,15 +44,11 @@ iterativeDeepening:
 			ss.printPV(os.Stdout, max(aw.alpha, min(score, aw.beta)), bound)
 
 			if score <= aw.alpha {
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenDown()
+				aw.widenDown(score)
 				continue
 			}
 			if score >= aw.beta {
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenUp()
+				aw.widenUp(score)
 				continue
 			}
 			ss.bestScore = score
