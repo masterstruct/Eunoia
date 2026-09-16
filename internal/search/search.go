@@ -24,7 +24,7 @@ iterativeDeepening:
 			break
 		}
 
-		if depth > 5 {
+		if depth >= aspirationMinDepth {
 			aw.centerAround(lastScore)
 		}
 
@@ -39,15 +39,11 @@ iterativeDeepening:
 			}
 
 			if score <= aw.alpha {
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenDown()
+				aw.widenDown(score)
 				continue
 			}
 			if score >= aw.beta {
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenUp()
+				aw.widenUp(score)
 				continue
 			}
 
