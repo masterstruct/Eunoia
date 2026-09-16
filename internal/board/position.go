@@ -7,15 +7,14 @@ type Bitboards struct {
 
 type Position struct {
 	Bitboards
-	Board          [64]Piece
-	SideToMove     Color
-	CastlingRights CastlingRights
-	CastlingRookSq CastlingRookSquares // TODO: move out of Position, breaks equality checks
-	EnPassant      Square
-	HalfmoveClock  uint8
-	Ply            uint16
-	Hash           uint64
-	KingSq         [2]Square
+	Board         [64]Piece
+	SideToMove    Color
+	Castling      Castling
+	EnPassant     Square
+	HalfmoveClock uint8
+	Ply           uint16
+	Hash          uint64
+	KingSq        [2]Square
 }
 
 func (pos *Position) PieceBB(piece Piece) Bitboard {
@@ -56,12 +55,13 @@ func newBoard() [64]Piece {
 
 func NewPosition() Position {
 	pos := Position{
-		SideToMove:     White,
-		CastlingRights: AllCastling,
-		EnPassant:      NoSquare,
-		HalfmoveClock:  0,
-		Ply:            0,
-		Hash:           69420,
+		SideToMove:    White,
+		Castling:      noCastling,
+		EnPassant:     NoSquare,
+		HalfmoveClock: 0,
+		Ply:           0,
+		Hash:          69420,
+		KingSq:        [2]Square{NoSquare, NoSquare},
 	}
 	pos.Board = newBoard()
 	return pos

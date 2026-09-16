@@ -21,7 +21,7 @@ func (pos *Position) MakeMove(move Move) Position {
 	hash := newPos.Hash
 
 	// remove existing castling rights and re-apply them at the end
-	hash ^= ZobristTable.CastlingKey(newPos.CastlingRights)
+	hash ^= ZobristTable.CastlingKey(newPos.Castling.ToIndex())
 
 	newPos.HalfmoveClock++
 	oldEnPassantSq := newPos.EnPassant
@@ -54,31 +54,17 @@ func (pos *Position) MakeMove(move Move) Position {
 
 		// rook move - remove castling rights
 		if pieceType == Rook {
-			rooks := pos.CastlingRookSq
-			switch from {
-			case rooks.WhiteQueenside:
-				newPos.CastlingRights.Remove(WhiteQueenside)
-			case rooks.WhiteKingside:
-				newPos.CastlingRights.Remove(WhiteKingside)
-			case rooks.BlackQueenside:
-				newPos.CastlingRights.Remove(BlackQueenside)
-			case rooks.BlackKingside:
-				newPos.CastlingRights.Remove(BlackKingside)
+			ok, sq := pos.Castling.HasSquare(from)
+			if ok {
+				newPos.Castling.Remove(sq)
 			}
 		}
 
 		// rook captured - remove castling rights
 		if isCapture && capturedPiece.Type == Rook {
-			rooks := pos.CastlingRookSq
-			switch to {
-			case rooks.WhiteQueenside:
-				newPos.CastlingRights.Remove(WhiteQueenside)
-			case rooks.WhiteKingside:
-				newPos.CastlingRights.Remove(WhiteKingside)
-			case rooks.BlackQueenside:
-				newPos.CastlingRights.Remove(BlackQueenside)
-			case rooks.BlackKingside:
-				newPos.CastlingRights.Remove(BlackKingside)
+			ok, sq := pos.Castling.HasSquare(to)
+			if ok {
+				newPos.Castling.Remove(sq)
 			}
 		}
 
@@ -98,17 +84,14 @@ func (pos *Position) MakeMove(move Move) Position {
 		// king moved - remove castling rights
 		if pieceType == King {
 			newPos.KingSq[color] = to
-			if color == Black {
-				newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
-			} else {
-				newPos.CastlingRights.Remove(WhiteKingside | WhiteQueenside)
-			}
+			newPos.Castling.Clear(color)
 		}
 	} else {
 		// castle - move pieces
 
 		// remove rook
 		hash ^= ZobristTable.PieceKey(color, Rook, to)
+		newPos.Castling.Clear(color)
 
 		if color == Black {
 			if move.IsKingsideCastle() {
@@ -124,7 +107,6 @@ func (pos *Position) MakeMove(move Move) Position {
 				hash ^= ZobristTable.PieceKey(Black, Rook, D8)
 				newPos.KingSq[Black] = C8
 			}
-			newPos.CastlingRights.Remove(BlackKingside | BlackQueenside)
 		} else {
 			if move.IsKingsideCastle() {
 				newPos.PlacePiece(WhiteKing, G1)
@@ -139,7 +121,6 @@ func (pos *Position) MakeMove(move Move) Position {
 				hash ^= ZobristTable.PieceKey(White, Rook, D1)
 				newPos.KingSq[White] = C1
 			}
-			newPos.CastlingRights.Remove(WhiteKingside | WhiteQueenside)
 		}
 	}
 
@@ -148,9 +129,20 @@ func (pos *Position) MakeMove(move Move) Position {
 	newPos.Ply++
 
 	// re-apply castling rights
-	hash ^= ZobristTable.CastlingKey(newPos.CastlingRights)
+	hash ^= ZobristTable.CastlingKey(newPos.Castling.ToIndex())
 
 	newPos.Hash = hash
 
+	return newPos
+}
+
+func (pos *Position) MakeNullMove() Position {
+	newPos := *pos
+	if newPos.EnPassant != NoSquare {
+		newPos.Hash ^= ZobristTable.EnPassantKey(newPos.EnPassant.File())
+		newPos.EnPassant = NoSquare
+	}
+	newPos.SideToMove = pos.SideToMove.Opponent()
+	newPos.Hash ^= ZobristTable.SideToMoveKey()
 	return newPos
 }

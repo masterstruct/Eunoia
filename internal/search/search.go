@@ -2,7 +2,6 @@ package search
 
 import (
 	"os"
-	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
 )
@@ -12,7 +11,7 @@ const (
 	INF  int16 = 32000
 )
 
-func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Move {
+func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 	var bestMove board.Move
 
 	var lastScore int16
@@ -20,14 +19,12 @@ func (ss *SearchState) SearchBestMove(pos board.Position, maxDepth int) board.Mo
 
 	// iterative deepening
 iterativeDeepening:
-	for depth := 1; depth <= maxDepth; depth++ {
-		if (ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) || (!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime)) {
+	for depth := 1; depth <= ss.MaxDepth; depth++ {
+		if ss.ShouldStop(Soft) || ss.ShouldStop(Hard) {
 			break
 		}
 
 		if depth > 5 {
-			// for the first 5 depths the evaluation
-			// is unstable, so search without bounds
 			aw.centerAround(lastScore)
 		}
 
@@ -35,14 +32,22 @@ iterativeDeepening:
 		for {
 			score := ss.negamax(pos, depth, 0, aw.alpha, aw.beta)
 
-			if ss.searchStopped() {
+			if len(ss.pv.Line()) == 0 {
+				// interruped before first move search completed,
+				// discard results from this depth
 				break iterativeDeepening
 			}
 
-			// TODO: widen gradually
-			if score <= aw.alpha || score >= aw.beta {
+			if score <= aw.alpha {
 				aw.alpha = -INF
 				aw.beta = INF
+				// aw.widenDown()
+				continue
+			}
+			if score >= aw.beta {
+				aw.alpha = -INF
+				aw.beta = INF
+				// aw.widenUp()
 				continue
 			}
 
@@ -53,17 +58,4 @@ iterativeDeepening:
 		}
 	}
 	return bestMove
-}
-
-func (ss *SearchState) searchStopped() bool {
-	if ss.Stop {
-		return true
-	}
-	if ss.MaxNodes > 0 && ss.Nodes >= ss.MaxNodes {
-		return true
-	}
-	if !ss.MaxTime.IsZero() && time.Now().After(ss.MaxTime) {
-		return true
-	}
-	return false
 }

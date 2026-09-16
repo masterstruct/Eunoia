@@ -6,11 +6,11 @@ import (
 	"testing"
 )
 
-func wantPosition(placements []placement, sideToMove Color, castling CastlingRights, epSq Square, halfmove uint8, ply uint16) Position {
+func wantPosition(placements []placement, sideToMove Color, castling Castling, epSq Square, halfmove uint8, ply uint16) Position {
 	pos := NewPosition()
 
 	pos.SideToMove = sideToMove
-	pos.CastlingRights = castling
+	pos.Castling = castling
 	pos.EnPassant = epSq
 	pos.HalfmoveClock = halfmove
 	pos.Ply = ply
@@ -36,8 +36,8 @@ func assertPositionEqual(t *testing.T, got, want Position, fen string) {
 	if got.SideToMove != want.SideToMove {
 		t.Errorf("%q: side to move: got %v want %v", fen, got.SideToMove, want.SideToMove)
 	}
-	if got.CastlingRights != want.CastlingRights {
-		t.Errorf("%q: castling rights: got %v want %v", fen, got.CastlingRights, want.CastlingRights)
+	if got.Castling != want.Castling {
+		t.Errorf("%q: castling rights: got %v want %v", fen, got.Castling, want.Castling)
 	}
 	if got.EnPassant != want.EnPassant {
 		t.Errorf("%q: en passant: got %v want %v", fen, got.EnPassant, want.EnPassant)
@@ -60,7 +60,7 @@ func TestParseFEN_Valid(t *testing.T) {
 		fen        string
 		placements []placement
 		sideToMove Color
-		castling   CastlingRights
+		castling   Castling
 		epSq       Square
 		halfmove   uint8
 		ply        uint16
@@ -81,13 +81,13 @@ func TestParseFEN_Valid(t *testing.T) {
 				{WhiteRook, A1}, {WhiteKnight, B1}, {WhiteBishop, C1}, {WhiteQueen, D1},
 				{WhiteKing, E1}, {WhiteBishop, F1}, {WhiteKnight, G1}, {WhiteRook, H1},
 			},
-			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 0,
+			sideToMove: White, castling: Castling{A8, H8, A1, H1}, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
 			name:       "two kings",
 			fen:        "k7/8/8/8/8/8/8/7K w - - 0 1",
 			placements: []placement{{BlackKing, A8}, {WhiteKing, H1}},
-			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 0,
+			sideToMove: White, castling: noCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
 			name: "en passant set",
@@ -109,14 +109,14 @@ func TestParseFEN_Valid(t *testing.T) {
 				{WhiteRook, A1}, {WhiteKnight, B1}, {WhiteBishop, C1}, {WhiteQueen, D1},
 				{WhiteKing, E1}, {WhiteBishop, F1}, {WhiteKnight, G1}, {WhiteRook, H1},
 			},
-			sideToMove: White, castling: AllCastling, epSq: E6, halfmove: 0, ply: 4,
+			sideToMove: White, castling: Castling{A8, H8, A1, H1}, epSq: E6, halfmove: 0, ply: 4,
 		},
 
 		{
 			name:       "single piece each corner",
 			fen:        "K6k/8/8/8/8/8/8/n6B w - - 0 1",
 			placements: []placement{{WhiteKing, A8}, {BlackKing, H8}, {BlackKnight, A1}, {WhiteBishop, H1}},
-			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 0,
+			sideToMove: White, castling: noCastling, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
 			name: "kiwipete",
@@ -131,7 +131,7 @@ func TestParseFEN_Valid(t *testing.T) {
 				{WhitePawn, A2}, {WhitePawn, B2}, {WhitePawn, C2}, {WhiteBishop, D2}, {WhiteBishop, E2}, {WhitePawn, F2}, {WhitePawn, G2}, {WhitePawn, H2},
 				{WhiteRook, A1}, {WhiteKing, E1}, {WhiteRook, H1},
 			},
-			sideToMove: White, castling: AllCastling, epSq: NoSquare, halfmove: 0, ply: 0,
+			sideToMove: White, castling: Castling{A8, H8, A1, H1}, epSq: NoSquare, halfmove: 0, ply: 0,
 		},
 		{
 			name: "no pieces on Rank1 or Rank8",
@@ -142,7 +142,7 @@ func TestParseFEN_Valid(t *testing.T) {
 				{WhitePawn, G5}, {WhitePawn, D4}, {WhiteKing, F4}, {WhitePawn, H4},
 				{WhiteRook, A3}, {WhitePawn, C3}, {WhitePawn, C2}, {WhitePawn, F2},
 			},
-			sideToMove: White, castling: NoCastling, epSq: NoSquare, halfmove: 0, ply: 62,
+			sideToMove: White, castling: noCastling, epSq: NoSquare, halfmove: 0, ply: 62,
 		},
 		{
 			name: "long endgame",
@@ -151,7 +151,7 @@ func TestParseFEN_Valid(t *testing.T) {
 				{WhiteKing, G6}, {WhiteBishop, F5}, {BlackPawn, H4},
 				{BlackBishop, G3}, {BlackKing, D2}, {BlackQueen, E1},
 			},
-			sideToMove: Black, castling: NoCastling, epSq: NoSquare, halfmove: 17, ply: 241,
+			sideToMove: Black, castling: noCastling, epSq: NoSquare, halfmove: 17, ply: 241,
 		},
 	}
 
@@ -184,6 +184,7 @@ func TestParseFEN_RoundTrip(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
+
 			got := pos.FEN()
 			if got != fen {
 				t.Fatalf("round-trip mismatch: started %q, got %q", fen, got)

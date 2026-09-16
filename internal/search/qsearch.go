@@ -5,10 +5,10 @@ import (
 	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
-func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
+func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 	ss.Nodes++
 
-	standPat := evaluate(pos)
+	standPat := evaluate(&pos)
 
 	if standPat >= beta {
 		return standPat
@@ -18,8 +18,8 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 	}
 
 	var movelist movegen.Movelist
-	movegen.GeneratePseudolegalMoves(pos, &movelist)
-	ss.orderMoves(pos, &movelist)
+	movegen.GeneratePseudolegalMoves(&pos, &movelist)
+	ss.orderMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
 	for i := range movelist.Len {
@@ -33,9 +33,9 @@ func (ss *SearchState) qsearch(pos *board.Position, alpha, beta int16) int16 {
 			continue
 		}
 
-		score := -ss.qsearch(&newPos, -beta, -alpha)
+		score := -ss.qsearch(newPos, -beta, -alpha)
 
-		if ss.searchStopped() {
+		if ss.ShouldStop(Hard) {
 			return 0
 		}
 

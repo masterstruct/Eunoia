@@ -18,7 +18,7 @@ func (ss *SearchState) isRepetition(hash uint64, halfmoveClock uint8) bool {
 		if ss.keyHistory[idx] != hash {
 			continue
 		}
-		if idx >= ss.rootHistLen {
+		if idx >= ss.keyHistoryLen {
 			return true
 		}
 		reps++

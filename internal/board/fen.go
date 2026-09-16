@@ -114,10 +114,7 @@ func ParseFEN(fen string) (Position, error) {
 	if err != nil {
 		return pos, err
 	}
-	pos.CastlingRights = rights
-
-	// find castling rooks
-	pos.CastlingRookSq = pos.NewCastlingRooks()
+	pos.Castling = rights
 
 	// en passant
 	sq, err := ParseSquare(splits[3])
@@ -197,11 +194,7 @@ func (pos *Position) FEN() string {
 	sb.WriteByte(' ')
 	sb.WriteString(pos.SideToMove.String())
 	sb.WriteByte(' ')
-	if IsChess960() {
-		sb.WriteString(pos.CastlingRights.ShredderString(pos.CastlingRookSq))
-	} else {
-		sb.WriteString(pos.CastlingRights.String())
-	}
+	sb.WriteString(pos.Castling.String(IsChess960()))
 	sb.WriteByte(' ')
 	sb.WriteString(pos.EnPassant.String())
 	sb.WriteByte(' ')

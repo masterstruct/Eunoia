@@ -243,24 +243,23 @@ func GenPawnMoves(pos *board.Position, movelist *Movelist) {
 func GenKingMoves(pos *board.Position, movelist *Movelist) {
 	color := pos.SideToMove
 
-	castlingRights := pos.CastlingRights
 	from := pos.KingSq[color]
-	if castlingRights != board.NoCastling {
-		rooks := pos.CastlingRookSq
-		if color == board.Black {
-			if castlingRights.Has(board.BlackKingside) && canCastle(pos, from, rooks.BlackKingside) {
-				movelist.Add(board.NewCastle(from, rooks.BlackKingside))
-			}
-			if castlingRights.Has(board.BlackQueenside) && canCastle(pos, from, rooks.BlackQueenside) {
-				movelist.Add(board.NewCastle(from, rooks.BlackQueenside))
-			}
-		} else {
-			if castlingRights.Has(board.WhiteKingside) && canCastle(pos, from, rooks.WhiteKingside) {
-				movelist.Add(board.NewCastle(from, rooks.WhiteKingside))
-			}
-			if castlingRights.Has(board.WhiteQueenside) && canCastle(pos, from, rooks.WhiteQueenside) {
-				movelist.Add(board.NewCastle(from, rooks.WhiteQueenside))
-			}
+
+	// temporarily reversed iteration order: kingside -> queenside
+
+	// base := board.CastlingRights(color * 2)
+	// for right := base; right < base+2; right++ {
+	// 	rookSq := pos.Castling[right]
+	// 	if pos.Castling.Has(right) && canCastle(pos, from, rookSq) {
+	// 		movelist.Add(board.NewCastle(from, rookSq))
+	// 	}
+	// }
+
+	base := int(color * 2)
+	for right := base + 1; right >= base; right-- {
+		rookSq := pos.Castling[right]
+		if pos.Castling.Has(board.CastlingRights(right)) && canCastle(pos, from, rookSq) {
+			movelist.Add(board.NewCastle(from, rookSq))
 		}
 	}
 
