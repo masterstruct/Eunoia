@@ -23,7 +23,7 @@ iterativeDeepening:
 			break
 		}
 
-		if depth > 5 {
+		if depth >= aspirationMinDepth {
 			aw.centerAround(lastScore)
 		}
 
@@ -41,18 +41,14 @@ iterativeDeepening:
 				ss.pv.EnsureRoot(bestMove)
 				ss.printPV(os.Stdout, depth, score, tt.Upper)
 
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenDown()
+				aw.widenDown(score)
 				continue
 			}
 			bestMove = ss.pv.BestMove()
 			if score >= aw.beta {
 				ss.printPV(os.Stdout, depth, score, tt.Lower)
 
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenUp()
+				aw.widenUp(score)
 				continue
 			}
 
