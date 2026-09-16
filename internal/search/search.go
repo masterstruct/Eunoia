@@ -32,7 +32,7 @@ iterativeDeepening:
 		for {
 			score := ss.negamax(pos, depth, 0, aw.alpha, aw.beta)
 
-			if len(ss.pv.Line()) == 0 {
+			if ss.ShouldStop(Hard) {
 				// interruped before first move search completed,
 				// discard results from this depth
 				break iterativeDeepening
