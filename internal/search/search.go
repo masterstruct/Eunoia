@@ -39,15 +39,11 @@ iterativeDeepening:
 			}
 
 			if score <= aw.alpha {
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenDown()
+				aw.widenDown()
 				continue
 			}
 			if score >= aw.beta {
-				aw.alpha = -INF
-				aw.beta = INF
-				// aw.widenUp()
+				aw.widenUp()
 				continue
 			}
 
