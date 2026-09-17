@@ -10,7 +10,7 @@ var (
 	errInvalidCastlingLength = errors.New("castling: string must be 1 to 4 characters, or \"-\" for none")
 	errInvalidCastlingChar   = errors.New("castling: character must be one of 'K', 'Q', 'k', 'q' or rook file letters")
 	errDuplicateCastlingChar = errors.New("castling: character appears more than once")
-	errMixedCastlingNotation = errors.New("castling: cannot mix standard (KQkq) and Shredder-FEN (file letter) notation")
+	errInvalidCastlingState  = errors.New("castling: string does not match board position")
 )
 
 type CastlingRights uint8
@@ -122,96 +122,66 @@ func (c Castling) String(chess960 bool) string {
 }
 
 func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (Castling, error) {
-	// TODO: add X-fen support
 	n := len(s)
+
 	if n == 0 || n > 4 {
 		return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingLength, s)
 	}
 	if n == 1 && s[0] == '-' {
 		return noCastling, nil
 	}
-	hasStandard := strings.ContainsAny(s, "KQkq")
-	hasShredder := strings.ContainsAny(s, "ABCDEFGHabcdefgh")
-	if hasStandard && hasShredder {
-		return noCastling, fmt.Errorf("%w: %q", errMixedCastlingNotation, s)
-	}
 
 	rights := noCastling
-	var sq Square
-	var kingside bool
 
-	// standard KQkq form
-	switch s[0] {
-	case 'K', 'Q', 'k', 'q':
-		for _, char := range s {
-			switch char {
-			case 'k':
-				sq = H8
-				kingside = true
-			case 'q':
-				sq = A8
-				kingside = false
-			case 'K':
-				sq = H1
-				kingside = true
-			case 'Q':
-				sq = A1
-				kingside = false
-			default:
-				return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
-			}
-
-			if ok, _ := rights.HasSquare(sq); ok {
-				return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
-			}
-			rights.Set(sq, kingside)
-		}
-		return rights, nil
-	}
-
-	// shredder form
-	var file File
-	var kingFile File
+	var rookSq Square
+	var kingSq Square
 
 	for _, char := range s {
-		// validate and normalize file
-
 		switch {
+		case char == 'k':
+			rookSq = H8
+			kingSq = blackKingSq
+		case char == 'q':
+			rookSq = A8
+			kingSq = blackKingSq
+		case char == 'K':
+			rookSq = H1
+			kingSq = whiteKingSq
+		case char == 'Q':
+			rookSq = A1
+			kingSq = whiteKingSq
 		case 'A' <= char && char <= 'H':
 			// white
-			file = File(char - 'A')
-			rookSq := NewSquare(file, Rank1)
-
-			if ok, _ := rights.HasSquare(rookSq); ok {
-				return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
-			}
-
-			rights.Set(rookSq, rookSq > whiteKingSq)
-			kingFile = whiteKingSq.File()
+			rookSq = NewSquare(File(char-'A'), Rank1)
+			kingSq = whiteKingSq
 		case 'a' <= char && char <= 'h':
 			// black
-			file = File(char - 'a')
-			rookSq := NewSquare(file, Rank8)
-
-			if ok, _ := rights.HasSquare(rookSq); ok {
-				return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
-			}
-
-			rights.Set(rookSq, rookSq > blackKingSq)
-			kingFile = blackKingSq.File()
+			rookSq = NewSquare(File(char-'a'), Rank8)
+			kingSq = blackKingSq
 		default:
 			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
 		}
 
-		if file == kingFile {
-			// rook is inside the king..?
-			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
+		if ok, _ := rights.HasSquare(rookSq); ok {
+			return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
 		}
+
+		// TODO: validate that a rook actually exists on rookSq
+
+		if rookSq == kingSq {
+			// rook is inside the king..?
+			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
+		}
+
+		if kingSq.Rank() != Rank1 && kingSq.Rank() != Rank8 {
+			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
+		}
+
+		rights.Set(rookSq, rookSq > kingSq)
 	}
 	return rights, nil
 }
 
-// TODO: X-fens
 func FindCastlingRooks(pos *Position) Castling {
 	castling := noCastling
 
