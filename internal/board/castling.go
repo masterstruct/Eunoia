@@ -124,65 +124,50 @@ func (c Castling) String(chess960 bool) string {
 func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square, whiteRooks, blackRooks Bitboard) (Castling, error) {
 	n := len(s)
 
-	if n == 0 || n > 4 {
-		return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingLength, s)
-	}
 	if n == 1 && s[0] == '-' {
 		return noCastling, nil
+	}
+	if n == 0 || n > 4 {
+		return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingLength, s)
 	}
 
 	rights := noCastling
 
+	var color Color
+	var rooks Bitboard
 	var rookSq Square
 	var kingSq Square
 
 	for _, char := range s {
-		ok := true
+		if char&0x20 == 0 {
+			// uppercase -> White
+			color = White
+			kingSq = whiteKingSq
+			rooks = whiteRooks
+		} else {
+			// lowercase -> Black
+			color = Black
+			kingSq = blackKingSq
+			rooks = blackRooks
+		}
+		char |= 0x20 // fast lowercase conversion
 
 		switch {
-		case char == 'k':
-			kingSq = blackKingSq
-			rookSq, ok = scanRook(blackRooks, kingSq, true)
-		case char == 'q':
-			kingSq = blackKingSq
-			rookSq, ok = scanRook(blackRooks, kingSq, false)
-		case char == 'K':
-			kingSq = whiteKingSq
-			rookSq, ok = scanRook(whiteRooks, kingSq, true)
-		case char == 'Q':
-			kingSq = whiteKingSq
-			rookSq, ok = scanRook(whiteRooks, kingSq, false)
-		case 'A' <= char && char <= 'H':
-			// white
-			rookSq = NewSquare(File(char-'A'), Rank1)
-			kingSq = whiteKingSq
+		case char == 'k', char == 'q':
+			rookSq = scanRook(rooks, kingSq, char == 'k')
 		case 'a' <= char && char <= 'h':
-			// black
-			rookSq = NewSquare(File(char-'a'), Rank8)
-			kingSq = blackKingSq
+			file := File(char - 'a')
+			rookSq = NewSquare(file, color.ExpectedKingRank())
 		default:
 			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
 		}
 
-		if !ok {
-			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
+		if err := validateRookSquare(rookSq, kingSq, rooks, color); err != nil {
+			return noCastling, fmt.Errorf("%w: %q", err, s)
 		}
 
 		if ok, _ := rights.HasSquare(rookSq); ok {
 			return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
-		}
-
-		if !(whiteRooks | blackRooks).IsBitSet(rookSq) {
-			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
-		}
-
-		if rookSq == kingSq {
-			// rook is inside the king..?
-			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
-		}
-
-		if kingSq.Rank() != Rank1 && kingSq.Rank() != Rank8 {
-			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
 		}
 
 		rights.Set(rookSq, rookSq > kingSq)
@@ -190,24 +175,43 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square, whiteRooks, 
 	return rights, nil
 }
 
-func scanRook(rookBB Bitboard, kingSq Square, kingside bool) (Square, bool) {
+func scanRook(rookBB Bitboard, kingSq Square, kingside bool) Square {
 	rank := kingSq.Rank()
+	kingFile := kingSq.File()
 
-	startingFile := FileA
-	dir := File(1)
 	if kingside {
-		startingFile = FileH
-		dir = -1
+		for file := FileH; file > kingFile; file-- {
+			sq := NewSquare(file, rank)
+			if rookBB.IsBitSet(sq) {
+				return sq
+			}
+		}
+	} else {
+		for file := range kingFile {
+			sq := NewSquare(file, rank)
+			if rookBB.IsBitSet(sq) {
+				return sq
+			}
+		}
 	}
+	return NoSquare
+}
 
-	for file := startingFile; file >= FileA && file <= FileH; file += dir {
-		sq := NewSquare(file, rank)
-		if sq == kingSq {
-			return NoSquare, false
-		}
-		if rookBB.IsBitSet(sq) {
-			return sq, true
-		}
+func validateRookSquare(rookSq, kingSq Square, rooks Bitboard, color Color) error {
+	if rookSq == NoSquare {
+		return errInvalidCastlingState
 	}
-	return NoSquare, false
+	if !rooks.IsBitSet(rookSq) {
+		return errInvalidCastlingState // rook does not exist on board
+	}
+	if rookSq.Rank() != kingSq.Rank() {
+		return errInvalidCastlingState // king and rook on different ranks
+	}
+	if rookSq == kingSq {
+		return errInvalidCastlingState // rook is inside the king..?
+	}
+	if kingSq.Rank() != color.ExpectedKingRank() {
+		return errInvalidCastlingState // king not on back rank
+	}
+	return nil
 }
