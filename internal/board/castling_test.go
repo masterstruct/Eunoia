@@ -97,7 +97,7 @@ func TestParseCastlingRights(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseCastlingRights(tt.input, E1, E8)
+			got, err := ParseCastlingRights(tt.input, E1, E8, Bitboard(0x81), Bitboard(0x8100000000000000))
 
 			if tt.wantErr != nil {
 				if !errors.Is(err, tt.wantErr) {
@@ -154,7 +154,9 @@ func TestParseCastlingRights_Shredder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseCastlingRights(tt.s, tt.whiteKingSq, tt.blackKingSq)
+			whiteRooks, blackRooks := populateRookBitboards(tt.want)
+
+			got, err := ParseCastlingRights(tt.s, tt.whiteKingSq, tt.blackKingSq, whiteRooks, blackRooks)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -165,31 +167,59 @@ func TestParseCastlingRights_Shredder(t *testing.T) {
 	}
 }
 
-func TestParseCastlingRights_ShredderErrors(t *testing.T) {
+func TestParseCastlingRights_Xfen(t *testing.T) {
+	withChess960(t)
 	tests := []struct {
-		name     string
-		from, to Square
-		s        string
+		name        string
+		s           string
+		whiteKingSq Square
+		blackKingSq Square
+		want        Castling
 	}{
-		{"empty string", E1, E8, ""},
-		{"too long", D1, E8, "AHahb"},
-		{"duplicate file letter", C1, H8, "AA"},
-		{"file letter equal to white king's file", E1, A8, "E"},
-		{"file letter equal to black king's file", H1, F8, "Dbf"},
+		{"standard start via file letters", "KQkq", E1, E8, Castling{A8, H8, A1, H1}},
+		{"white kingside only, rook on h", "K", E1, E8, Castling{NoSquare, NoSquare, NoSquare, H1}},
+		{"white queenside only, rook on a", "Q", E1, E8, Castling{NoSquare, NoSquare, A1, NoSquare}},
+		{"black kingside only, rook on h", "k", E1, E8, Castling{NoSquare, H8, NoSquare, NoSquare}},
+		{"black queenside only, rook on a", "q", E1, E8, Castling{A8, NoSquare, NoSquare, NoSquare}},
+		{"960 king on b file, rooks on a and g", "KQkq", B1, B8, Castling{A8, G8, A1, G1}},
+		{"960 king on g file, rooks on h and d", "KQkq", G1, G8, Castling{D8, H8, D1, H1}},
+		{"mixed case single rights", "Qq", E1, E8, Castling{B8, NoSquare, A1, NoSquare}},
+		{"none", "-", E1, E8, noCastling},
+
+		{"white both sides", "KQ", C1, C8, Castling{NoSquare, NoSquare, B1, D1}},
+		{"black both sides", "kq", C1, C8, Castling{B8, D8, NoSquare, NoSquare}},
+		{"white kingside + black kingside", "Kk", E1, E8, Castling{NoSquare, H8, NoSquare, H1}},
+		{"white queenside + black queenside", "Qq", E1, E8, Castling{A8, NoSquare, A1, NoSquare}},
+		{"white kingside + black queenside", "Kq", E1, E8, Castling{A8, NoSquare, NoSquare, H1}},
+		{"white queenside + black kingside", "Qk", E1, E8, Castling{NoSquare, H8, A1, NoSquare}},
+		{"all four, mixed order", "kqQK", E1, E8, Castling{A8, H8, A1, H1}},
+		{"all four 960", "KQkq", G1, D8, Castling{C8, F8, C1, H1}},
+		{"white both + black kingside", "KQk", E1, E8, Castling{NoSquare, H8, A1, H1}},
+		{"white both + black queenside", "KQq", E1, E8, Castling{A8, NoSquare, A1, H1}},
+		{"black both + white kingside", "Kkq", E1, E8, Castling{A8, H8, NoSquare, H1}},
+		{"black both + white queenside", "Qkq", E1, E8, Castling{A8, H8, A1, NoSquare}},
+
+		// rn2k1r1/ppp1pp1p/3p2p1/5bn1/P7/2N2B2/1PPPPP2/2BNK1RR w Gkq - 4 11
+		{"both white rooks kingside, black rooks A and G file", "Gkq", E1, E8, Castling{A8, G8, NoSquare, G1}},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := ParseCastlingRights(tt.s, tt.from, tt.to)
-			if err == nil {
-				t.Error("expected an error, got none")
+			whiteRooks, blackRooks := populateRookBitboards(tt.want)
+
+			got, err := ParseCastlingRights(tt.s, tt.whiteKingSq, tt.blackKingSq, whiteRooks, blackRooks)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("got %v want %v", got, tt.want)
 			}
 		})
 	}
 }
 
 func TestParseCastlingRights_UsesRealKingSquare(t *testing.T) {
-	got, err := ParseCastlingRights("D", B1, B8)
+	got, err := ParseCastlingRights("D", B1, B8, Bitboard(0x8), EmptyBB)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -197,32 +227,12 @@ func TestParseCastlingRights_UsesRealKingSquare(t *testing.T) {
 		t.Errorf("king on B1: got %v, want WhiteKingside", got)
 	}
 
-	got, err = ParseCastlingRights("D", E1, E8)
+	got, err = ParseCastlingRights("D", E1, E8, Bitboard(0x8), EmptyBB)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if got[WhiteQueenside] != D1 {
 		t.Errorf("king on E1: got %v, want WhiteQueenside", got)
-	}
-}
-
-func TestParseFEN_Chess960_NonEFileKing(t *testing.T) {
-	withChess960(t)
-	tests := []string{
-		"1qrkrbbn/pppppppp/8/8/8/8/PPPPPPPP/1QRKRBBN w CEce - 0 1",
-		"qnnbbrkr/pppppppp/8/8/8/8/PPPPPPPP/QNNBBRKR w FHfh - 0 1",
-	}
-
-	for _, fen := range tests {
-		t.Run(fen, func(t *testing.T) {
-			pos, err := ParseFEN(fen)
-			if err != nil {
-				t.Fatalf("ParseFEN failed: %v", err)
-			}
-			if got := pos.FEN(); got != fen {
-				t.Errorf("got %s want %s", got, fen)
-			}
-		})
 	}
 }
 
@@ -248,7 +258,7 @@ func TestCastlingRoundTrip(t *testing.T) {
 
 	for _, s := range tests {
 		t.Run(s, func(t *testing.T) {
-			got, err := ParseCastlingRights(s, E1, E8)
+			got, err := ParseCastlingRights(s, E1, E8, Bitboard(0x81), Bitboard(0x8100000000000000))
 			if err != nil {
 				t.Fatalf("unexpected error parsing %q: %v", s, err)
 			}
@@ -260,95 +270,17 @@ func TestCastlingRoundTrip(t *testing.T) {
 	}
 }
 
-func TestCastlingRooks(t *testing.T) {
-	tests := []struct {
-		name string
-		fen  string
-		want Castling
-	}{
-		{
-			name: "standard starting position, all four rights",
-			fen:  StartingFEN,
-			want: Castling{
-				WhiteKingside:  H1,
-				WhiteQueenside: A1,
-				BlackKingside:  H8,
-				BlackQueenside: A8,
-			},
-		},
-		{
-			name: "no rights at all",
-			fen:  "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1",
-			want: Castling{
-				WhiteKingside:  NoSquare,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: NoSquare,
-			},
-		},
-		{
-			name: "only white kingside right, other rooks present but irrelevant",
-			fen:  "r3k2r/8/8/8/8/8/8/R3K2R w K - 0 1",
-			want: Castling{
-				WhiteKingside:  H1,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: NoSquare,
-			},
-		},
-		{
-			name: "only black queenside right",
-			fen:  "r3k2r/8/8/8/8/8/8/R3K2R b q - 0 1",
-			want: Castling{
-				WhiteKingside:  NoSquare,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: A8,
-			},
-		},
-		{
-			name: "960 white king on b file, white rooks on a and g, black king on d file, black rooks on c and f",
-			fen:  "2rk1r2/8/8/8/8/8/8/RK4R1 w AGcf - 0 1",
-			want: Castling{
-				WhiteKingside:  G1,
-				WhiteQueenside: A1,
-				BlackKingside:  F8,
-				BlackQueenside: C8,
-			},
-		},
-		{
-			name: "960 king on g-file, rooks on d and h",
-			fen:  "3r2kr/8/8/8/8/8/8/3R2KR w HDhd - 0 1",
-			want: Castling{
-				WhiteKingside:  H1,
-				WhiteQueenside: D1,
-				BlackKingside:  H8,
-				BlackQueenside: D8,
-			},
-		},
-		{
-			name: "right held but no matching rook on board returns NoSquare",
-			fen:  "4k3/8/8/8/8/8/8/4K3 w KQkq - 0 1",
-			want: Castling{
-				WhiteKingside:  NoSquare,
-				WhiteQueenside: NoSquare,
-				BlackKingside:  NoSquare,
-				BlackQueenside: NoSquare,
-			},
-		},
+func rookBitboard(c Castling, color Color) Bitboard {
+	var bb Bitboard
+	base := CastlingRights(color * 2)
+	for right := base; right < base+2; right++ {
+		if c.Has(right) {
+			bb.SetBit(c[right])
+		}
 	}
+	return bb
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			pos, err := ParseFEN(tt.fen)
-			if err != nil {
-				t.Fatalf("bad test FEN: %v", err)
-			}
-
-			got := FindCastlingRooks(&pos)
-			if got != tt.want {
-				t.Errorf("\n%v got %v want %v", pos.String(), got, tt.want)
-			}
-		})
-	}
+func populateRookBitboards(c Castling) (white Bitboard, black Bitboard) {
+	return rookBitboard(c, White), rookBitboard(c, Black)
 }

@@ -251,9 +251,9 @@ func TestMakeMove(t *testing.T) {
 		},
 		{
 			name:    "black captures white rook on h1, clears K",
-			fen:     "4k3/8/8/8/7r/8/8/R3K2R b KQkq - 0 1",
+			fen:     "4k3/8/8/8/7r/8/8/R3K2R b KQ - 0 1",
 			move:    NewCapture(H4, H1),
-			wantFEN: "4k3/8/8/8/8/8/8/R3K2r w Qkq - 0 2",
+			wantFEN: "4k3/8/8/8/8/8/8/R3K2r w Q - 0 2",
 		},
 		{
 			name:    "rook move from non-home square doesn't touch castling rights",

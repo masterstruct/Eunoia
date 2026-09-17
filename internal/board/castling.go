@@ -121,7 +121,7 @@ func (c Castling) String(chess960 bool) string {
 	return b.String()
 }
 
-func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (Castling, error) {
+func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square, whiteRooks, blackRooks Bitboard) (Castling, error) {
 	n := len(s)
 
 	if n == 0 || n > 4 {
@@ -137,19 +137,21 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (Castling, e
 	var kingSq Square
 
 	for _, char := range s {
+		ok := true
+
 		switch {
 		case char == 'k':
-			rookSq = H8
 			kingSq = blackKingSq
+			rookSq, ok = scanRook(blackRooks, kingSq, true)
 		case char == 'q':
-			rookSq = A8
 			kingSq = blackKingSq
+			rookSq, ok = scanRook(blackRooks, kingSq, false)
 		case char == 'K':
-			rookSq = H1
 			kingSq = whiteKingSq
+			rookSq, ok = scanRook(whiteRooks, kingSq, true)
 		case char == 'Q':
-			rookSq = A1
 			kingSq = whiteKingSq
+			rookSq, ok = scanRook(whiteRooks, kingSq, false)
 		case 'A' <= char && char <= 'H':
 			// white
 			rookSq = NewSquare(File(char-'A'), Rank1)
@@ -162,11 +164,17 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (Castling, e
 			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
 		}
 
+		if !ok {
+			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
+		}
+
 		if ok, _ := rights.HasSquare(rookSq); ok {
 			return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
 		}
 
-		// TODO: validate that a rook actually exists on rookSq
+		if !(whiteRooks | blackRooks).IsBitSet(rookSq) {
+			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingState, s)
+		}
 
 		if rookSq == kingSq {
 			// rook is inside the king..?
@@ -182,35 +190,24 @@ func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (Castling, e
 	return rights, nil
 }
 
-func FindCastlingRooks(pos *Position) Castling {
-	castling := noCastling
-
-	kingSq := pos.KingSq[White]
-	if pos.Castling.Has(WhiteQueenside) {
-		castling.Set(scanRook(pos.PieceBB(WhiteRook), kingSq, -1), false)
-	}
-	if pos.Castling.Has(WhiteKingside) {
-		castling.Set(scanRook(pos.PieceBB(WhiteRook), kingSq, +1), true)
-	}
-
-	kingSq = pos.KingSq[Black]
-	if pos.Castling.Has(BlackQueenside) {
-		castling.Set(scanRook(pos.PieceBB(BlackRook), kingSq, -1), false)
-	}
-	if pos.Castling.Has(BlackKingside) {
-		castling.Set(scanRook(pos.PieceBB(BlackRook), kingSq, +1), true)
-	}
-
-	return castling
-}
-
-func scanRook(rookBB Bitboard, kingSq Square, dir File) Square {
+func scanRook(rookBB Bitboard, kingSq Square, kingside bool) (Square, bool) {
 	rank := kingSq.Rank()
-	for file := kingSq.File() + dir; file >= FileA && file <= FileH; file += dir {
+
+	startingFile := FileA
+	dir := File(1)
+	if kingside {
+		startingFile = FileH
+		dir = -1
+	}
+
+	for file := startingFile; file >= FileA && file <= FileH; file += dir {
 		sq := NewSquare(file, rank)
+		if sq == kingSq {
+			return NoSquare, false
+		}
 		if rookBB.IsBitSet(sq) {
-			return sq
+			return sq, true
 		}
 	}
-	return NoSquare
+	return NoSquare, false
 }
