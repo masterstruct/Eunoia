@@ -2,6 +2,9 @@ package movegen
 
 import "github.com/masterstruct/Eunoia/internal/board"
 
+// Thank you Dan, creator of Hobbes, for the ray implementation this file is based on
+// https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/board/ray.rs
+
 var (
 	between   [64][64]board.Bitboard
 	extending [64][64]board.Bitboard
