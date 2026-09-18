@@ -8,6 +8,13 @@ const (
 	NoColor
 )
 
+func (c Color) ExpectedKingRank() Rank {
+	if c == White {
+		return Rank1
+	}
+	return Rank8
+}
+
 func (color Color) String() string {
 	switch color {
 	case Black:

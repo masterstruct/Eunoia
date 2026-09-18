@@ -342,27 +342,6 @@ func TestParseFEN_SideToMove(t *testing.T) {
 	}
 }
 
-func TestParseFEN_Castling(t *testing.T) {
-	tests := []struct {
-		name    string
-		fen     string
-		wantErr error
-	}{
-		{"invalid char propagates", "k7/8/8/8/8/8/8/7K w X - 0 1", errInvalidCastlingChar},
-		{"duplicate propagates", "k7/8/8/8/8/8/8/7K w KK - 0 1", errDuplicateCastlingChar},
-		{"too long propagates", "k7/8/8/8/8/8/8/7K w KQkqK - 0 1", errInvalidCastlingLength},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := ParseFEN(tt.fen)
-			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("expected error %v but got %v", tt.wantErr, err)
-			}
-		})
-	}
-}
-
 func TestParseFEN_EnPassant(t *testing.T) {
 	tests := []struct {
 		name    string

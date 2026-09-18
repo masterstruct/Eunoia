@@ -10,7 +10,7 @@ var (
 	errInvalidCastlingLength = errors.New("castling: string must be 1 to 4 characters, or \"-\" for none")
 	errInvalidCastlingChar   = errors.New("castling: character must be one of 'K', 'Q', 'k', 'q' or rook file letters")
 	errDuplicateCastlingChar = errors.New("castling: character appears more than once")
-	errMixedCastlingNotation = errors.New("castling: cannot mix standard (KQkq) and Shredder-FEN (file letter) notation")
+	errInvalidCastlingState  = errors.New("castling: string does not match board position")
 )
 
 type CastlingRights uint8
@@ -121,126 +121,97 @@ func (c Castling) String(chess960 bool) string {
 	return b.String()
 }
 
-func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square) (Castling, error) {
-	// TODO: add X-fen support
+func ParseCastlingRights(s string, whiteKingSq, blackKingSq Square, whiteRooks, blackRooks Bitboard) (Castling, error) {
 	n := len(s)
-	if n == 0 || n > 4 {
-		return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingLength, s)
-	}
+
 	if n == 1 && s[0] == '-' {
 		return noCastling, nil
 	}
-	hasStandard := strings.ContainsAny(s, "KQkq")
-	hasShredder := strings.ContainsAny(s, "ABCDEFGHabcdefgh")
-	if hasStandard && hasShredder {
-		return noCastling, fmt.Errorf("%w: %q", errMixedCastlingNotation, s)
+	if n == 0 || n > 4 {
+		return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingLength, s)
 	}
 
 	rights := noCastling
-	var sq Square
-	var kingside bool
 
-	// standard KQkq form
-	switch s[0] {
-	case 'K', 'Q', 'k', 'q':
-		for _, char := range s {
-			switch char {
-			case 'k':
-				sq = H8
-				kingside = true
-			case 'q':
-				sq = A8
-				kingside = false
-			case 'K':
-				sq = H1
-				kingside = true
-			case 'Q':
-				sq = A1
-				kingside = false
-			default:
-				return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
-			}
-
-			if ok, _ := rights.HasSquare(sq); ok {
-				return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
-			}
-			rights.Set(sq, kingside)
-		}
-		return rights, nil
-	}
-
-	// shredder form
-	var file File
-	var kingFile File
+	var color Color
+	var rooks Bitboard
+	var rookSq Square
+	var kingSq Square
 
 	for _, char := range s {
-		// validate and normalize file
+		if char&0x20 == 0 {
+			// uppercase -> White
+			color = White
+			kingSq = whiteKingSq
+			rooks = whiteRooks
+		} else {
+			// lowercase -> Black
+			color = Black
+			kingSq = blackKingSq
+			rooks = blackRooks
+		}
+		char |= 0x20 // fast lowercase conversion
 
 		switch {
-		case 'A' <= char && char <= 'H':
-			// white
-			file = File(char - 'A')
-			rookSq := NewSquare(file, Rank1)
-
-			if ok, _ := rights.HasSquare(rookSq); ok {
-				return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
-			}
-
-			rights.Set(rookSq, rookSq > whiteKingSq)
-			kingFile = whiteKingSq.File()
+		case char == 'k', char == 'q':
+			rookSq = scanRook(rooks, kingSq, char == 'k')
 		case 'a' <= char && char <= 'h':
-			// black
-			file = File(char - 'a')
-			rookSq := NewSquare(file, Rank8)
-
-			if ok, _ := rights.HasSquare(rookSq); ok {
-				return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
-			}
-
-			rights.Set(rookSq, rookSq > blackKingSq)
-			kingFile = blackKingSq.File()
+			file := File(char - 'a')
+			rookSq = NewSquare(file, color.ExpectedKingRank())
 		default:
 			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
 		}
 
-		if file == kingFile {
-			// rook is inside the king..?
-			return noCastling, fmt.Errorf("%w: %q", errInvalidCastlingChar, s)
+		if err := validateRookSquare(rookSq, kingSq, rooks, color); err != nil {
+			return noCastling, fmt.Errorf("%w: %q", err, s)
 		}
+
+		if ok, _ := rights.HasSquare(rookSq); ok {
+			return noCastling, fmt.Errorf("%w: %q", errDuplicateCastlingChar, s)
+		}
+
+		rights.Set(rookSq, rookSq > kingSq)
 	}
 	return rights, nil
 }
 
-// TODO: X-fens
-func FindCastlingRooks(pos *Position) Castling {
-	castling := noCastling
-
-	kingSq := pos.KingSq[White]
-	if pos.Castling.Has(WhiteQueenside) {
-		castling.Set(scanRook(pos.PieceBB(WhiteRook), kingSq, -1), false)
-	}
-	if pos.Castling.Has(WhiteKingside) {
-		castling.Set(scanRook(pos.PieceBB(WhiteRook), kingSq, +1), true)
-	}
-
-	kingSq = pos.KingSq[Black]
-	if pos.Castling.Has(BlackQueenside) {
-		castling.Set(scanRook(pos.PieceBB(BlackRook), kingSq, -1), false)
-	}
-	if pos.Castling.Has(BlackKingside) {
-		castling.Set(scanRook(pos.PieceBB(BlackRook), kingSq, +1), true)
-	}
-
-	return castling
-}
-
-func scanRook(rookBB Bitboard, kingSq Square, dir File) Square {
+func scanRook(rookBB Bitboard, kingSq Square, kingside bool) Square {
 	rank := kingSq.Rank()
-	for file := kingSq.File() + dir; file >= FileA && file <= FileH; file += dir {
-		sq := NewSquare(file, rank)
-		if rookBB.IsBitSet(sq) {
-			return sq
+	kingFile := kingSq.File()
+
+	if kingside {
+		for file := FileH; file > kingFile; file-- {
+			sq := NewSquare(file, rank)
+			if rookBB.IsBitSet(sq) {
+				return sq
+			}
+		}
+	} else {
+		for file := range kingFile {
+			sq := NewSquare(file, rank)
+			if rookBB.IsBitSet(sq) {
+				return sq
+			}
 		}
 	}
 	return NoSquare
+}
+
+func validateRookSquare(rookSq, kingSq Square, rooks Bitboard, color Color) error {
+	if rookSq == NoSquare {
+		return errInvalidCastlingState
+	}
+	if !rooks.IsBitSet(rookSq) {
+		return errInvalidCastlingState // rook does not exist on board
+	}
+	if rookSq.Rank() != kingSq.Rank() {
+		return errInvalidCastlingState // king and rook on different ranks
+	}
+	if rookSq == kingSq {
+		return errInvalidCastlingState // rook is inside the king..?
+	}
+	if kingSq.Rank() != color.ExpectedKingRank() {
+		return errInvalidCastlingState // king not on back rank
+	}
+	return nil
 }
