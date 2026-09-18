@@ -5,6 +5,69 @@ import (
 	"testing"
 )
 
+func TestRemove(t *testing.T) {
+	tests := []struct {
+		name  string
+		c     Castling
+		right CastlingRights
+		want  Castling
+	}{
+		{
+			"remove black kingside",
+			Castling{A8, H8, A1, H1},
+			BlackKingside,
+			Castling{A8, NoSquare, A1, H1},
+		},
+		{
+			"remove black queenside",
+			Castling{A8, H8, A1, H1},
+			BlackQueenside,
+			Castling{NoSquare, H8, A1, H1},
+		},
+		{
+			"remove white kingside",
+			Castling{A8, H8, A1, H1},
+			WhiteKingside,
+			Castling{A8, H8, A1, NoSquare},
+		},
+		{
+			"remove white queenside",
+			Castling{A8, H8, A1, H1},
+			WhiteQueenside,
+			Castling{A8, H8, NoSquare, H1},
+		},
+		{
+			"remove absent right",
+			Castling{NoSquare, H8, NoSquare, NoSquare},
+			BlackQueenside,
+			Castling{NoSquare, H8, NoSquare, NoSquare},
+		},
+		{
+			"remove only right",
+			Castling{NoSquare, NoSquare, A1, NoSquare},
+			WhiteQueenside,
+			noCastling,
+		},
+		{
+			"remove from none",
+			noCastling,
+			BlackKingside,
+			noCastling,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := tt.c
+			c.Remove(tt.right)
+
+			if c != tt.want {
+				t.Errorf("removed %v but got %v, want %v", tt.right, c, tt.want)
+			}
+		})
+	}
+}
+
 func TestHas(t *testing.T) {
 	tests := []struct {
 		name  string
