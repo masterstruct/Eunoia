@@ -57,3 +57,29 @@ func TestExtending(t *testing.T) {
 		})
 	}
 }
+
+func TestBeyond(t *testing.T) {
+	tests := []struct {
+		a    board.Square
+		b    board.Square
+		want board.Bitboard
+	}{
+		{board.A1, board.H8, board.EmptyBB},
+		{board.A8, board.H1, board.EmptyBB},
+		{board.D2, board.D7, board.SquareBB[board.D8]},
+		{board.H3, board.F5, 0x408100000000000},
+		{board.C2, board.E2, 0xe000},
+		{board.D2, board.A2, board.EmptyBB},
+		{board.D4, board.E5, 0x8040200000000000},
+		{board.D4, board.D5, 0x808080000000000},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			got := Beyond(tt.a, tt.b)
+			if got != tt.want {
+				t.Fatalf("from %v to %v\ngot:\n%v\nwant:\n%v", tt.a, tt.b, got, tt.want)
+			}
+		})
+	}
+}

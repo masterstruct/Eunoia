@@ -5,6 +5,7 @@ import "github.com/masterstruct/Eunoia/internal/board"
 var (
 	between   [64][64]board.Bitboard
 	extending [64][64]board.Bitboard
+	beyond    [64][64]board.Bitboard
 )
 
 func Between(a, b board.Square) board.Bitboard {
@@ -15,9 +16,14 @@ func Extending(a, b board.Square) board.Bitboard {
 	return extending[a][b]
 }
 
+func Beyond(a, b board.Square) board.Bitboard {
+	return beyond[a][b]
+}
+
 func init() {
 	initBetween()
 	initExtending()
+	initBeyond()
 }
 
 func initBetween() {
@@ -43,6 +49,20 @@ func initExtending() {
 
 			if BishopAttacks(a, board.EmptyBB).IsBitSet(b) {
 				extending[a][b] = BishopAttacks(a, board.EmptyBB) & BishopAttacks(b, board.EmptyBB)
+			}
+		}
+	}
+}
+
+func initBeyond() {
+	for a := range board.NoSquare {
+		for b := range board.NoSquare {
+			if RookAttacks(a, board.EmptyBB).IsBitSet(b) {
+				beyond[a][b] = RookAttacks(a, board.EmptyBB) & RookAttacks(b, board.SquareBB[a]) &^ Between(a, b)
+			}
+
+			if BishopAttacks(a, board.EmptyBB).IsBitSet(b) {
+				beyond[a][b] = BishopAttacks(a, board.EmptyBB) & BishopAttacks(b, board.SquareBB[a]) &^ Between(a, b)
 			}
 		}
 	}
