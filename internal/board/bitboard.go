@@ -76,6 +76,22 @@ func (bb *Bitboard) PopLSB() Square {
 	return sq
 }
 
+func (bb Bitboard) northEast() Bitboard {
+	return Bitboard(bb << 9 &^ FileBB[FileA])
+}
+
+func (bb Bitboard) northWest() Bitboard {
+	return Bitboard(bb << 7 &^ FileBB[FileH])
+}
+
+func (bb Bitboard) southEast() Bitboard {
+	return Bitboard(bb >> 7 &^ FileBB[FileA])
+}
+
+func (bb Bitboard) southWest() Bitboard {
+	return Bitboard(bb >> 9 &^ FileBB[FileH])
+}
+
 func (bb Bitboard) String() string {
 	var sb strings.Builder
 	sb.WriteString(strconv.FormatUint(uint64(bb), 10))

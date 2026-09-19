@@ -66,3 +66,10 @@ func attacksFromOffsets(sq Square, offsets [][2]int) Bitboard {
 	}
 	return bb
 }
+
+func pawnAttacks(pawns Bitboard, color Color) Bitboard {
+	if color == White {
+		return pawns.northEast() | pawns.northWest()
+	}
+	return pawns.southEast() | pawns.southWest()
+}

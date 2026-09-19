@@ -106,3 +106,26 @@ func TestPawnAttacksFrom(t *testing.T) {
 		})
 	}
 }
+
+func TestPawnAttacks(t *testing.T) {
+	tests := []struct {
+		color Color
+		bb    Bitboard
+		want  Bitboard
+	}{
+		{White, EmptyBB, EmptyBB},
+		{White, 0xff00, 0xff0000},
+		{Black, 0x100000, 0x2800},
+		{White, 0x81000e700, 0x142800ff0000},
+		{Black, 0x40208004051000, 0xa050400a0a28},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			got := pawnAttacks(tt.bb, tt.color)
+			if got != tt.want {
+				t.Errorf("want %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
