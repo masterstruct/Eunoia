@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/movegen"
 	"github.com/masterstruct/Eunoia/internal/search"
 )
 
@@ -152,7 +151,7 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 			return *pos, nil, fmt.Errorf("uci: illegal move %q", move)
 		}
 
-		var movelist movegen.Movelist
+		var movelist board.Movelist
 		from, err := board.ParseSquare(move[:2])
 		if err != nil {
 			return *pos, nil, fmt.Errorf("uci: failed to parse move %q", move)
@@ -164,17 +163,17 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 
 		switch piece.Type {
 		case board.Pawn:
-			movegen.GenPawnMoves(&newPos, &movelist)
+			board.GenPawnMoves(&newPos, &movelist)
 		case board.Knight:
-			movegen.GenKnightMoves(&newPos, &movelist)
+			board.GenKnightMoves(&newPos, &movelist)
 		case board.Bishop:
-			movegen.GenBishopMoves(&newPos, &movelist)
+			board.GenBishopMoves(&newPos, &movelist)
 		case board.Rook:
-			movegen.GenRookMoves(&newPos, &movelist)
+			board.GenRookMoves(&newPos, &movelist)
 		case board.Queen:
-			movegen.GenQueenMoves(&newPos, &movelist)
+			board.GenQueenMoves(&newPos, &movelist)
 		case board.King:
-			movegen.GenKingMoves(&newPos, &movelist)
+			board.GenKingMoves(&newPos, &movelist)
 		}
 
 		for i := range movelist.Len {

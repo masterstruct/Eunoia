@@ -1,6 +1,4 @@
-package movegen
-
-import "github.com/masterstruct/Eunoia/internal/board"
+package board
 
 var (
 	rookDirs = [][2]int{
@@ -15,26 +13,26 @@ var (
 	}
 )
 
-func rookAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func rookAttacksSlow(sq Square, occupied Bitboard) Bitboard {
 	return rayAttacks(sq, rookDirs, occupied)
 }
 
-func bishopAttacksSlow(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func bishopAttacksSlow(sq Square, occupied Bitboard) Bitboard {
 	return rayAttacks(sq, bishopDirs, occupied)
 }
 
-func rayAttacks(sq board.Square, dirs [][2]int, occupied board.Bitboard) board.Bitboard {
-	bb := board.EmptyBB
+func rayAttacks(sq Square, dirs [][2]int, occupied Bitboard) Bitboard {
+	bb := EmptyBB
 
 	for _, dir := range dirs {
-		df, dr := board.File(dir[0]), board.Rank(dir[1])
+		df, dr := File(dir[0]), Rank(dir[1])
 		currSq := sq
 
 		for {
 			newFile := currSq.File() + df
 			newRank := currSq.Rank() + dr
 
-			currSq = board.NewSquare(newFile, newRank)
+			currSq = NewSquare(newFile, newRank)
 			if !currSq.IsValid() {
 				break
 			}
@@ -48,14 +46,14 @@ func rayAttacks(sq board.Square, dirs [][2]int, occupied board.Bitboard) board.B
 	return bb
 }
 
-func RookAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func RookAttacks(sq Square, occupied Bitboard) Bitboard {
 	return RookMoves[MagicIndex(&RookMagics[sq], occupied)]
 }
 
-func BishopAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func BishopAttacks(sq Square, occupied Bitboard) Bitboard {
 	return BishopMoves[MagicIndex(&BishopMagics[sq], occupied)]
 }
 
-func QueenAttacks(sq board.Square, occupied board.Bitboard) board.Bitboard {
+func QueenAttacks(sq Square, occupied Bitboard) Bitboard {
 	return RookAttacks(sq, occupied) | BishopAttacks(sq, occupied)
 }

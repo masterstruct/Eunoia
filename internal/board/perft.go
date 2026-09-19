@@ -1,10 +1,8 @@
-package movegen
+package board
 
 import (
 	"fmt"
 	"time"
-
-	"github.com/masterstruct/Eunoia/internal/board"
 )
 
 type PerftResult struct {
@@ -13,7 +11,7 @@ type PerftResult struct {
 	NPS   uint64
 }
 
-func Perft(pos *board.Position, depth int) PerftResult {
+func Perft(pos *Position, depth int) PerftResult {
 	start := time.Now()
 
 	nodes := perft(*pos, depth)
@@ -28,7 +26,7 @@ func Perft(pos *board.Position, depth int) PerftResult {
 	}
 }
 
-func perft(pos board.Position, depth int) uint64 {
+func perft(pos Position, depth int) uint64 {
 	if depth <= 0 {
 		return 1
 	}
@@ -48,7 +46,7 @@ func perft(pos board.Position, depth int) uint64 {
 	return nodes
 }
 
-func SplitPerft(pos *board.Position, depth int) PerftResult {
+func SplitPerft(pos *Position, depth int) PerftResult {
 	start := time.Now()
 
 	var total uint64

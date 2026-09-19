@@ -1,13 +1,11 @@
-package movegen
+package board
 
 import (
 	"testing"
-
-	"github.com/masterstruct/Eunoia/internal/board"
 )
 
 func TestIncrementalZobrist(t *testing.T) {
-	pos, err := board.ParseFEN(board.KiwipeteFEN)
+	pos, err := ParseFEN(KiwipeteFEN)
 	if err != nil {
 		t.Fatalf("bad FEN: %v", err)
 	}
@@ -21,7 +19,7 @@ func TestIncrementalZobrist(t *testing.T) {
 	t.Logf("checked %d positions", checked)
 }
 
-func walkAndVerifyHash(t *testing.T, pos board.Position, depth int, checked *int) {
+func walkAndVerifyHash(t *testing.T, pos Position, depth int, checked *int) {
 	t.Helper()
 	if depth <= 0 {
 		return
@@ -37,7 +35,7 @@ func walkAndVerifyHash(t *testing.T, pos board.Position, depth int, checked *int
 			continue
 		}
 
-		want := board.ZobristTable.ComputeHash(&newPos)
+		want := ZobristTable.ComputeHash(&newPos)
 		if newPos.Hash != want {
 			t.Errorf("move %v depth %d: incremental hash %d, computed hash %d", movelist.Moves[i], depth, newPos.Hash, want)
 		}

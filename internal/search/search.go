@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
 const (
@@ -65,14 +64,14 @@ iterativeDeepening:
 }
 
 func firstLegalMove(pos board.Position) (board.Move, bool) {
-	var movelist movegen.Movelist
-	movegen.GeneratePseudolegalMoves(&pos, &movelist)
+	var movelist board.Movelist
+	board.GeneratePseudolegalMoves(&pos, &movelist)
 	mover := pos.SideToMove
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
-		if !movegen.InCheck(&newPos, mover) {
+		if !board.InCheck(&newPos, mover) {
 			return move, true
 		}
 	}

@@ -1,12 +1,10 @@
-package movegen
+package board
 
 import (
 	"fmt"
 	"strings"
 	"sync"
 	"testing"
-
-	"github.com/masterstruct/Eunoia/internal/board"
 )
 
 func TestPerft(t *testing.T) {
@@ -26,13 +24,13 @@ var perftPositions = []struct {
 }{
 	{
 		name:  "starting position",
-		fen:   board.StartingFEN,
+		fen:   StartingFEN,
 		depth: 5,
 		want:  []uint64{20, 400, 8902, 197281, 4865609, 119060324, 3195901860, 84998978956, 2439530234167},
 	},
 	{
 		name:  "kiwipete",
-		fen:   board.KiwipeteFEN,
+		fen:   KiwipeteFEN,
 		depth: 4,
 		want:  []uint64{48, 2039, 97862, 4085603, 193690690, 8031647685},
 	},
@@ -136,7 +134,7 @@ func runPerftTests(t *testing.T, positions []struct {
 				t.Parallel()
 			}
 
-			pos, err := board.ParseFEN(tt.fen)
+			pos, err := ParseFEN(tt.fen)
 			if err != nil {
 				t.Fatalf("bad FEN: %v", err)
 			}

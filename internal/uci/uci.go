@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/movegen"
 	"github.com/masterstruct/Eunoia/internal/search"
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
@@ -112,7 +111,7 @@ func Loop(r io.Reader, w io.Writer) {
 			pos := eng.pos
 			eng.mu.Unlock()
 
-			perftRes := movegen.Perft(&pos, depth)
+			perftRes := board.Perft(&pos, depth)
 			fmt.Fprintln(w, "total:", perftRes.Nodes)
 			fmt.Fprintln(w, "time:", perftRes.Time)
 			fmt.Fprintln(w, "nps:", perftRes.NPS)

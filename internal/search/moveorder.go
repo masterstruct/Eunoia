@@ -2,7 +2,6 @@ package search
 
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
 const (
@@ -12,7 +11,7 @@ const (
 	maxHistory = 2 << 13
 )
 
-func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelist) {
+func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist) {
 	n := movelist.Len
 	if n == 0 {
 		return
@@ -28,7 +27,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 	}
 
 	// score moves
-	var scores [movegen.MaxMoves]int
+	var scores [board.MaxMoves]int
 	for i := range n {
 		move := movelist.Moves[i]
 		from := move.From()
