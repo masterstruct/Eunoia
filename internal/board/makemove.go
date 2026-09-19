@@ -134,6 +134,7 @@ func (pos *Position) MakeMove(move Move) Position {
 
 	newPos.Threats = newPos.calculateThreats(oppColor)
 	newPos.Checkers = newPos.calculateCheckers(oppColor)
+	newPos.Pinned = newPos.calculateBothPinned()
 
 	return newPos
 }

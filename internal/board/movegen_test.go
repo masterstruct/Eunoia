@@ -1084,3 +1084,66 @@ func TestCalculateCheckers(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculatePinned(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+		want Bitboard
+	}{
+		{
+			name: "startpos",
+			fen:  StartingFEN,
+			want: EmptyBB,
+		},
+		{
+			name: "kiwipete",
+			fen:  KiwipeteFEN,
+			want: EmptyBB,
+		},
+		{
+			name: "pinned queen",
+			fen:  "r1b4r/pp4kp/4pqp1/3pQ3/3P3P/3B4/PP3PP1/R3K2R b KQ - 1 17",
+			want: SquareBB[F6],
+		},
+		{
+			name: "pinned pawn",
+			fen:  "r1b2rk1/pp3ppp/1qnb1n2/3p4/3P4/2NB1P2/PP2NKPP/R1BQ3R w - - 6 11",
+			want: SquareBB[D4],
+		},
+		{
+			name: "pinned rook",
+			fen:  "8/2p5/6kb/p1pP3p/P1P2RpP/1P2K1P1/8/8 w - - 0 49",
+			want: SquareBB[F4],
+		},
+		{
+			name: "2 pinned pieces",
+			fen:  "1nb1kbnr/pp2pppp/8/q3r3/3p4/2NBP3/PP3PPP/R1BQK1NR w KQk - 2 6",
+			want: SquareBB[C3] | SquareBB[E3],
+		},
+		{
+			name: "3 pinned pieces",
+			fen:  "2r4k/6b1/6p1/2P2b2/1P3Q2/3N4/2K2Bq1/8 w - - 0 1",
+			want: SquareBB[C5] | SquareBB[D3] | SquareBB[F2],
+		},
+		{
+			name: "many pinned pieces",
+			fen:  "3R2B1/1Q1b1r2/2n5/R1pk2pR/2r1n3/8/B2b2Q1/3R3K b - - 0 1",
+			want: 0x28044414000800,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad FEN: %v", err)
+			}
+
+			got := pos.calculatePinned(pos.SideToMove)
+			if got != tt.want {
+				t.Errorf("want %v got %v", tt.want, got)
+			}
+		})
+	}
+}

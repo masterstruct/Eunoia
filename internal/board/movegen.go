@@ -382,3 +382,36 @@ func (pos *Position) calculateCheckers(myColor Color) Bitboard {
 		BishopAttacks(kingSq, occupied)&(bishops|queens) |
 		RookAttacks(kingSq, occupied)&(rooks|queens)
 }
+
+func (pos *Position) calculateBothPinned() [2]Bitboard {
+	return [2]Bitboard{pos.calculatePinned(Black), pos.calculatePinned(White)}
+}
+
+func (pos *Position) calculatePinned(color Color) Bitboard {
+	king := pos.KingSq[color]
+	us := pos.Colors[color]
+	them := pos.Colors[color.Opponent()]
+
+	diagonals := (pos.Pieces[Bishop] | pos.Pieces[Queen]) & them
+	orthogonals := (pos.Pieces[Rook] | pos.Pieces[Queen]) & them
+
+	if diagonals|orthogonals == EmptyBB {
+		return EmptyBB
+	}
+
+	potentialAttackers := BishopAttacks(king, them)&diagonals |
+		RookAttacks(king, them)&orthogonals
+
+	pinned := EmptyBB
+
+	for potentialAttackers != 0 {
+		attacker := potentialAttackers.PopLSB()
+		between := Between(king, attacker)
+		maybePinned := us & between
+		if maybePinned.CountBits() == 1 {
+			pinned |= maybePinned
+		}
+	}
+
+	return pinned
+}
