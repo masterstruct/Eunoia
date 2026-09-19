@@ -1011,3 +1011,76 @@ func TestCalculateThreats(t *testing.T) {
 		})
 	}
 }
+
+func TestCalculateCheckers(t *testing.T) {
+	tests := []struct {
+		name string
+		fen  string
+		want Bitboard
+	}{
+		{
+			name: "startpos",
+			fen:  StartingFEN,
+			want: EmptyBB,
+		},
+		{
+			name: "kiwipete",
+			fen:  KiwipeteFEN,
+			want: EmptyBB,
+		},
+		{
+			name: "rook attacks king",
+			fen:  "4rrk1/p1q4p/2p3pP/2Nn1p2/8/P4P2/1b1BK1P1/2RQ3R w - - 0 22",
+			want: SquareBB[E8],
+		},
+		{
+			name: "bishop attacks king",
+			fen:  "2kr3r/1pq2ppp/p1n1pn2/2pP4/8/1P1P1B2/PBPN2Pb/R3QRK1 w - - 0 14",
+			want: SquareBB[H2],
+		},
+		{
+			name: "pawn attacks king",
+			fen:  "2kr3r/1Pq2ppp/p3pn2/2p5/8/1P1P1B2/PBPN2P1/R3bR1K b - - 0 16",
+			want: SquareBB[B7],
+		},
+		{
+			name: "knight attacks king",
+			fen:  "3k2r1/p3nN2/8/6PK/4r3/8/P7/8 b - - 0 56",
+			want: SquareBB[F7],
+		},
+		{
+			name: "queen attacks king",
+			fen:  "r4rk1/1p4pp/p2b2q1/3Q1b2/8/3B1PP1/PP3BK1/4R2R b - - 0 23",
+			want: SquareBB[D5],
+		},
+		{
+			name: "knight rook double check",
+			fen:  "2r5/8/3k4/1Q6/3n4/8/2K5/8 w - - 0 1",
+			want: SquareBB[D4] | SquareBB[C8],
+		},
+		{
+			name: "pawn rook double check after en passant",
+			fen:  "8/4k3/3P4/8/2K5/8/8/4R3 b - - 0 1",
+			want: SquareBB[D6] | SquareBB[E1],
+		},
+		{
+			name: "bishop queen double check",
+			fen:  "1k6/8/K2B4/8/8/1Q6/8/2R5 b - - 0 1",
+			want: SquareBB[B3] | SquareBB[D6],
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad FEN: %v", err)
+			}
+
+			got := pos.calculateCheckers(pos.SideToMove)
+			if got != tt.want {
+				t.Errorf("want %v got %v", tt.want, got)
+			}
+		})
+	}
+}

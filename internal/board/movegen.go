@@ -47,7 +47,7 @@ func IsSquareAttacked(pos *Position, sq Square, byColor Color) bool {
 
 // returns true if the side to move is in check
 func (pos *Position) InCheck() bool {
-	return pos.Threats.IsBitSet(pos.KingSq[pos.SideToMove])
+	return pos.Checkers != 0
 }
 
 // returns true if the side that just moved left its own king attacked.
@@ -324,7 +324,7 @@ func canCastle(pos *Position, kingSq, rookSq Square) bool {
 
 	for file := kingFile; file != toFileKing+kingDir; file += kingDir {
 		sq := NewSquare(file, rank)
-		if occupied.IsBitSet(sq) || pos.Threats.IsBitSet(sq) {
+		if (occupied | pos.Threats).IsBitSet(sq) {
 			return false
 		}
 	}
@@ -363,4 +363,22 @@ func (pos *Position) calculateThreats(myColor Color) Bitboard {
 		bishopAttacks(bishops|queens, occupied) |
 		rookAttacks(rooks|queens, occupied) |
 		KingAttacks[pos.KingSq[enemyColor]]
+}
+
+// pieces attacking the king
+func (pos *Position) calculateCheckers(myColor Color) Bitboard {
+	occupied := pos.Occupied()
+	kingSq := pos.KingSq[myColor]
+	enemyBB := pos.Colors[myColor.Opponent()]
+
+	pawns := pos.Pieces[Pawn] & enemyBB
+	knights := pos.Pieces[Knight] & enemyBB
+	bishops := pos.Pieces[Bishop] & enemyBB
+	rooks := pos.Pieces[Rook] & enemyBB
+	queens := pos.Pieces[Queen] & enemyBB
+
+	return PawnAttacks[myColor][kingSq]&pawns |
+		KnightAttacks[kingSq]&knights |
+		BishopAttacks(kingSq, occupied)&(bishops|queens) |
+		RookAttacks(kingSq, occupied)&(rooks|queens)
 }

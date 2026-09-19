@@ -133,6 +133,7 @@ func (pos *Position) MakeMove(move Move) Position {
 	newPos.Hash = hash
 
 	newPos.Threats = newPos.calculateThreats(oppColor)
+	newPos.Checkers = newPos.calculateCheckers(oppColor)
 
 	return newPos
 }
@@ -149,6 +150,7 @@ func (pos *Position) MakeNullMove() Position {
 	newPos.Ply++
 
 	newPos.Threats = newPos.calculateThreats(newPos.SideToMove)
+	newPos.Checkers = newPos.calculateCheckers(newPos.SideToMove)
 
 	return newPos
 }

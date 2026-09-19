@@ -143,6 +143,7 @@ func ParseFEN(fen string) (Position, error) {
 
 	pos.Hash = ZobristTable.ComputeHash(&pos)
 	pos.Threats = pos.calculateThreats(pos.SideToMove)
+	pos.Checkers = pos.calculateCheckers(pos.SideToMove)
 
 	return pos, nil
 }
