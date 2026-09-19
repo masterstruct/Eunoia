@@ -45,12 +45,15 @@ func IsSquareAttacked(pos *Position, sq Square, byColor Color) bool {
 	return false
 }
 
-func InCheck(pos *Position, color Color) bool {
-	return IsSquareAttacked(
-		pos,
-		pos.KingSq[color],
-		color.Opponent(),
-	)
+// returns true if the side to move is in check
+func (pos *Position) InCheck() bool {
+	return pos.Threats.IsBitSet(pos.KingSq[pos.SideToMove])
+}
+
+// returns true if the side that just moved left its own king attacked.
+// Call ONLY on a position returned by MakeMove to filter pseudolegal moves
+func (pos *Position) IsIllegal() bool {
+	return IsSquareAttacked(pos, pos.KingSq[pos.SideToMove.Opponent()], pos.SideToMove)
 }
 
 func GenKnightMoves(pos *Position, movelist *Movelist) {
@@ -319,10 +322,9 @@ func canCastle(pos *Position, kingSq, rookSq Square) bool {
 		}
 	}
 
-	color := pos.Board[kingSq].Color
 	for file := kingFile; file != toFileKing+kingDir; file += kingDir {
 		sq := NewSquare(file, rank)
-		if occupied.IsBitSet(sq) || IsSquareAttacked(pos, sq, color.Opponent()) {
+		if occupied.IsBitSet(sq) || pos.Threats.IsBitSet(sq) {
 			return false
 		}
 	}
@@ -342,4 +344,23 @@ func GeneratePseudolegalMoves(pos *Position, movelist *Movelist) {
 	GenQueenMoves(pos, movelist)
 	GenPawnMoves(pos, movelist)
 	GenKingMoves(pos, movelist)
+}
+
+// squares attacked by opponent pieces
+func (pos *Position) calculateThreats(myColor Color) Bitboard {
+	occupied := pos.Occupied() &^ SquareBB[pos.KingSq[myColor]]
+	enemyColor := myColor.Opponent()
+	enemyBB := pos.Colors[enemyColor]
+
+	pawns := pos.Pieces[Pawn] & enemyBB
+	knights := pos.Pieces[Knight] & enemyBB
+	bishops := pos.Pieces[Bishop] & enemyBB
+	rooks := pos.Pieces[Rook] & enemyBB
+	queens := pos.Pieces[Queen] & enemyBB
+
+	return pawnAttacks(pawns, enemyColor) |
+		knightAttacks(knights) |
+		bishopAttacks(bishops|queens, occupied) |
+		rookAttacks(rooks|queens, occupied) |
+		KingAttacks[pos.KingSq[enemyColor]]
 }

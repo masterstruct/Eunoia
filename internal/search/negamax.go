@@ -59,7 +59,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	}
 
 	mover := pos.SideToMove
-	inCheck := board.InCheck(&pos, mover)
+	inCheck := pos.InCheck()
 
 	// reverse futility pruning
 	staticEval := evaluate(&pos)
@@ -93,7 +93,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
-		if board.InCheck(&newPos, mover) {
+		if newPos.IsIllegal() {
 			continue
 		}
 

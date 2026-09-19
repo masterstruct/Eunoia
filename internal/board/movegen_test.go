@@ -143,7 +143,7 @@ func TestInCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			pos, _ := ParseFEN(tt.fen)
 
-			got := InCheck(&pos, pos.SideToMove)
+			got := pos.InCheck()
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
@@ -168,7 +168,7 @@ func BenchmarkInCheck(b *testing.B) {
 
 	for i := 0; b.Loop(); i++ {
 		pos := &positions[i%len(positions)]
-		_ = InCheck(pos, pos.SideToMove)
+		_ = pos.InCheck()
 	}
 }
 
@@ -962,5 +962,52 @@ func BenchmarkGenMoves(b *testing.B) {
 		var movelist Movelist
 		pos := positions[i%len(positions)]
 		GenPawnMoves(pos, &movelist)
+	}
+}
+
+func TestCalculateThreats(t *testing.T) {
+	tests := []struct {
+		name               string
+		fen                string
+		wantThreatsToWhite Bitboard
+		wantThreatsToBlack Bitboard
+	}{
+		{
+			name:               "startpos",
+			fen:                StartingFEN,
+			wantThreatsToWhite: 0x7EFFFF0000000000,
+			wantThreatsToBlack: 0xFFFF7E,
+		},
+		{
+			name:               "kiwipete",
+			fen:                KiwipeteFEN,
+			wantThreatsToWhite: 0xFFBBFEAED78D5000,
+			wantThreatsToBlack: 0x28F5EA75FFF97E,
+		},
+		{
+			name:               "threats ignore king",
+			fen:                "8/8/1b6/8/3K4/8/6k1/6N1 w - - 0 1",
+			wantThreatsToWhite: 0x805000508F0A0E0,
+			wantThreatsToBlack: 0x1C14BC1000,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos, err := ParseFEN(tt.fen)
+			if err != nil {
+				t.Fatalf("bad FEN: %v", err)
+			}
+
+			gotWhite := pos.calculateThreats(White)
+			if gotWhite != tt.wantThreatsToWhite {
+				t.Errorf("White: want %v got %v", tt.wantThreatsToWhite, gotWhite)
+			}
+
+			gotBlack := pos.calculateThreats(Black)
+			if gotBlack != tt.wantThreatsToBlack {
+				t.Errorf("Black: want %v got %v", tt.wantThreatsToBlack, gotBlack)
+			}
+		})
 	}
 }

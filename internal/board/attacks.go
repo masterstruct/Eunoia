@@ -73,3 +73,27 @@ func pawnAttacks(pawns Bitboard, color Color) Bitboard {
 	}
 	return pawns.southEast() | pawns.southWest()
 }
+
+func knightAttacks(knights Bitboard) Bitboard {
+	out := EmptyBB
+	for knights != 0 {
+		out |= KnightAttacks[knights.PopLSB()]
+	}
+	return out
+}
+
+func bishopAttacks(bishops, occupied Bitboard) Bitboard {
+	out := EmptyBB
+	for bishops != 0 {
+		out |= BishopAttacks(bishops.PopLSB(), occupied)
+	}
+	return out
+}
+
+func rookAttacks(rooks, occupied Bitboard) Bitboard {
+	out := EmptyBB
+	for rooks != 0 {
+		out |= RookAttacks(rooks.PopLSB(), occupied)
+	}
+	return out
+}

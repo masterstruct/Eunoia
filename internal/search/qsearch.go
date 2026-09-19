@@ -19,7 +19,6 @@ func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 	var movelist board.Movelist
 	board.GeneratePseudolegalMoves(&pos, &movelist)
 	ss.orderMoves(&pos, &movelist)
-	mover := pos.SideToMove
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
@@ -28,7 +27,7 @@ func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 		}
 
 		newPos := pos.MakeMove(move)
-		if board.InCheck(&newPos, mover) {
+		if newPos.IsIllegal() {
 			continue
 		}
 

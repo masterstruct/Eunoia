@@ -66,12 +66,11 @@ iterativeDeepening:
 func firstLegalMove(pos board.Position) (board.Move, bool) {
 	var movelist board.Movelist
 	board.GeneratePseudolegalMoves(&pos, &movelist)
-	mover := pos.SideToMove
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
-		if !board.InCheck(&newPos, mover) {
+		if !newPos.IsIllegal() {
 			return move, true
 		}
 	}

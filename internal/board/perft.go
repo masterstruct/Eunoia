@@ -34,10 +34,10 @@ func perft(pos Position, depth int) uint64 {
 	var nodes uint64
 	var movelist Movelist
 	GeneratePseudolegalMoves(&pos, &movelist)
-	mover := pos.SideToMove
+
 	for i := 0; i < movelist.Len; i++ {
 		newPos := pos.MakeMove(movelist.Moves[i])
-		if InCheck(&newPos, mover) {
+		if newPos.IsIllegal() {
 			continue
 		}
 		nodes += perft(newPos, depth-1)
@@ -53,10 +53,9 @@ func SplitPerft(pos *Position, depth int) PerftResult {
 	var movelist Movelist
 	GeneratePseudolegalMoves(pos, &movelist)
 
-	mover := pos.SideToMove
 	for i := 0; i < movelist.Len; i++ {
 		newPos := pos.MakeMove(movelist.Moves[i])
-		if InCheck(&newPos, mover) {
+		if newPos.IsIllegal() {
 			continue
 		}
 		nodes := perft(newPos, depth-1)

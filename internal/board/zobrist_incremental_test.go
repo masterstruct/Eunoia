@@ -27,11 +27,10 @@ func walkAndVerifyHash(t *testing.T, pos Position, depth int, checked *int) {
 
 	var movelist Movelist
 	GeneratePseudolegalMoves(&pos, &movelist)
-	mover := pos.SideToMove
 
 	for i := 0; i < movelist.Len; i++ {
 		newPos := pos.MakeMove(movelist.Moves[i])
-		if InCheck(&newPos, mover) {
+		if newPos.IsIllegal() {
 			continue
 		}
 

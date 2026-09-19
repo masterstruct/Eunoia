@@ -130,8 +130,9 @@ func (pos *Position) MakeMove(move Move) Position {
 
 	// re-apply castling rights
 	hash ^= ZobristTable.CastlingKey(newPos.Castling.ToIndex())
-
 	newPos.Hash = hash
+
+	newPos.Threats = newPos.calculateThreats(oppColor)
 
 	return newPos
 }
@@ -142,7 +143,12 @@ func (pos *Position) MakeNullMove() Position {
 		newPos.Hash ^= ZobristTable.EnPassantKey(newPos.EnPassant.File())
 		newPos.EnPassant = NoSquare
 	}
+
 	newPos.SideToMove = pos.SideToMove.Opponent()
 	newPos.Hash ^= ZobristTable.SideToMoveKey()
+	newPos.Ply++
+
+	newPos.Threats = newPos.calculateThreats(newPos.SideToMove)
+
 	return newPos
 }
