@@ -15,6 +15,10 @@ type Position struct {
 	Ply           uint16
 	Hash          uint64
 	KingSq        [2]Square
+
+	Threats  Bitboard
+	Checkers Bitboard
+	Pinned   [2]Bitboard
 }
 
 func (pos *Position) PieceBB(piece Piece) Bitboard {
