@@ -1,5 +1,30 @@
 package board
 
+// All - all moves
+// Quiets - non-captures (including promos)
+// Noisies - captures and promos
+// Captures - only captures
+type MoveFilter uint8
+
+const (
+	All MoveFilter = iota
+	Quiets
+	Noisies
+	Captures
+)
+
+func (mf MoveFilter) genQuiets() bool {
+	return mf == All || mf == Quiets
+}
+
+func (mf MoveFilter) genNoisies() bool {
+	return mf == All || mf == Noisies
+}
+
+func (mf MoveFilter) genCaptures() bool {
+	return mf == All || mf == Captures
+}
+
 const MaxMoves = 256
 
 type Movelist struct {
