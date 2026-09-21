@@ -31,11 +31,11 @@ func initBetween() {
 	for a := range NoSquare {
 		for b := range NoSquare {
 			if RookAttacks(a, EmptyBB).IsBitSet(b) {
-				between[a][b] = RookAttacks(a, SquareBB[b]) & RookAttacks(b, SquareBB[a])
+				between[a][b] = RookAttacks(a, b.Bit()) & RookAttacks(b, a.Bit())
 			}
 
 			if BishopAttacks(a, EmptyBB).IsBitSet(b) {
-				between[a][b] = BishopAttacks(a, SquareBB[b]) & BishopAttacks(b, SquareBB[a])
+				between[a][b] = BishopAttacks(a, b.Bit()) & BishopAttacks(b, a.Bit())
 			}
 		}
 	}
@@ -59,11 +59,11 @@ func initBeyond() {
 	for a := range NoSquare {
 		for b := range NoSquare {
 			if RookAttacks(a, EmptyBB).IsBitSet(b) {
-				beyond[a][b] = RookAttacks(a, EmptyBB) & RookAttacks(b, SquareBB[a]) &^ Between(a, b)
+				beyond[a][b] = RookAttacks(a, EmptyBB) & RookAttacks(b, a.Bit()) &^ Between(a, b)
 			}
 
 			if BishopAttacks(a, EmptyBB).IsBitSet(b) {
-				beyond[a][b] = BishopAttacks(a, EmptyBB) & BishopAttacks(b, SquareBB[a]) &^ Between(a, b)
+				beyond[a][b] = BishopAttacks(a, EmptyBB) & BishopAttacks(b, a.Bit()) &^ Between(a, b)
 			}
 		}
 	}

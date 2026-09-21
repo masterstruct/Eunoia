@@ -50,15 +50,15 @@ func InitBitboards() {
 }
 
 func (bb *Bitboard) SetBit(sq Square) {
-	*bb |= SquareBB[sq]
+	*bb |= sq.Bit()
 }
 
 func (bb *Bitboard) ClearBit(sq Square) {
-	*bb &^= SquareBB[sq]
+	*bb &^= sq.Bit()
 }
 
 func (bb Bitboard) IsBitSet(sq Square) bool {
-	return (bb & SquareBB[sq]) != 0
+	return (bb & sq.Bit()) != 0
 }
 
 func (bb Bitboard) CountBits() int {

@@ -75,6 +75,10 @@ func (sq Square) Color() Color {
 	return White
 }
 
+func (sq Square) Bit() Bitboard {
+	return SquareBB[sq]
+}
+
 func (sq Square) IsValid() bool {
 	return sq >= A1 && sq <= H8
 }

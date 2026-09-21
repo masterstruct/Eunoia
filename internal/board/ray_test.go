@@ -64,7 +64,7 @@ func TestBeyond(t *testing.T) {
 	}{
 		{A1, H8, EmptyBB},
 		{A8, H1, EmptyBB},
-		{D2, D7, SquareBB[D8]},
+		{D2, D7, D8.Bit()},
 		{H3, F5, 0x408100000000000},
 		{C2, E2, 0xe000},
 		{D2, A2, EmptyBB},
