@@ -77,19 +77,19 @@ func (bb *Bitboard) PopLSB() Square {
 }
 
 func (bb Bitboard) northEast() Bitboard {
-	return Bitboard(bb << 9 &^ FileBB[FileA])
+	return Bitboard(bb << 9 &^ FileA.Bits())
 }
 
 func (bb Bitboard) northWest() Bitboard {
-	return Bitboard(bb << 7 &^ FileBB[FileH])
+	return Bitboard(bb << 7 &^ FileH.Bits())
 }
 
 func (bb Bitboard) southEast() Bitboard {
-	return Bitboard(bb >> 7 &^ FileBB[FileA])
+	return Bitboard(bb >> 7 &^ FileA.Bits())
 }
 
 func (bb Bitboard) southWest() Bitboard {
-	return Bitboard(bb >> 9 &^ FileBB[FileH])
+	return Bitboard(bb >> 9 &^ FileH.Bits())
 }
 
 func (bb Bitboard) String() string {

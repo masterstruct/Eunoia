@@ -56,8 +56,16 @@ func (f File) String() string {
 	return string('a' + byte(f))
 }
 
+func (f File) Bits() Bitboard {
+	return FileBB[f]
+}
+
 func (r Rank) String() string {
 	return string('1' + byte(r))
+}
+
+func (r Rank) Bits() Bitboard {
+	return RankBB[r]
 }
 
 func (sq Square) File() File {
