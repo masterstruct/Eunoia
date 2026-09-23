@@ -111,10 +111,7 @@ func (sq Square) String() string {
 	if sq == NoSquare {
 		return "-"
 	}
-	f := sq.File()
-	r := sq.Rank()
-	// ascii manipulation
-	return fmt.Sprintf("%s%d", f.String(), r+1)
+	return fmt.Sprintf("%s%d", sq.File().String(), sq.Rank()+1)
 }
 
 func ParseSquare(s string) (Square, error) {
