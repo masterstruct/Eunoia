@@ -146,6 +146,8 @@ func ParseFEN(fen string) (Position, error) {
 	pos.Checkers = pos.calculateCheckers(pos.SideToMove)
 	pos.Pinned = pos.calculateBothPinned()
 
+	pos.Chess960 = IsChess960()
+
 	return pos, nil
 }
 
@@ -197,7 +199,7 @@ func (pos *Position) FEN() string {
 	sb.WriteByte(' ')
 	sb.WriteString(pos.SideToMove.String())
 	sb.WriteByte(' ')
-	sb.WriteString(pos.Castling.String(IsChess960()))
+	sb.WriteString(pos.Castling.String(pos.Chess960))
 	sb.WriteByte(' ')
 	sb.WriteString(pos.EnPassant.String())
 	sb.WriteByte(' ')
