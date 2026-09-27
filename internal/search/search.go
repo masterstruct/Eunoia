@@ -65,7 +65,7 @@ iterativeDeepening:
 
 func firstLegalMove(pos board.Position) (board.Move, bool) {
 	var movelist board.Movelist
-	board.GeneratePseudolegalMoves(&pos, &movelist)
+	board.GenerateLegalMoves(&pos, &movelist, board.All)
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]

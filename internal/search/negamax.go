@@ -83,7 +83,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	movesSearched := 0
 
 	var movelist board.Movelist
-	board.GeneratePseudolegalMoves(&pos, &movelist)
+	board.GenerateLegalMoves(&pos, &movelist, board.All)
 	ss.orderMoves(&pos, &movelist)
 
 	var quietsTried board.Movelist
@@ -93,9 +93,6 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
-		if newPos.IsIllegal() {
-			continue
-		}
 
 		isCapture := move.IsCapture()
 

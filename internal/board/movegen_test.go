@@ -206,7 +206,7 @@ func TestGenKnightMoves(t *testing.T) {
 			pos, _ := ParseFEN(tt.fen)
 
 			var movelist Movelist
-			GenKnightMoves(&pos, &movelist)
+			GenKnightMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -254,7 +254,7 @@ func TestGenBishopMoves(t *testing.T) {
 			pos, _ := ParseFEN(tt.fen)
 
 			var movelist Movelist
-			GenBishopMoves(&pos, &movelist)
+			GenBishopMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -301,7 +301,7 @@ func TestGenRookMoves(t *testing.T) {
 			pos, _ := ParseFEN(tt.fen)
 
 			var movelist Movelist
-			GenRookMoves(&pos, &movelist)
+			GenRookMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -348,7 +348,7 @@ func TestGenQueenMoves(t *testing.T) {
 			pos, _ := ParseFEN(tt.fen)
 
 			var movelist Movelist
-			GenQueenMoves(&pos, &movelist)
+			GenQueenMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -415,7 +415,7 @@ func TestGenPawnMoves(t *testing.T) {
 			}
 
 			var movelist Movelist
-			GenPawnMoves(&pos, &movelist)
+			GenPawnMoves(&pos, All, FullBB, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -456,9 +456,9 @@ func TestGenPawnMoves_EnPassant(t *testing.T) {
 			to:   []Square{B6, C6, D6, C6},
 		},
 		{
-			name: "en passant pin: pseudolegal movegen still creates capture",
+			name: "en passant pin: movegen doesn't create capture",
 			fen:  "8/2p5/3p4/KP5r/1R3pPk/8/8/8 b - g3 0 1",
-			to:   []Square{F3, G3, D5, C6, C5},
+			to:   []Square{F3, D5, C6, C5},
 		},
 	}
 	for _, tt := range tests {
@@ -469,7 +469,7 @@ func TestGenPawnMoves_EnPassant(t *testing.T) {
 			}
 
 			var movelist Movelist
-			GenPawnMoves(&pos, &movelist)
+			GenPawnMoves(&pos, All, FullBB, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -566,7 +566,7 @@ func TestGenPawnMoves_Promotion(t *testing.T) {
 			}
 
 			var movelist Movelist
-			GenPawnMoves(&pos, &movelist)
+			GenPawnMoves(&pos, All, FullBB, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.wantMoves, move) {
@@ -616,8 +616,7 @@ func TestGenKingMoves(t *testing.T) {
 		{
 			name: "white king cannot castle kingside through check",
 			fen:  "k7/8/8/8/2b5/8/8/4K2R w K - 0 1",
-			to: []Square{D1, D2,
-				E2, F2, F1},
+			to:   []Square{D1, D2, F2},
 		},
 		{
 			name: "white king can castle queenside",
@@ -628,8 +627,7 @@ func TestGenKingMoves(t *testing.T) {
 		{
 			name: "white king cannot castle queenside through check",
 			fen:  "8/8/8/2k5/6b1/8/8/R3K3 w Q - 0 1",
-			to: []Square{D1, D2,
-				E2, F2, F1},
+			to:   []Square{D2, F2, F1},
 		},
 		{
 			name: "white king can castle both ways",
@@ -646,8 +644,7 @@ func TestGenKingMoves(t *testing.T) {
 		{
 			name: "black king cannot castle kingside through check",
 			fen:  "r3k2r/8/3B4/3K4/8/8/8/8 b kq - 0 1",
-			to: []Square{A8, D8, D7,
-				E7, F7, F8},
+			to:   []Square{A8, D8, D7, F7},
 		},
 		{
 			name: "black king can castle queenside",
@@ -658,8 +655,7 @@ func TestGenKingMoves(t *testing.T) {
 		{
 			name: "black king cannot castle queenside through check",
 			fen:  "r3k2r/8/8/3K2B1/8/8/8/8 b kq - 0 1",
-			to: []Square{D8, D7, E7,
-				F7, F8, H8},
+			to:   []Square{D7, F7, F8, H8},
 		},
 		{
 			name: "black king can castle both ways",
@@ -670,12 +666,12 @@ func TestGenKingMoves(t *testing.T) {
 		{
 			name: "king cannot castle to attacked square",
 			fen:  "8/8/8/3k4/8/7n/8/4K2R w K - 0 1",
-			to:   []Square{D1, D2, E2, F2, F1},
+			to:   []Square{D1, D2, E2, F1},
 		},
 		{
 			name: "king cannot castle if check",
 			fen:  "8/8/8/3k4/8/3n4/8/4K2R w K - 0 1",
-			to:   []Square{D1, D2, E2, F2, F1},
+			to:   []Square{D1, D2, E2, F1},
 		},
 	}
 	for _, tt := range tests {
@@ -683,7 +679,8 @@ func TestGenKingMoves(t *testing.T) {
 			pos, _ := ParseFEN(tt.fen)
 
 			var movelist Movelist
-			GenKingMoves(&pos, &movelist)
+			GenKingMoves(&pos, FullBB, &movelist)
+			genCastleMoves(&pos, pos.SideToMove, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -961,7 +958,7 @@ func BenchmarkGenMoves(b *testing.B) {
 	for i := 0; b.Loop(); i++ {
 		var movelist Movelist
 		pos := positions[i%len(positions)]
-		GenPawnMoves(pos, &movelist)
+		GenPawnMoves(pos, All, FullBB, &movelist)
 	}
 }
 
@@ -1031,42 +1028,42 @@ func TestCalculateCheckers(t *testing.T) {
 		{
 			name: "rook attacks king",
 			fen:  "4rrk1/p1q4p/2p3pP/2Nn1p2/8/P4P2/1b1BK1P1/2RQ3R w - - 0 22",
-			want: SquareBB[E8],
+			want: E8.Bit(),
 		},
 		{
 			name: "bishop attacks king",
 			fen:  "2kr3r/1pq2ppp/p1n1pn2/2pP4/8/1P1P1B2/PBPN2Pb/R3QRK1 w - - 0 14",
-			want: SquareBB[H2],
+			want: H2.Bit(),
 		},
 		{
 			name: "pawn attacks king",
 			fen:  "2kr3r/1Pq2ppp/p3pn2/2p5/8/1P1P1B2/PBPN2P1/R3bR1K b - - 0 16",
-			want: SquareBB[B7],
+			want: B7.Bit(),
 		},
 		{
 			name: "knight attacks king",
 			fen:  "3k2r1/p3nN2/8/6PK/4r3/8/P7/8 b - - 0 56",
-			want: SquareBB[F7],
+			want: F7.Bit(),
 		},
 		{
 			name: "queen attacks king",
 			fen:  "r4rk1/1p4pp/p2b2q1/3Q1b2/8/3B1PP1/PP3BK1/4R2R b - - 0 23",
-			want: SquareBB[D5],
+			want: D5.Bit(),
 		},
 		{
 			name: "knight rook double check",
 			fen:  "2r5/8/3k4/1Q6/3n4/8/2K5/8 w - - 0 1",
-			want: SquareBB[D4] | SquareBB[C8],
+			want: D4.Bit() | C8.Bit(),
 		},
 		{
 			name: "pawn rook double check after en passant",
 			fen:  "8/4k3/3P4/8/2K5/8/8/4R3 b - - 0 1",
-			want: SquareBB[D6] | SquareBB[E1],
+			want: D6.Bit() | E1.Bit(),
 		},
 		{
 			name: "bishop queen double check",
 			fen:  "1k6/8/K2B4/8/8/1Q6/8/2R5 b - - 0 1",
-			want: SquareBB[B3] | SquareBB[D6],
+			want: B3.Bit() | D6.Bit(),
 		},
 	}
 
@@ -1104,27 +1101,27 @@ func TestCalculatePinned(t *testing.T) {
 		{
 			name: "pinned queen",
 			fen:  "r1b4r/pp4kp/4pqp1/3pQ3/3P3P/3B4/PP3PP1/R3K2R b KQ - 1 17",
-			want: SquareBB[F6],
+			want: F6.Bit(),
 		},
 		{
 			name: "pinned pawn",
 			fen:  "r1b2rk1/pp3ppp/1qnb1n2/3p4/3P4/2NB1P2/PP2NKPP/R1BQ3R w - - 6 11",
-			want: SquareBB[D4],
+			want: D4.Bit(),
 		},
 		{
 			name: "pinned rook",
 			fen:  "8/2p5/6kb/p1pP3p/P1P2RpP/1P2K1P1/8/8 w - - 0 49",
-			want: SquareBB[F4],
+			want: F4.Bit(),
 		},
 		{
 			name: "2 pinned pieces",
 			fen:  "1nb1kbnr/pp2pppp/8/q3r3/3p4/2NBP3/PP3PPP/R1BQK1NR w KQk - 2 6",
-			want: SquareBB[C3] | SquareBB[E3],
+			want: C3.Bit() | E3.Bit(),
 		},
 		{
 			name: "3 pinned pieces",
 			fen:  "2r4k/6b1/6p1/2P2b2/1P3Q2/3N4/2K2Bq1/8 w - - 0 1",
-			want: SquareBB[C5] | SquareBB[D3] | SquareBB[F2],
+			want: C5.Bit() | D3.Bit() | F2.Bit(),
 		},
 		{
 			name: "many pinned pieces",
