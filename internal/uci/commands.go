@@ -139,8 +139,6 @@ func (e *engine) handlePosition(args []string) error {
 }
 
 func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, error) {
-	// TODO: if capture, don't generate non-captures with staged movegen
-
 	newPos := *pos
 	hashes := make([]uint64, 0, len(moves))
 
@@ -160,25 +158,17 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 		if !ok {
 			return *pos, nil, fmt.Errorf("uci: illegal move %q", move)
 		}
-
-		switch piece.Type {
-		case board.Pawn:
-			board.GenPawnMoves(&newPos, &movelist)
-		case board.Knight:
-			board.GenKnightMoves(&newPos, &movelist)
-		case board.Bishop:
-			board.GenBishopMoves(&newPos, &movelist)
-		case board.Rook:
-			board.GenRookMoves(&newPos, &movelist)
-		case board.Queen:
-			board.GenQueenMoves(&newPos, &movelist)
-		case board.King:
-			board.GenKingMoves(&newPos, &movelist)
+		to, err := board.ParseSquare(move[2:4])
+		if err != nil {
+			return *pos, nil, fmt.Errorf("uci: failed to parse move %q", move)
 		}
+
+		filter := moveFilter(&newPos, piece, to, len(move) == 5)
+		board.GenerateLegalMovesForPiece(&newPos, piece.Type, &movelist, filter)
 
 		for i := range movelist.Len {
 			m := movelist.Moves[i]
-			if m.String() == move {
+			if matchesUCIMove(m, from, to, move) {
 				newPos = newPos.MakeMove(m)
 				hashes = append(hashes, newPos.Hash)
 				success = true
@@ -190,6 +180,39 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 		}
 	}
 	return newPos, hashes, nil
+}
+
+func matchesUCIMove(move board.Move, from, to board.Square, text string) bool {
+	if move.From() != from {
+		return false
+	}
+
+	expectedTo := move.To()
+	if move.IsCastle() && !board.IsChess960() {
+		expectedTo = board.FischerRandomToStandardCastling(move)
+	}
+	if expectedTo != to {
+		return false
+	}
+
+	if len(text) == 4 {
+		return !move.IsPromo()
+	}
+	if !move.IsPromo() {
+		return false
+	}
+	return move.Promo().String() == text[4]
+}
+
+func moveFilter(pos *board.Position, piece board.Piece, to board.Square, promotion bool) board.MoveFilter {
+	if promotion || (piece.Type == board.Pawn && pos.EnPassant == to) {
+		return board.Noisies
+	}
+	_, occupied := pos.PieceOn(to)
+	if occupied {
+		return board.Noisies
+	}
+	return board.Quiets
 }
 
 func (e *engine) handleSetOption(args []string) {
@@ -216,7 +239,11 @@ func (e *engine) handleSetOption(args []string) {
 
 	switch name {
 	case "UCI_Chess960":
-		board.SetChess960(value == "true")
+		chess960 := value == "true"
+		board.SetChess960(chess960)
+		e.mu.Lock()
+		e.pos.Chess960 = chess960
+		e.mu.Unlock()
 
 	case "Hash":
 		mib, err := strconv.Atoi(value)
