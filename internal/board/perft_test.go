@@ -2,126 +2,107 @@ package board
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/masterstruct/Eunoia/resources"
+)
+
+const (
+	standardMaxDepth = 5
+	chess960MaxDepth = 4
 )
 
 func TestPerft(t *testing.T) {
-	runPerftTests(t, perftPositions, false, true)
+	positions, err := loadPerftPositions("standard.epd", standardMaxDepth)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runPerftTests(t, positions, false, true, true)
 }
 
 func TestPerft_Chess960(t *testing.T) {
 	withChess960(t)
-	runPerftTests(t, perftPositionsChess960, false, true)
+	positions, err := loadPerftPositions("frc.epd", chess960MaxDepth)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runPerftTests(t, positions, false, true, false)
 }
 
-var perftPositions = []struct {
-	name  string
-	fen   string
-	depth int
-	want  []uint64
-}{
-	{
-		name:  "starting position",
-		fen:   StartingFEN,
-		depth: 5,
-		want:  []uint64{20, 400, 8902, 197281, 4865609, 119060324, 3195901860, 84998978956, 2439530234167},
-	},
-	{
-		name:  "kiwipete",
-		fen:   KiwipeteFEN,
-		depth: 4,
-		want:  []uint64{48, 2039, 97862, 4085603, 193690690, 8031647685},
-	},
-	{
-		name:  "position 3",
-		fen:   "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
-		depth: 6,
-		want:  []uint64{14, 191, 2812, 43238, 674624, 11030083, 178633661, 3009794393},
-	},
-	{
-		name:  "position 4",
-		fen:   "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
-		depth: 5,
-		want:  []uint64{6, 264, 9467, 422333, 15833292, 706045033},
-	},
-	{
-		name:  "position 5",
-		fen:   "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
-		depth: 4,
-		want:  []uint64{44, 1486, 62379, 2103487, 89941194},
-	},
-	{
-		name:  "position 6",
-		fen:   "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10",
-		depth: 4,
-		want:  []uint64{46, 2079, 89890, 3894594, 164075551, 6923051137, 287188994746, 11923589843526, 490154852788714},
-	},
-	{
-		name:  "position 7",
-		fen:   "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/P2P2PP/q2Q1R1K w kq - 0 2",
-		depth: 4,
-		want:  []uint64{37, 1766, 67665, 3251340, 126325537, 6084758848, 238196369383},
-	},
+type perftPosition struct {
+	name string
+	fen  string
+	want []uint64
 }
 
-var perftPositionsChess960 = []struct {
-	name  string
-	fen   string
-	depth int
-	want  []uint64
-}{
-	{
-		name:  "position 1",
-		fen:   "bqnb1rkr/pp3ppp/3ppn2/2p5/5P2/P2P4/NPP1P1PP/BQ1BNRKR w HFhf - 2 9",
-		depth: 5,
-		want:  []uint64{21, 528, 12189, 326672, 8146062, 227689589},
-	},
-	{
-		name:  "position 93",
-		fen:   "1nrbkr1q/1pppp1pp/1n6/p4p2/N1b4P/8/PPPPPPPB/N1RBKR1Q w FCfc - 2 9",
-		depth: 4,
-		want:  []uint64{27, 862, 24141, 755171, 22027695, 696353497},
-	},
-	{
-		name:  "position 175",
-		fen:   "nrnk1rbb/p1p2ppp/3pq3/Qp2p3/1P1P4/8/P1P1PPPP/NRN1KRBB w fb - 2 9",
-		depth: 4,
-		want:  []uint64{28, 873, 25683, 791823, 23868737, 747991356},
-	},
-	{
-		name:  "position 246",
-		fen:   "1rbkqbr1/ppp1pppp/1n5n/3p4/3P4/1PP3P1/P3PP1P/NRBKQBNR w HBb - 1 9",
-		depth: 5,
-		want:  []uint64{27, 752, 20686, 606783, 16986290, 521817800},
-	},
-	{
-		name:  "position 519",
-		fen:   "r1bqk1rb/pppnpppp/5n2/3p4/2P3PP/2N5/PP1PPP2/R1BQKNRB w GAga - 1 9",
-		depth: 4,
-		want:  []uint64{32, 821, 27121, 733155, 24923473, 710765657},
-	},
-	{
-		name:  "position 787",
-		fen:   "1rqknrnb/2pp1ppp/p3p3/1p6/P2P4/5bP1/1PP1PP1P/BRQKNRNB w FBfb - 0 9",
-		depth: 4,
-		want:  []uint64{24, 737, 20052, 598439, 17948681, 536330341},
-	},
-	{
-		name:  "position 889",
-		fen:   "rqkb1rnn/1pp1pp1p/p5p1/1b1p4/3P4/P5P1/RPP1PP1P/1QKBBRNN w Ffa - 1 9",
-		depth: 5,
-		want:  []uint64{21, 505, 11592, 290897, 7147063, 188559137},
-	},
+func loadPerftPositions(filename string, maxDepth int) ([]perftPosition, error) {
+	if maxDepth < 1 {
+		return nil, fmt.Errorf("maximum depth must be positive: %d", maxDepth)
+	}
+
+	file, err := resources.Perft.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("open %s: %w", filename, err)
+	}
+	defer file.Close()
+
+	var positions []perftPosition
+	err = ParseEPD(file, func(epd EPD) error {
+		positionIndex := len(positions) + 1
+		position := perftPosition{
+			name: fmt.Sprintf("position-%d", positionIndex),
+			fen:  epd.FEN,
+		}
+		seenDepths := make(map[int]bool, len(epd.Operations))
+		for _, operation := range epd.Operations {
+			if !strings.HasPrefix(operation.Key, "D") {
+				return fmt.Errorf("position %d: unexpected operation %q", positionIndex, operation.Key)
+			}
+			depth, err := strconv.Atoi(strings.TrimPrefix(operation.Key, "D"))
+			if err != nil || depth < 1 {
+				return fmt.Errorf("position %d: invalid depth %q", positionIndex, operation.Key)
+			}
+			if depth > maxDepth {
+				continue
+			}
+			if seenDepths[depth] {
+				return fmt.Errorf("position %d: duplicate depth %d", positionIndex, depth)
+			}
+			seenDepths[depth] = true
+			if depth > len(position.want) {
+				position.want = append(position.want, make([]uint64, depth-len(position.want))...)
+			}
+			nodes, err := strconv.ParseUint(operation.Value, 10, 64)
+			if err != nil {
+				return fmt.Errorf("position %d: invalid node count %q", positionIndex, operation.Value)
+			}
+			position.want[depth-1] = nodes
+		}
+		if len(position.want) == 0 {
+			return fmt.Errorf("position %d: no perft counts", positionIndex)
+		}
+		for depth := range position.want {
+			if !seenDepths[depth+1] {
+				return fmt.Errorf("position %d: missing D%d count", positionIndex, depth+1)
+			}
+		}
+
+		positions = append(positions, position)
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("parse %s: %w", filename, err)
+	}
+	if len(positions) == 0 {
+		return nil, fmt.Errorf("%s contains no perft positions", filename)
+	}
+	return positions, nil
 }
 
-func runPerftTests(t *testing.T, positions []struct {
-	name  string
-	fen   string
-	depth int
-	want  []uint64
-}, splitperft bool, parallel bool) {
+func runPerftTests(t *testing.T, positions []perftPosition, splitperft bool, parallel bool, print bool) {
 	t.Helper()
 
 	var total uint64
@@ -139,36 +120,28 @@ func runPerftTests(t *testing.T, positions []struct {
 				t.Fatalf("bad FEN: %v", err)
 			}
 
-			depth := tt.depth
-			if depth < 1 {
-				t.Fatalf("depth must be >= 1: %d", depth)
-			}
-			if depth > len(tt.want) {
-				depth = len(tt.want)
-			}
+			for depth, want := range tt.want {
+				depth++
+				var got PerftResult
+				if splitperft {
+					got = SplitPerft(&pos, depth)
+				} else {
+					got = Perft(&pos, depth)
+				}
+				if got.Nodes != want {
+					t.Errorf("depth %d: got %d, want %d", depth, got.Nodes, want)
+				}
 
-			var got PerftResult
-			if splitperft {
-				got = SplitPerft(&pos, depth)
-			} else {
-				got = Perft(&pos, depth)
+				if depth == len(tt.want) {
+					if print {
+						fmt.Printf("%s depth %d: nodes %d, time %v, nps %d\n", tt.name, depth, got.Nodes, got.Time, got.NPS)
+					}
+					mu.Lock()
+					total += got.NPS
+					n++
+					mu.Unlock()
+				}
 			}
-
-			want := tt.want[depth-1]
-			if got.Nodes != want {
-				t.Errorf("depth %d: got %d, want %d", depth, got.Nodes, want)
-			}
-
-			fmt.Printf(
-				`total: %d
-time: %v
-nps: %d`,
-				got.Nodes, got.Time, got.NPS)
-
-			mu.Lock()
-			total += got.NPS
-			n++
-			mu.Unlock()
 		})
 	}
 
