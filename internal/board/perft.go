@@ -27,14 +27,14 @@ func Perft(pos *Position, depth int) PerftResult {
 }
 
 func perft(pos Position, depth int) uint64 {
-	if depth <= 0 {
-		return 1
-	}
-
-	var nodes uint64
 	var movelist Movelist
 	GenerateLegalMoves(&pos, &movelist, All)
 
+	if depth <= 1 {
+		return uint64(movelist.Len)
+	}
+
+	var nodes uint64
 	for i := 0; i < movelist.Len; i++ {
 		newPos := pos.MakeMove(movelist.Moves[i])
 		nodes += perft(newPos, depth-1)
