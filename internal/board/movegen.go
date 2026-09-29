@@ -1,5 +1,8 @@
 package board
 
+// Thank you Dan, creator of Hobbes, for your movegen implementation this file is based on
+// https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/board/movegen.rs
+
 // All - all moves
 // Quiets - non-captures (including promos)
 // Noisies - captures and promos
