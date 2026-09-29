@@ -78,12 +78,6 @@ func (pos *Position) InCheck() bool {
 	return pos.Checkers != 0
 }
 
-// returns true if the side that just moved left its own king attacked.
-// Call ONLY on a position returned by MakeMove to filter pseudolegal moves
-func (pos *Position) IsIllegal() bool {
-	return IsSquareAttacked(pos, pos.KingSq[pos.SideToMove.Opponent()], pos.SideToMove)
-}
-
 func GenKnightMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
 	color := pos.SideToMove
 	opponents := pos.Colors[color.Opponent()]

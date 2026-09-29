@@ -12,8 +12,8 @@ const (
 )
 
 func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
-	bestMove, ok := firstLegalMove(pos)
-	if !ok {
+	bestMove := firstLegalMove(&pos)
+	if bestMove == board.NullMove {
 		return board.NullMove
 	}
 
@@ -63,16 +63,14 @@ iterativeDeepening:
 	return bestMove
 }
 
-func firstLegalMove(pos board.Position) (board.Move, bool) {
+func firstLegalMove(pos *board.Position) board.Move {
 	var movelist board.Movelist
-	board.GenerateLegalMoves(&pos, &movelist, board.All)
 
-	for i := range movelist.Len {
-		move := movelist.Moves[i]
-		newPos := pos.MakeMove(move)
-		if !newPos.IsIllegal() {
-			return move, true
+	for _, piece := range board.PieceTypes {
+		board.GenerateLegalMovesForPiece(pos, piece, &movelist, board.All)
+		if movelist.Len > 0 {
+			return movelist.Moves[0]
 		}
 	}
-	return board.NullMove, false
+	return board.NullMove
 }
