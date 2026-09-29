@@ -89,3 +89,10 @@ func (bb Bitboard) southEast() Bitboard {
 func (bb Bitboard) southWest() Bitboard {
 	return Bitboard(bb >> 9 &^ FileH.Bits())
 }
+
+func (bb Bitboard) Shift(offset int8) Bitboard {
+	if offset > 0 {
+		return bb << offset
+	}
+	return bb >> -offset
+}
