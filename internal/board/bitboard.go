@@ -74,22 +74,6 @@ func (bb *Bitboard) PopLSB() Square {
 	return sq
 }
 
-func (bb Bitboard) northEast() Bitboard {
-	return Bitboard(bb << 9 &^ FileA.Bits())
-}
-
-func (bb Bitboard) northWest() Bitboard {
-	return Bitboard(bb << 7 &^ FileH.Bits())
-}
-
-func (bb Bitboard) southEast() Bitboard {
-	return Bitboard(bb >> 7 &^ FileA.Bits())
-}
-
-func (bb Bitboard) southWest() Bitboard {
-	return Bitboard(bb >> 9 &^ FileH.Bits())
-}
-
 func (bb Bitboard) Shift(offset int8) Bitboard {
 	if offset > 0 {
 		return bb << offset

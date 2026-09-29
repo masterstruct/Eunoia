@@ -122,7 +122,7 @@ func TestPawnAttacks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			got := pawnAttacks(tt.bb, tt.color)
+			got := pawnAttacksSetwise(tt.bb, tt.color)
 			if got != tt.want {
 				t.Errorf("want %v but got %v", tt.want, got)
 			}

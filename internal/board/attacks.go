@@ -67,33 +67,37 @@ func attacksFromOffsets(sq Square, offsets [][2]int) Bitboard {
 	return bb
 }
 
-func pawnAttacks(pawns Bitboard, color Color) Bitboard {
+func pawnAttacksSetwise(bb Bitboard, color Color) Bitboard {
 	if color == White {
-		return pawns.northEast() | pawns.northWest()
+		return (bb &^ FileH.Bits()).Shift(9) |
+			(bb &^ FileA.Bits()).Shift(7)
 	}
-	return pawns.southEast() | pawns.southWest()
+	return (bb &^ FileH.Bits()).Shift(-7) |
+		(bb &^ FileA.Bits()).Shift(-9)
 }
 
-func knightAttacks(knights Bitboard) Bitboard {
+func knightAttacksSetwise(bb Bitboard) Bitboard {
+	notA := bb &^ FileA.Bits()
+	notAB := bb &^ (FileA.Bits() | FileB.Bits())
+	notH := bb &^ FileH.Bits()
+	notGH := bb &^ (FileG.Bits() | FileH.Bits())
+
+	return notA.Shift(15) | notA.Shift(-17) | notAB.Shift(6) | notAB.Shift(-10) |
+		notH.Shift(17) | notH.Shift(-15) | notGH.Shift(10) | notGH.Shift(-6)
+}
+
+func bishopAttacksSetwise(bb, occupied Bitboard) Bitboard {
 	out := EmptyBB
-	for knights != 0 {
-		out |= KnightAttacks[knights.PopLSB()]
+	for bb != 0 {
+		out |= BishopAttacks(bb.PopLSB(), occupied)
 	}
 	return out
 }
 
-func bishopAttacks(bishops, occupied Bitboard) Bitboard {
+func rookAttacksSetwise(bb, occupied Bitboard) Bitboard {
 	out := EmptyBB
-	for bishops != 0 {
-		out |= BishopAttacks(bishops.PopLSB(), occupied)
-	}
-	return out
-}
-
-func rookAttacks(rooks, occupied Bitboard) Bitboard {
-	out := EmptyBB
-	for rooks != 0 {
-		out |= RookAttacks(rooks.PopLSB(), occupied)
+	for bb != 0 {
+		out |= RookAttacks(bb.PopLSB(), occupied)
 	}
 	return out
 }

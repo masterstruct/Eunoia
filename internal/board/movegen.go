@@ -383,10 +383,10 @@ func (pos *Position) calculateThreats(myColor Color) Bitboard {
 	rooks := pos.Pieces[Rook] & enemyBB
 	queens := pos.Pieces[Queen] & enemyBB
 
-	return pawnAttacks(pawns, enemyColor) |
-		knightAttacks(knights) |
-		bishopAttacks(bishops|queens, occupied) |
-		rookAttacks(rooks|queens, occupied) |
+	return pawnAttacksSetwise(pawns, enemyColor) |
+		knightAttacksSetwise(knights) |
+		bishopAttacksSetwise(bishops|queens, occupied) |
+		rookAttacksSetwise(rooks|queens, occupied) |
 		KingAttacks[pos.KingSq[enemyColor]]
 }
 
