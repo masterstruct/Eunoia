@@ -20,7 +20,7 @@ func TestPerft(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	runPerftTests(t, positions, false, true, true)
+	runPerftTests(t, positions, false, false, true)
 }
 
 func TestPerft_Chess960(t *testing.T) {

@@ -936,12 +936,23 @@ func TestCanCastle_Chess960(t *testing.T) {
 	}
 }
 
-func BenchmarkGenMoves(b *testing.B) {
+func buildBenchmarkPositions(b *testing.B) []*Position {
 	fens := []string{
 		StartingFEN,
 		"r1bqkbnr/pppp1ppp/2n5/4p3/1P6/2N5/P1PPPPPP/R1BQKBNR w KQkq - 0 1",
 		"r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
 		"rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
+		"r2q1r2/2pn1pbk/bp1p1np1/3Pp2p/1PP1P3/N5P1/2NBQPBP/1R3RK1 b - - 1 19",
+		"r2qnrk1/pbnp2bp/1pp5/3Ppp2/2P5/1PN3P1/PBN2PBP/1R1Q1RK1 b - - 2 15",
+		"rnr3k1/ppq2p2/2pb2p1/3p3p/2PPp3/1PN1P1P1/P4PPN/R2Q1RK1 b - - 1 18",
+		"r3n1k1/5pp1/1q5p/8/2Qn4/3B4/1P3PPP/2KNR3 w - - 14 44",
+		"r1bqk2r/3n1pbp/p1p1p1p1/3pP3/5P2/3BB3/PPPN2PP/R2Q1RK1 w kq - 1 12",
+		"r1b2rk1/4qpb1/p5p1/3pP3/2p2Pn1/4BN2/PPB3P1/R3QRK1 w - - 2 20",
+		"rnb1k2r/p3ppb1/1ppp4/5PBp/3P2n1/q1N4B/P1PQN2P/1R2K2R w Kkq h6 0 13",
+		"1r3rk1/4bpp1/p2p3p/2qPP3/P5PP/1p6/1PP1Q2R/1K1R1B2 w - - 1 24",
+		"8/6p1/p1kNp3/1bp1P2P/R2p2P1/P4PK1/8/2b5 w - - 2 60",
+		"4k2r/1p1qbp1p/p3p1pB/3pP3/1PnPN1QP/P7/5PP1/2R3K1 b k - 2 27",
+		"r4rk1/pp1qbp1p/3p2p1/3Pp3/1P2P1n1/3P1N2/3B1PPP/R2QK2R w KQ - 5 15",
 	}
 
 	positions := make([]*Position, 0, len(fens))
@@ -953,12 +964,28 @@ func BenchmarkGenMoves(b *testing.B) {
 		positions = append(positions, &pos)
 	}
 
+	return positions
+}
+
+func BenchmarkGenPawnMoves(b *testing.B) {
+	positions := buildBenchmarkPositions(b)
 	b.ReportAllocs()
 
 	for i := 0; b.Loop(); i++ {
 		var movelist Movelist
 		pos := positions[i%len(positions)]
 		GenPawnMoves(pos, All, FullBB, &movelist)
+	}
+}
+
+func BenchmarkGenerateLegalMoves(b *testing.B) {
+	positions := buildBenchmarkPositions(b)
+	b.ReportAllocs()
+
+	for i := 0; b.Loop(); i++ {
+		var movelist Movelist
+		pos := positions[i%len(positions)]
+		GenerateLegalMoves(pos, &movelist, All)
 	}
 }
 
