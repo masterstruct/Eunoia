@@ -920,6 +920,13 @@ func TestCanCastle_Chess960(t *testing.T) {
 			rookSq: G1,
 			want:   true,
 		},
+		{
+			name:   "rook is pinned",
+			fen:    "k7/8/8/8/8/8/8/2KR3r w D - 0 1",
+			kingSq: C1,
+			rookSq: D1,
+			want:   false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

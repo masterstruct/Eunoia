@@ -293,21 +293,17 @@ func GenKingMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
 }
 
 func genCastleMoves(pos *Position, color Color, movelist *Movelist) {
-	base := int(color * 2)
+	base := color * 2
 	kingSq := pos.KingSq[color]
 
-	for _, kingside := range []bool{true, false} {
-		right := CastlingRights(base)
-		if kingside {
-			right++
-		}
-		if !pos.Castling.Has(right) {
-			continue
-		}
-		rookSq := pos.Castling[right]
-		if canCastle(pos, kingSq, rookSq) {
-			movelist.Add(NewCastle(kingSq, rookSq))
-		}
+	queensideRook := pos.Castling[base]
+	kingsideRook := pos.Castling[base+1]
+
+	if kingsideRook != NoSquare && canCastle(pos, kingSq, kingsideRook) {
+		movelist.Add(NewCastle(kingSq, kingsideRook))
+	}
+	if queensideRook != NoSquare && canCastle(pos, kingSq, queensideRook) {
+		movelist.Add(NewCastle(kingSq, queensideRook))
 	}
 }
 
@@ -317,6 +313,7 @@ func canCastle(pos *Position, kingSq, rookSq Square) bool {
 
 	kingTravel := Between(kingSq, kingTo) | kingTo.Bit()
 	rookTravel := Between(rookSq, rookTo) | rookTo.Bit()
+
 	travel := (kingTravel | rookTravel) &^ kingSq.Bit()
 	occupied := pos.Occupied() &^ rookSq.Bit()
 	if travel&occupied != 0 {
@@ -324,16 +321,11 @@ func canCastle(pos *Position, kingSq, rookSq Square) bool {
 	}
 
 	safety := kingTravel | kingSq.Bit()
-	if !pos.Chess960 {
-		return safety&pos.Threats == 0
+	if safety&pos.Threats != 0 {
+		return false
 	}
 
-	for safety != 0 {
-		if isSquareAttacked(pos, safety.PopLSB(), pos.SideToMove.Opponent(), occupied) {
-			return false
-		}
-	}
-	return true
+	return !pos.Pinned[pos.SideToMove].IsBitSet(rookSq)
 }
 
 func castleTargets(color Color, kingside bool) (kingTo, rookTo Square) {
@@ -360,7 +352,7 @@ func GenerateLegalMoves(pos *Position, movelist *Movelist, filter MoveFilter) {
 	}
 
 	GenKingMoves(pos, filterMask, movelist)
-	if filter.genQuiets() && !inCheck {
+	if !inCheck && filter.genQuiets() {
 		genCastleMoves(pos, color, movelist)
 	}
 
