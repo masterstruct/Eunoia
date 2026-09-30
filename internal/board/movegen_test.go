@@ -978,6 +978,62 @@ func BenchmarkGenPawnMoves(b *testing.B) {
 	}
 }
 
+func BenchmarkGenKnightMoves(b *testing.B) {
+	positions := buildBenchmarkPositions(b)
+	b.ReportAllocs()
+
+	for i := 0; b.Loop(); i++ {
+		var movelist Movelist
+		pos := positions[i%len(positions)]
+		GenKnightMoves(pos, FullBB, &movelist)
+	}
+}
+
+func BenchmarkGenBishopMoves(b *testing.B) {
+	positions := buildBenchmarkPositions(b)
+	b.ReportAllocs()
+
+	for i := 0; b.Loop(); i++ {
+		var movelist Movelist
+		pos := positions[i%len(positions)]
+		GenBishopMoves(pos, FullBB, &movelist)
+	}
+}
+
+func BenchmarkGenRookMoves(b *testing.B) {
+	positions := buildBenchmarkPositions(b)
+	b.ReportAllocs()
+
+	for i := 0; b.Loop(); i++ {
+		var movelist Movelist
+		pos := positions[i%len(positions)]
+		GenRookMoves(pos, FullBB, &movelist)
+	}
+}
+
+func BenchmarkGenQueenMoves(b *testing.B) {
+	positions := buildBenchmarkPositions(b)
+	b.ReportAllocs()
+
+	for i := 0; b.Loop(); i++ {
+		var movelist Movelist
+		pos := positions[i%len(positions)]
+		GenQueenMoves(pos, FullBB, &movelist)
+	}
+}
+
+func BenchmarkGenKingMoves(b *testing.B) {
+	positions := buildBenchmarkPositions(b)
+	b.ReportAllocs()
+
+	for i := 0; b.Loop(); i++ {
+		var movelist Movelist
+		pos := positions[i%len(positions)]
+		GenKingMoves(pos, FullBB, &movelist)
+		genCastleMoves(pos, pos.SideToMove, &movelist)
+	}
+}
+
 func BenchmarkGenerateLegalMoves(b *testing.B) {
 	positions := buildBenchmarkPositions(b)
 	b.ReportAllocs()
