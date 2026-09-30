@@ -154,7 +154,7 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 		if err != nil {
 			return *pos, nil, fmt.Errorf("uci: failed to parse move %q", move)
 		}
-		piece, ok := newPos.PieceOn(from)
+		_, ok := newPos.PieceOn(from)
 		if !ok {
 			return *pos, nil, fmt.Errorf("uci: illegal move %q", move)
 		}
@@ -163,8 +163,7 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 			return *pos, nil, fmt.Errorf("uci: failed to parse move %q", move)
 		}
 
-		filter := moveFilter(&newPos, piece, to, len(move) == 5)
-		board.GenerateLegalMovesForPiece(&newPos, piece.Type, &movelist, filter)
+		board.GenerateLegalMoves(&newPos, &movelist, board.All)
 
 		for i := range movelist.Len {
 			m := movelist.Moves[i]
@@ -202,17 +201,6 @@ func matchesUCIMove(move board.Move, from, to board.Square, text string) bool {
 		return false
 	}
 	return move.Promo().String() == text[4]
-}
-
-func moveFilter(pos *board.Position, piece board.Piece, to board.Square, promotion bool) board.MoveFilter {
-	if promotion || (piece.Type == board.Pawn && pos.EnPassant == to) {
-		return board.Noisies
-	}
-	_, occupied := pos.PieceOn(to)
-	if occupied {
-		return board.Noisies
-	}
-	return board.Quiets
 }
 
 func (e *engine) handleSetOption(args []string) {

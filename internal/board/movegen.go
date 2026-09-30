@@ -4,16 +4,14 @@ package board
 // https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/board/movegen.rs
 
 // All - all moves
-// Quiets - non-captures (including promos)
-// Noisies - captures and promos
-// Captures - only captures
+// Quiets - non-captures and underpromotions
+// Noisies - captures and queen promos
 type MoveFilter uint8
 
 const (
 	All MoveFilter = iota
 	Quiets
 	Noisies
-	Captures
 )
 
 func (mf MoveFilter) genQuiets() bool {
@@ -24,9 +22,10 @@ func (mf MoveFilter) genNoisies() bool {
 	return mf == All || mf == Noisies
 }
 
-func (mf MoveFilter) genCaptures() bool {
-	return mf == All || mf == Noisies || mf == Captures
-}
+var (
+	underPromos = [...]PieceType{Knight, Bishop, Rook}
+	allPromos   = [...]PieceType{Knight, Bishop, Rook, Queen}
+)
 
 const MaxMoves = 256
 
@@ -148,103 +147,140 @@ func GenQueenMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
 
 func GenPawnMoves(pos *Position, filter MoveFilter, evasionMask Bitboard, movelist *Movelist) {
 	color := pos.SideToMove
-	enemyColor := color.Opponent()
-	occupied := pos.Occupied()
-	enemyOcc := pos.Colors[enemyColor]
 	pinned := pos.Pinned[color]
 	kingSq := pos.KingSq[color]
-
 	pawns := pos.PieceBB(Piece{Type: Pawn, Color: color})
 
-	if filter.genCaptures() {
-		epSq := pos.EnPassant
-		if epSq != NoSquare {
-			attackers := PawnAttacks[enemyColor][epSq] & pawns
-			for attackers != 0 {
-				mv := NewEnPassant(attackers.PopLSB(), epSq)
-				if pos.IsLegal(mv) {
-					movelist.Add(mv)
-				}
-			}
+	if filter.genNoisies() {
+		if pos.EnPassant != NoSquare {
+			collectEnPassant(pos, pawns, movelist)
 		}
+		collectPawnCaptures(pos, pawns, pinned, kingSq, evasionMask, movelist)
 	}
 
-	for pawns != 0 {
-		from := pawns.PopLSB()
+	up, promos := collectPawnPushes(pos, pawns, pinned, evasionMask, filter, movelist)
+	if promos == EmptyBB {
+		return
+	}
 
-		pinRay := FullBB
-		if pinned.IsBitSet(from) {
-			pinRay = Extending(kingSq, from)
-		}
+	switch filter {
+	case All:
+		collectPawnPromos(movelist, promos, up, allPromos[:])
+	case Quiets:
+		collectPawnPromos(movelist, promos, up, underPromos[:])
+	case Noisies:
+		collectPawnPromos(movelist, promos, up, []PieceType{Queen})
+	}
+}
 
-		if filter.genCaptures() {
-			captures := PawnAttacks[color][from] & enemyOcc & pinRay & evasionMask
-			for captures != 0 {
-				addPawnMove(movelist, from, captures.PopLSB(), true)
-			}
-		}
-
-		if !filter.genQuiets() && !filter.genNoisies() {
-			continue
-		}
-
-		to := from.Up()
-		startRank := Rank2
-		promoRank := Rank8
-		if color == Black {
-			to = from.Down()
-			startRank = Rank7
-			promoRank = Rank1
-		}
-
-		if (occupied | ^pinRay).IsBitSet(to) {
-			continue
-		}
-
-		if to.Rank() == promoRank {
-			if filter.genNoisies() && evasionMask.IsBitSet(to) {
-				addPawnMove(movelist, from, to, false)
-			}
-			continue
-		}
-
-		if filter.genQuiets() && evasionMask.IsBitSet(to) {
-			movelist.Add(NewMove(from, to))
-		}
-
-		if from.Rank() == startRank && filter.genQuiets() {
-			var to2 Square
-			if color == White {
-				to2 = from + 16
-			} else {
-				to2 = from - 16
-			}
-			if (^occupied & pinRay & evasionMask).IsBitSet(to2) {
-				movelist.Add(NewDoublePush(from, to2))
-			}
+func collectEnPassant(pos *Position, pawns Bitboard, movelist *Movelist) {
+	epSq := pos.EnPassant
+	attackers := PawnAttacks[pos.SideToMove.Opponent()][epSq] & pawns
+	for attackers != 0 {
+		move := NewEnPassant(attackers.PopLSB(), epSq)
+		if pos.IsLegal(move) {
+			movelist.Add(move)
 		}
 	}
 }
 
-func addPawnMove(movelist *Movelist, from, to Square, capture bool) {
-	if to.Rank() == Rank1 || to.Rank() == Rank8 {
-		if capture {
-			movelist.Add(NewCapturePromo(from, to, Knight))
-			movelist.Add(NewCapturePromo(from, to, Bishop))
-			movelist.Add(NewCapturePromo(from, to, Rook))
-			movelist.Add(NewCapturePromo(from, to, Queen))
-		} else {
-			movelist.Add(NewPromo(from, to, Knight))
-			movelist.Add(NewPromo(from, to, Bishop))
-			movelist.Add(NewPromo(from, to, Rook))
-			movelist.Add(NewPromo(from, to, Queen))
+func collectPawnCaptures(pos *Position, pawns, pinned Bitboard, kingSq Square, evasionMask Bitboard, movelist *Movelist) {
+	color := pos.SideToMove
+	enemyOcc := pos.Colors[color.Opponent()]
+
+	freePawns := pawns &^ pinned
+	pawnsLeft := freePawns
+	pawnsRight := freePawns
+
+	if color == Black {
+		if pinned != EmptyBB {
+			pawnsLeft |= pawns & pinned & Diagonal(kingSq, SouthEast)
+			pawnsRight |= pawns & pinned & Diagonal(kingSq, SouthWest)
 		}
-		return
-	}
-	if capture {
-		movelist.Add(NewCapture(from, to))
+		capturesLeft := (pawnsLeft &^ FileH.Bits()).Shift(-7) & enemyOcc & evasionMask
+		capturesRight := (pawnsRight &^ FileA.Bits()).Shift(-9) & enemyOcc & evasionMask
+		collectPawnCaptureMoves(movelist, capturesLeft, -7, Rank1.Bits())
+		collectPawnCaptureMoves(movelist, capturesRight, -9, Rank1.Bits())
 	} else {
+		if pinned != EmptyBB {
+			pawnsLeft |= pawns & pinned & Diagonal(kingSq, NorthWest)
+			pawnsRight |= pawns & pinned & Diagonal(kingSq, NorthEast)
+		}
+		capturesLeft := (pawnsLeft &^ FileA.Bits()).Shift(7) & enemyOcc & evasionMask
+		capturesRight := (pawnsRight &^ FileH.Bits()).Shift(9) & enemyOcc & evasionMask
+		collectPawnCaptureMoves(movelist, capturesLeft, 7, Rank8.Bits())
+		collectPawnCaptureMoves(movelist, capturesRight, 9, Rank8.Bits())
+	}
+}
+
+func collectPawnPushes(pos *Position, pawns, pinned Bitboard, evasionMask Bitboard, filter MoveFilter, movelist *Movelist) (int8, Bitboard) {
+	color := pos.SideToMove
+	empty := ^pos.Occupied()
+
+	up := int8(8)
+	thirdRank := Rank3
+	promoRank := Rank8
+	if color == Black {
+		up = -8
+		thirdRank = Rank6
+		promoRank = Rank1
+	}
+
+	pushPawns := pawns & (^pinned | pos.KingSq[color].File().Bits())
+	oneStep := pushPawns.Shift(up) & empty
+	promoMask := promoRank.Bits()
+	promos := oneStep & promoMask & evasionMask
+
+	if filter.genQuiets() {
+		singlePushes := oneStep &^ promoMask & evasionMask
+		collectPawnQuiets(movelist, singlePushes, up)
+
+		doublePushes := (oneStep & thirdRank.Bits()).Shift(up) & empty & evasionMask
+		collectPawnDoublePushes(movelist, doublePushes, up*2)
+	}
+	return up, promos
+}
+
+func collectPawnPromos(movelist *Movelist, destinations Bitboard, offset int8, promos []PieceType) {
+	for destinations != 0 {
+		to := destinations.PopLSB()
+		from := Square(int(to) - int(offset))
+		for _, promo := range promos {
+			movelist.Add(NewPromo(from, to, promo))
+		}
+	}
+}
+
+func collectPawnQuiets(movelist *Movelist, destinations Bitboard, offset int8) {
+	for destinations != 0 {
+		to := destinations.PopLSB()
+		from := Square(int(to) - int(offset))
 		movelist.Add(NewMove(from, to))
+	}
+}
+
+func collectPawnDoublePushes(movelist *Movelist, destinations Bitboard, offset int8) {
+	for destinations != 0 {
+		to := destinations.PopLSB()
+		from := Square(int(to) - int(offset))
+		movelist.Add(NewDoublePush(from, to))
+	}
+}
+
+func collectPawnCaptureMoves(movelist *Movelist, destinations Bitboard, offset int8, promoRank Bitboard) {
+	promos := destinations & promoRank
+	destinations &^= promoRank
+	for destinations != 0 {
+		to := destinations.PopLSB()
+		from := Square(int(to) - int(offset))
+		movelist.Add(NewCapture(from, to))
+	}
+	for promos != 0 {
+		to := promos.PopLSB()
+		from := Square(int(to) - int(offset))
+		for _, promo := range allPromos {
+			movelist.Add(NewCapturePromo(from, to, promo))
+		}
 	}
 }
 
@@ -308,7 +344,7 @@ func castleTargets(color Color, kingside bool) (kingTo, rookTo Square) {
 	return NewSquare(FileC, rank), NewSquare(FileD, rank)
 }
 
-func GenerateLegalMovesForPiece(pos *Position, pieceType PieceType, movelist *Movelist, filter MoveFilter) {
+func GenerateLegalMoves(pos *Position, movelist *Movelist, filter MoveFilter) {
 	color := pos.SideToMove
 	us := pos.Colors[color]
 	them := pos.Colors[color.Opponent()]
@@ -319,17 +355,13 @@ func GenerateLegalMovesForPiece(pos *Position, pieceType PieceType, movelist *Mo
 	switch filter {
 	case Quiets:
 		filterMask = ^them
-	case Noisies, Captures:
+	case Noisies:
 		filterMask = them
 	}
 
-	if pieceType == King {
-		GenKingMoves(pos, filterMask, movelist)
-		if filter.genQuiets() && !inCheck {
-			genCastleMoves(pos, color, movelist)
-		}
-
-		return
+	GenKingMoves(pos, filterMask, movelist)
+	if filter.genQuiets() && !inCheck {
+		genCastleMoves(pos, color, movelist)
 	}
 
 	if pos.Checkers.CountBits() > 1 {
@@ -348,27 +380,11 @@ func GenerateLegalMovesForPiece(pos *Position, pieceType PieceType, movelist *Mo
 		filterMask &^= us
 	}
 
-	switch pieceType {
-	case Pawn:
-		GenPawnMoves(pos, filter, evasionMask, movelist)
-	case Knight:
-		GenKnightMoves(pos, filterMask, movelist)
-	case Bishop:
-		GenBishopMoves(pos, filterMask, movelist)
-	case Rook:
-		GenRookMoves(pos, filterMask, movelist)
-	case Queen:
-		GenQueenMoves(pos, filterMask, movelist)
-	}
-}
-
-func GenerateLegalMoves(pos *Position, movelist *Movelist, filter MoveFilter) {
-	GenerateLegalMovesForPiece(pos, King, movelist, filter)
-	GenerateLegalMovesForPiece(pos, Knight, movelist, filter)
-	GenerateLegalMovesForPiece(pos, Bishop, movelist, filter)
-	GenerateLegalMovesForPiece(pos, Rook, movelist, filter)
-	GenerateLegalMovesForPiece(pos, Queen, movelist, filter)
-	GenerateLegalMovesForPiece(pos, Pawn, movelist, filter)
+	GenKnightMoves(pos, filterMask, movelist)
+	GenBishopMoves(pos, filterMask, movelist)
+	GenRookMoves(pos, filterMask, movelist)
+	GenQueenMoves(pos, filterMask, movelist)
+	GenPawnMoves(pos, filter, evasionMask, movelist)
 }
 
 // squares attacked by opponent pieces
