@@ -4,9 +4,19 @@ package board
 // https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/board/ray.rs
 
 var (
-	between   [64][64]Bitboard
-	extending [64][64]Bitboard
-	beyond    [64][64]Bitboard
+	between      [64][64]Bitboard
+	extending    [64][64]Bitboard
+	beyond       [64][64]Bitboard
+	diagonalRays [4][64]Bitboard
+)
+
+type DiagonalDirection uint8
+
+const (
+	NorthWest DiagonalDirection = iota
+	NorthEast
+	SouthEast
+	SouthWest
 )
 
 func Between(a, b Square) Bitboard {
@@ -21,10 +31,15 @@ func Beyond(a, b Square) Bitboard {
 	return beyond[a][b]
 }
 
+func Diagonal(sq Square, direction DiagonalDirection) Bitboard {
+	return diagonalRays[direction][sq]
+}
+
 func init() {
 	initBetween()
 	initExtending()
 	initBeyond()
+	initDiagonals()
 }
 
 func initBetween() {
@@ -64,6 +79,30 @@ func initBeyond() {
 
 			if BishopAttacks(a, EmptyBB).IsBitSet(b) {
 				beyond[a][b] = BishopAttacks(a, EmptyBB) & BishopAttacks(b, a.Bit()) &^ Between(a, b)
+			}
+		}
+	}
+}
+
+func initDiagonals() {
+	directions := [4][2]int{
+		{-1, 1},
+		{1, 1},
+		{1, -1},
+		{-1, -1},
+	}
+	for sq := A1; sq <= H8; sq++ {
+		for direction, step := range directions {
+			file := int(sq.File()) + step[0]
+			rank := int(sq.Rank()) + step[1]
+			for {
+				next := NewSquare(File(file), Rank(rank))
+				if !next.IsValid() {
+					break
+				}
+				diagonalRays[direction][sq].SetBit(next)
+				file += step[0]
+				rank += step[1]
 			}
 		}
 	}

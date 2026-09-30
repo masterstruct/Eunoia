@@ -81,3 +81,34 @@ func TestBeyond(t *testing.T) {
 		})
 	}
 }
+
+func TestDiagonal(t *testing.T) {
+	tests := []struct {
+		square    Square
+		direction DiagonalDirection
+		want      Bitboard
+	}{
+		{D4, NorthWest, C5.Bit() | B6.Bit() | A7.Bit()},
+		{D4, NorthEast, E5.Bit() | F6.Bit() | G7.Bit() | H8.Bit()},
+		{D4, SouthEast, E3.Bit() | F2.Bit() | G1.Bit()},
+		{D4, SouthWest, C3.Bit() | B2.Bit() | A1.Bit()},
+		{A1, NorthWest, EmptyBB},
+		{A1, SouthEast, EmptyBB},
+		{A1, SouthWest, EmptyBB},
+		{A1, NorthEast, 0x8040201008040200},
+		{B8, NorthWest, EmptyBB},
+		{H8, NorthEast, EmptyBB},
+		{H8, SouthEast, EmptyBB},
+		{H8, SouthWest, 0x40201008040201},
+		{B8, SouthWest, A7.Bit()},
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			got := Diagonal(tt.square, tt.direction)
+			if got != tt.want {
+				t.Fatalf("from %v in direction %v\ngot:\n%v\nwant:\n%v", tt.square, tt.direction, got, tt.want)
+			}
+		})
+	}
+}
