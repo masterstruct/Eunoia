@@ -2,7 +2,6 @@ package search
 
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
 const (
@@ -12,13 +11,13 @@ const (
 	maxHistory = 2 << 13
 )
 
-func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelist) {
+func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist) {
 	n := movelist.Len
 	if n == 0 {
 		return
 	}
 
-	color := pos.SideToMove
+	stm := pos.SideToMove
 
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
@@ -28,13 +27,13 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *movegen.Movelis
 	}
 
 	// score moves
-	var scores [movegen.MaxMoves]int
+	var scores [board.MaxMoves]int
 	for i := range n {
 		move := movelist.Moves[i]
 		from := move.From()
 		to := move.To()
 
-		score := ss.butterflyHistory[color][from][to]
+		score := ss.butterflyHistory[stm][from][to]
 
 		if ttHit && move == ttMove {
 			score += ttMoveBonus
@@ -77,7 +76,7 @@ func mvvlvaScore(victim, attacker board.PieceType) int {
 	return int(victim)*1000 + 60 - int(attacker)*10
 }
 
-func (ss *SearchState) updateButterflyHistory(sideToMove board.Color, from, to board.Square, bonus int) {
+func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Square, bonus int) {
 	// history gravity
 	// https://chessprogramming.org/History_Heuristic#history-bonuses
 
@@ -105,5 +104,5 @@ func (ss *SearchState) updateButterflyHistory(sideToMove board.Color, from, to b
 		absBonus = -absBonus
 	}
 
-	ss.butterflyHistory[sideToMove][from][to] += clampedBonus - ss.butterflyHistory[sideToMove][from][to]*absBonus/maxHistory
+	ss.butterflyHistory[stm][from][to] += clampedBonus - ss.butterflyHistory[stm][from][to]*absBonus/maxHistory
 }

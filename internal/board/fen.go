@@ -92,11 +92,11 @@ func ParseFEN(fen string) (Position, error) {
 	}
 
 	// side to move
-	sideToMove := ParseColor(splits[1][0])
-	if sideToMove == NoColor {
+	stm := ParseColor(splits[1][0])
+	if stm == NoColor {
 		return pos, fmt.Errorf("%w: %q", errInvalidSideToMove, splits[1][0])
 	}
-	pos.SideToMove = sideToMove
+	pos.SideToMove = stm
 
 	// king count
 	whiteKingBB := pos.PieceBB(WhiteKing)
@@ -142,6 +142,11 @@ func ParseFEN(fen string) (Position, error) {
 	}
 
 	pos.Hash = ZobristTable.ComputeHash(&pos)
+	pos.Threats = pos.calculateThreats(pos.SideToMove)
+	pos.Checkers = pos.calculateCheckers(pos.SideToMove)
+	pos.Pinned = pos.calculateBothPinned()
+
+	pos.Chess960 = IsChess960()
 
 	return pos, nil
 }
@@ -151,10 +156,10 @@ func (pos *Position) FEN() string {
 	var rankBB Bitboard
 	var skip int
 
-	occupied := pos.Occupied()
+	occ := pos.Occupied()
 
 	for rank := Rank8; rank >= Rank1; rank-- {
-		rankBB = occupied & RankBB[rank]
+		rankBB = occ & rank.Bits()
 		if rankBB == EmptyBB {
 			// skip empty rank
 			sb.WriteString("8")
@@ -168,7 +173,7 @@ func (pos *Position) FEN() string {
 		for file := FileA; file <= FileH; file++ {
 			sq := NewSquare(file, rank)
 
-			if !occupied.IsBitSet(sq) {
+			if !occ.IsBitSet(sq) {
 				skip++
 				continue
 			}
@@ -194,7 +199,7 @@ func (pos *Position) FEN() string {
 	sb.WriteByte(' ')
 	sb.WriteString(pos.SideToMove.String())
 	sb.WriteByte(' ')
-	sb.WriteString(pos.Castling.String(IsChess960()))
+	sb.WriteString(pos.Castling.String(pos.Chess960))
 	sb.WriteByte(' ')
 	sb.WriteString(pos.EnPassant.String())
 	sb.WriteByte(' ')
@@ -205,18 +210,18 @@ func (pos *Position) FEN() string {
 	return sb.String()
 }
 
-func PlyToFullmoves(ply uint16) (fullmoves uint16, sideToMove Color) {
+func PlyToFullmoves(ply uint16) (fullmoves uint16, stm Color) {
 	if ply%2 == 0 {
 		return ply/2 + 1, White
 	}
 	return (ply-1)/2 + 1, Black
 }
 
-func FullmovesToPly(fullmoves uint16, sideToMove Color) uint16 {
+func FullmovesToPly(fullmoves uint16, stm Color) uint16 {
 	if fullmoves == 0 {
 		return 0
 	}
-	if sideToMove == White {
+	if stm == White {
 		return (fullmoves - 1) * 2
 	}
 	return (fullmoves-1)*2 + 1

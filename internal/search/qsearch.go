@@ -2,7 +2,6 @@ package search
 
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/movegen"
 )
 
 func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
@@ -17,10 +16,9 @@ func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 		alpha = standPat
 	}
 
-	var movelist movegen.Movelist
-	movegen.GeneratePseudolegalMoves(&pos, &movelist)
+	var movelist board.Movelist
+	board.GenerateLegalMoves(&pos, &movelist, board.All)
 	ss.orderMoves(&pos, &movelist)
-	mover := pos.SideToMove
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
@@ -29,9 +27,6 @@ func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 		}
 
 		newPos := pos.MakeMove(move)
-		if movegen.InCheck(&newPos, mover) {
-			continue
-		}
 
 		score := -ss.qsearch(newPos, -beta, -alpha)
 

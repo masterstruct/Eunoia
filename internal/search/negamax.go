@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/movegen"
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
@@ -60,7 +59,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	}
 
 	mover := pos.SideToMove
-	inCheck := movegen.InCheck(&pos, mover)
+	inCheck := pos.InCheck()
 
 	// reverse futility pruning
 	staticEval := evaluate(&pos)
@@ -83,20 +82,17 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	var bestMove board.Move
 	movesSearched := 0
 
-	var movelist movegen.Movelist
-	movegen.GeneratePseudolegalMoves(&pos, &movelist)
+	var movelist board.Movelist
+	board.GenerateLegalMoves(&pos, &movelist, board.All)
 	ss.orderMoves(&pos, &movelist)
 
-	var quietsTried movegen.Movelist
+	var quietsTried board.Movelist
 
 	var score int16
 
 	for i := range movelist.Len {
 		move := movelist.Moves[i]
 		newPos := pos.MakeMove(move)
-		if movegen.InCheck(&newPos, mover) {
-			continue
-		}
 
 		isCapture := move.IsCapture()
 

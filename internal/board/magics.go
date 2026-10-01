@@ -1,48 +1,46 @@
-package movegen
+package board
 
 import (
 	"fmt"
-
-	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-func RookMask(sq board.Square) board.Bitboard {
+func RookMask(sq Square) Bitboard {
 	file := sq.File()
 	rank := sq.Rank()
-	var mask board.Bitboard
+	var mask Bitboard
 
-	for f := board.FileB; f < board.FileH; f++ {
-		mask.SetBit(board.NewSquare(f, rank))
+	for f := FileB; f < FileH; f++ {
+		mask.SetBit(NewSquare(f, rank))
 	}
 
-	for r := board.Rank2; r < board.Rank8; r++ {
-		mask.SetBit(board.NewSquare(file, r))
+	for r := Rank2; r < Rank8; r++ {
+		mask.SetBit(NewSquare(file, r))
 	}
 
 	mask.ClearBit(sq)
 	return mask
 }
 
-func BishopMask(sq board.Square) board.Bitboard {
-	var mask board.Bitboard
-	mask = bishopAttacksSlow(sq, board.EmptyBB)
-	return mask &^ board.EdgesBB
+func BishopMask(sq Square) Bitboard {
+	var mask Bitboard
+	mask = bishopAttacksSlow(sq, EmptyBB)
+	return mask &^ EdgesBB
 }
 
 type MagicEntry struct {
-	Mask   board.Bitboard
-	Magic  board.Bitboard
+	Mask   Bitboard
+	Magic  Bitboard
 	Shift  uint8
 	Offset int
 }
 
-func MagicIndex(entry *MagicEntry, occupied board.Bitboard) int {
-	return int(((occupied&entry.Mask)*entry.Magic)>>entry.Shift) + entry.Offset
+func MagicIndex(entry *MagicEntry, occ Bitboard) int {
+	return int(((occ&entry.Mask)*entry.Magic)>>entry.Shift) + entry.Offset
 }
 
 // iterate over all subsets of a bitboard
-func Subsets(mask board.Bitboard) func(yield func(board.Bitboard) bool) {
-	return func(yield func(board.Bitboard) bool) {
+func Subsets(mask Bitboard) func(yield func(Bitboard) bool) {
+	return func(yield func(Bitboard) bool) {
 		subset := mask
 		for {
 			if !yield(subset) {
@@ -60,7 +58,7 @@ func init() {
 	rookOffset := 0
 	bishopOffset := 0
 
-	for sq := board.A1; sq <= board.H8; sq++ {
+	for sq := A1; sq <= H8; sq++ {
 		rookEntry := &RookMagics[sq]
 		rookEntry.Mask = RookMask(sq)
 		rookEntry.Shift = uint8(64 - rookEntry.Mask.CountBits())
@@ -91,12 +89,12 @@ func init() {
 	}
 }
 
-func TryMakeTable(isRook bool, sq board.Square, entry *MagicEntry) ([]board.Bitboard, bool) {
+func TryMakeTable(isRook bool, sq Square, entry *MagicEntry) ([]Bitboard, bool) {
 	tableSize := 1 << (64 - entry.Shift)
-	table := make([]board.Bitboard, tableSize)
+	table := make([]Bitboard, tableSize)
 	used := make([]bool, tableSize)
 
-	var moves board.Bitboard
+	var moves Bitboard
 	for blockers := range Subsets(entry.Mask) {
 		if isRook {
 			moves = rookAttacksSlow(sq, blockers)
@@ -109,14 +107,14 @@ func TryMakeTable(isRook bool, sq board.Square, entry *MagicEntry) ([]board.Bitb
 			used[index] = true
 			table[index] = moves
 		} else if table[index] != moves {
-			return []board.Bitboard{}, false
+			return []Bitboard{}, false
 		}
 	}
 	return table, true
 }
 
-var RookMoves [RookTableSize]board.Bitboard
-var BishopMoves [BishopTableSize]board.Bitboard
+var RookMoves [RookTableSize]Bitboard
+var BishopMoves [BishopTableSize]Bitboard
 
 const RookTableSize = 102400
 const BishopTableSize = 5248

@@ -89,7 +89,7 @@ func (tm *TimeManager) resetTimeManager() {
 	tm.SoftTime = time.Time{}
 }
 
-func (tm *TimeManager) SetLimits(limits GoLimits, sideToMove board.Color) {
+func (tm *TimeManager) SetLimits(limits GoLimits, stm board.Color) {
 	tm.resetTimeManager()
 
 	if limits.Depth <= 0 || limits.Depth > MaxPly || limits.Infinite {
@@ -103,7 +103,7 @@ func (tm *TimeManager) SetLimits(limits GoLimits, sideToMove board.Color) {
 
 	var remainingTime int64
 	var increment int64
-	if sideToMove == board.Black {
+	if stm == board.Black {
 		remainingTime = limits.BTime
 		increment = limits.BInc
 	} else {

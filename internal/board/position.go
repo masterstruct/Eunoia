@@ -12,9 +12,14 @@ type Position struct {
 	Castling      Castling
 	EnPassant     Square
 	HalfmoveClock uint8
+	Chess960      bool
 	Ply           uint16
 	Hash          uint64
 	KingSq        [2]Square
+
+	Threats  Bitboard
+	Checkers Bitboard
+	Pinned   [2]Bitboard
 }
 
 func (pos *Position) PieceBB(piece Piece) Bitboard {
@@ -62,6 +67,7 @@ func NewPosition() Position {
 		Ply:           0,
 		Hash:          69420,
 		KingSq:        [2]Square{NoSquare, NoSquare},
+		Chess960:      IsChess960(),
 	}
 	pos.Board = newBoard()
 	return pos

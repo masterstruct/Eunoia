@@ -2,8 +2,6 @@ package board
 
 import (
 	"math/bits"
-	"strconv"
-	"strings"
 )
 
 type Bitboard uint64
@@ -50,15 +48,15 @@ func InitBitboards() {
 }
 
 func (bb *Bitboard) SetBit(sq Square) {
-	*bb |= SquareBB[sq]
+	*bb |= sq.Bit()
 }
 
 func (bb *Bitboard) ClearBit(sq Square) {
-	*bb &^= SquareBB[sq]
+	*bb &^= sq.Bit()
 }
 
 func (bb Bitboard) IsBitSet(sq Square) bool {
-	return (bb & SquareBB[sq]) != 0
+	return (bb & sq.Bit()) != 0
 }
 
 func (bb Bitboard) CountBits() int {
@@ -76,37 +74,9 @@ func (bb *Bitboard) PopLSB() Square {
 	return sq
 }
 
-func (bb Bitboard) String() string {
-	var sb strings.Builder
-	sb.WriteString(strconv.FormatUint(uint64(bb), 10))
-
-	sb.WriteByte('\n')
-
-	for rank := Rank8; rank >= Rank1; rank-- {
-		// ranks
-		sb.WriteString(fgRGB(250, 179, 135))
-		sb.WriteString(strconv.Itoa(int(rank + 1)))
-		sb.WriteByte(' ')
-
-		for file := FileA; file <= FileH; file++ {
-			sq := NewSquare(file, rank)
-			if bb.IsBitSet(sq) {
-				sb.WriteString(fgRGB(166, 227, 161))
-				sb.WriteString("1 ")
-			} else {
-				sb.WriteString(fgRGB(243, 139, 168))
-				sb.WriteString(". ")
-			}
-			sb.WriteString(resetColor)
-		}
-
-		sb.WriteByte('\n')
+func (bb Bitboard) Shift(offset int8) Bitboard {
+	if offset > 0 {
+		return bb << offset
 	}
-
-	// files
-	sb.WriteString(fgRGB(116, 199, 236))
-	sb.WriteString("  a b c d e f g h\n")
-	sb.WriteString(resetColor)
-
-	return sb.String()
+	return bb >> -offset
 }

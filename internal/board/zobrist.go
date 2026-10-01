@@ -23,10 +23,10 @@ func (p *PRNG) Next() uint64 {
 }
 
 type zobrist struct {
-	piece      [2][6][64]uint64 // [color][pieceType][sq]
-	castling   [16]uint64
-	enPassant  [8]uint64
-	sideToMove uint64
+	piece     [2][6][64]uint64 // [color][pieceType][sq]
+	castling  [16]uint64
+	enPassant [8]uint64
+	stm       uint64
 }
 
 func NewZobrist(rng *PRNG) *zobrist {
@@ -44,7 +44,7 @@ func NewZobrist(rng *PRNG) *zobrist {
 	for i := range 8 {
 		z.enPassant[i] = rng.Next()
 	}
-	z.sideToMove = rng.Next()
+	z.stm = rng.Next()
 	return z
 }
 
@@ -61,15 +61,15 @@ func (z *zobrist) EnPassantKey(file File) uint64 {
 }
 
 func (z *zobrist) SideToMoveKey() uint64 {
-	return z.sideToMove
+	return z.stm
 }
 
 func (z *zobrist) ComputeHash(pos *Position) uint64 {
 	var hash uint64
 
-	occupied := pos.Occupied()
-	for occupied != 0 {
-		sq := occupied.PopLSB()
+	occ := pos.Occupied()
+	for occ != 0 {
+		sq := occ.PopLSB()
 
 		piece, ok := pos.PieceOn(sq)
 		if !ok {

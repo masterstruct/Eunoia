@@ -56,8 +56,16 @@ func (f File) String() string {
 	return string('a' + byte(f))
 }
 
+func (f File) Bits() Bitboard {
+	return FileBB[f]
+}
+
 func (r Rank) String() string {
 	return string('1' + byte(r))
+}
+
+func (r Rank) Bits() Bitboard {
+	return RankBB[r]
 }
 
 func (sq Square) File() File {
@@ -73,6 +81,10 @@ func (sq Square) Color() Color {
 		return Black
 	}
 	return White
+}
+
+func (sq Square) Bit() Bitboard {
+	return SquareBB[sq]
 }
 
 func (sq Square) IsValid() bool {
@@ -99,10 +111,7 @@ func (sq Square) String() string {
 	if sq == NoSquare {
 		return "-"
 	}
-	f := sq.File()
-	r := sq.Rank()
-	// ascii manipulation
-	return fmt.Sprintf("%s%d", f.String(), r+1)
+	return fmt.Sprintf("%s%d", sq.File().String(), sq.Rank()+1)
 }
 
 func ParseSquare(s string) (Square, error) {

@@ -173,10 +173,37 @@ func TestPopLSB(t *testing.T) {
 			gotSq := bb.PopLSB()
 
 			if gotSq != tt.wantSq {
-				t.Errorf("expected square %d but got %d", tt.wantSq, gotSq)
+				t.Errorf("want %v but got %v", tt.wantSq, gotSq)
 			}
 			if bb != tt.wantBB {
-				t.Errorf("expected bitboard %d but got %d", tt.wantBB, bb)
+				t.Errorf("want %v but got %v", tt.wantBB, bb)
+			}
+		})
+	}
+}
+
+func TestShift(t *testing.T) {
+	tests := []struct {
+		name  string
+		bb    Bitboard
+		shift int8
+		want  Bitboard
+	}{
+		{"empty", EmptyBB, 0, EmptyBB},
+		{"A1 shifted 63 squares", A1.Bit(), 63, H8.Bit()},
+		{"H8 shifted -63 squares", H8.Bit(), -63, A1.Bit()},
+		{"MSB cuts off", 0x8000000000000001, 8, 0x100},
+		{"LSB cuts off", 0x8000000000000001, -8, 0x80000000000000},
+		{"multiple squares", 0x8140241408340280, 4, 0x1402414083402800},
+		{"edges diagonal", EdgesBB, -9, 0x7fc0c0c0c0c0c0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.bb.Shift(tt.shift)
+
+			if got != tt.want {
+				t.Errorf("want %v but got %v", tt.want, got)
 			}
 		})
 	}

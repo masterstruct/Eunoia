@@ -8,6 +8,43 @@ import (
 
 const resetColor = "\033[0m"
 
+// prints pretty bitboards
+func (bb Bitboard) String() string {
+	var sb strings.Builder
+	sb.WriteString(strconv.FormatUint(uint64(bb), 10))
+
+	sb.WriteByte('\n')
+
+	for rank := Rank8; rank >= Rank1; rank-- {
+		// ranks
+		sb.WriteString(fgRGB(250, 179, 135))
+		sb.WriteString(strconv.Itoa(int(rank + 1)))
+		sb.WriteByte(' ')
+
+		for file := FileA; file <= FileH; file++ {
+			sq := NewSquare(file, rank)
+			if bb.IsBitSet(sq) {
+				sb.WriteString(fgRGB(166, 227, 161))
+				sb.WriteString("1 ")
+			} else {
+				sb.WriteString(fgRGB(243, 139, 168))
+				sb.WriteString(". ")
+			}
+			sb.WriteString(resetColor)
+		}
+
+		sb.WriteByte('\n')
+	}
+
+	// files
+	sb.WriteString(fgRGB(116, 199, 236))
+	sb.WriteString("  a b c d e f g h\n")
+	sb.WriteString(resetColor)
+
+	return sb.String()
+}
+
+// prints a pretty board with colors
 func (pos *Position) String() string {
 	// If using VSCode, go to settings
 	// and set this setting:
@@ -60,7 +97,7 @@ func (pos *Position) String() string {
 	fullmoves, _ := PlyToFullmoves(pos.Ply)
 
 	fmt.Fprintf(&sb, "%-13s%9s\n", "Side to move:", side)
-	fmt.Fprintf(&sb, "%-16s%6s\n", "Castling rights:", pos.Castling.String(IsChess960()))
+	fmt.Fprintf(&sb, "%-16s%6s\n", "Castling rights:", pos.Castling.String(pos.Chess960))
 	fmt.Fprintf(&sb, "%-18s%4s\n", "En passant square:", pos.EnPassant)
 	fmt.Fprintf(&sb, "%-13s%9d\n", "50 move rule:", pos.HalfmoveClock)
 	fmt.Fprintf(&sb, "%-13s%9d\n", "Fullmoves:", fullmoves)
