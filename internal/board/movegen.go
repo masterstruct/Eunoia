@@ -40,10 +40,6 @@ func (ml *Movelist) Add(m Move) {
 }
 
 func IsSquareAttacked(pos *Position, sq Square, byColor Color) bool {
-	return isSquareAttacked(pos, sq, byColor, pos.Occupied())
-}
-
-func isSquareAttacked(pos *Position, sq Square, byColor Color, occupied Bitboard) bool {
 	if byColor == NoColor {
 		return false
 	}
@@ -57,6 +53,8 @@ func isSquareAttacked(pos *Position, sq Square, byColor Color, occupied Bitboard
 	if KingAttacks[sq]&pos.PieceBB(Piece{Type: King, Color: byColor}) != 0 {
 		return true
 	}
+
+	occupied := pos.Occupied()
 
 	rooks := pos.PieceBB(Piece{Type: Rook, Color: byColor})
 	queens := pos.PieceBB(Piece{Type: Queen, Color: byColor})

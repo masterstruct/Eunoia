@@ -943,7 +943,7 @@ func TestCanCastle_Chess960(t *testing.T) {
 	}
 }
 
-func buildBenchmarkPositions(b *testing.B) []*Position {
+func buildBenchmarkPositions(b testing.TB) []*Position {
 	fens := []string{
 		StartingFEN,
 		"r1bqkbnr/pppp1ppp/2n5/4p3/1P6/2N5/P1PPPPPP/R1BQKBNR w KQkq - 0 1",
@@ -1038,6 +1038,48 @@ func BenchmarkGenKingMoves(b *testing.B) {
 		pos := positions[i%len(positions)]
 		GenKingMoves(pos, FullBB, &movelist)
 		genCastleMoves(pos, pos.SideToMove, &movelist)
+	}
+}
+
+func TestGenerateLegalMoves_MoveFilter(t *testing.T) {
+	for _, pos := range buildBenchmarkPositions(t) {
+		checkMoveFilter(t, *pos, 3)
+	}
+}
+
+func checkMoveFilter(t *testing.T, pos Position, depth int) {
+	if depth <= 0 {
+		return
+	}
+
+	t.Helper()
+
+	var quiets Movelist
+	GenerateLegalMoves(&pos, &quiets, Quiets)
+	for i := range quiets.Len {
+		move := quiets.Moves[i]
+		if move.IsCapture() {
+			t.Fatalf("depth %d: quiet move is a capture: %v\n%s", depth, move, pos.String())
+		}
+	}
+
+	var noisies Movelist
+	GenerateLegalMoves(&pos, &noisies, Noisies)
+	for i := range noisies.Len {
+		move := noisies.Moves[i]
+		if !move.IsCapture() && !(move.IsPromo() && move.Promo() == Queen) {
+			t.Fatalf("depth %d: noisy move is not a capture or queen promo: %v\n%s", depth, move, pos.String())
+		}
+	}
+
+	var all Movelist
+	GenerateLegalMoves(&pos, &all, All)
+	if quiets.Len+noisies.Len != all.Len {
+		t.Fatalf("depth %d: got quiet+noisy move count %d, want %d\n%s", depth, quiets.Len+noisies.Len, all.Len, pos.String())
+	}
+
+	for i := range all.Len {
+		checkMoveFilter(t, pos.MakeMove(all.Moves[i]), depth-1)
 	}
 }
 
