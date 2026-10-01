@@ -91,7 +91,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	var score int16
 
 	for i := range movelist.Len {
-		move := movelist.Moves[i]
+		move := movelist.Moves[i].Move
 		newPos := pos.MakeMove(move)
 
 		isCapture := move.IsCapture()
@@ -162,7 +162,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 
 				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
-					quietMove := quietsTried.Moves[i]
+					quietMove := quietsTried.Moves[i].Move
 					ss.updateButterflyHistory(mover, quietMove.From(), quietMove.To(), -bonus)
 				}
 			}

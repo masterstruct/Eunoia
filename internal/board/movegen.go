@@ -28,16 +28,29 @@ var (
 	allPromos   = [...]PieceType{Knight, Bishop, Rook, Queen}
 )
 
+type ScoredMove struct {
+	Move  Move
+	Score int16
+}
+
+func NewScoredMove(move Move, score int16) ScoredMove {
+	return ScoredMove{Move: move, Score: score}
+}
+
 const MaxMoves = 256
 
 type Movelist struct {
-	Moves [MaxMoves]Move
+	Moves [MaxMoves]ScoredMove
 	Len   int
 }
 
 func (ml *Movelist) Add(m Move) {
-	ml.Moves[ml.Len] = m
+	ml.Moves[ml.Len] = NewScoredMove(m, 0)
 	ml.Len++
+}
+
+func (ml *Movelist) IsEmpty() bool {
+	return ml.Len == 0
 }
 
 func IsSquareAttacked(pos *Position, sq Square, byColor Color) bool {

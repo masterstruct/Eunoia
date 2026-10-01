@@ -55,7 +55,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist)
 	// score moves
 	var scores [board.MaxMoves]int
 	for i := range n {
-		move := movelist.Moves[i]
+		move := movelist.Moves[i].Move
 		from := move.From()
 		to := move.To()
 
@@ -83,7 +83,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist)
 	// reverse insertion sort
 	for i := 1; i < n; i++ {
 		score := scores[i]
-		move := movelist.Moves[i]
+		move := movelist.Moves[i].Move
 
 		j := i - 1
 		for j >= 0 && scores[j] < score {
@@ -93,7 +93,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist)
 		}
 
 		scores[j+1] = score
-		movelist.Moves[j+1] = move
+		movelist.Moves[j+1] = board.NewScoredMove(move, 0)
 	}
 }
 

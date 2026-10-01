@@ -66,8 +66,5 @@ iterativeDeepening:
 func firstLegalMove(pos *board.Position) board.Move {
 	var movelist board.Movelist
 	board.GenerateLegalMoves(pos, &movelist, board.All)
-	if movelist.Len > 0 {
-		return movelist.Moves[0]
-	}
-	return board.NullMove
+	return movelist.Moves[0].Move // NullMove if no legal moves
 }

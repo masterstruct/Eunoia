@@ -21,7 +21,7 @@ func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 	ss.orderMoves(&pos, &movelist)
 
 	for i := range movelist.Len {
-		move := movelist.Moves[i]
+		move := movelist.Moves[i].Move
 		if !move.IsCapture() && !move.IsPromo() {
 			continue
 		}
