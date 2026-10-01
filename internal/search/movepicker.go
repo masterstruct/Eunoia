@@ -11,6 +11,32 @@ const (
 	maxHistory = 2 << 13
 )
 
+type Stage uint8
+
+const (
+	TTMove Stage = iota
+	GenerateNoisies
+	Noisies
+	Quiets
+)
+
+type MovePicker struct {
+	movelist board.Movelist
+	stage    Stage
+	ttMove   board.Move
+}
+
+func NewMovePicker(ttMove board.Move) MovePicker {
+	stage := TTMove
+	if ttMove == board.NullMove {
+		stage = GenerateNoisies
+	}
+	return MovePicker{
+		movelist: board.Movelist{},
+		stage:    stage,
+	}
+}
+
 func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist) {
 	n := movelist.Len
 	if n == 0 {
