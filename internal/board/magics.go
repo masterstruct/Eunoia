@@ -34,8 +34,8 @@ type MagicEntry struct {
 	Offset int
 }
 
-func MagicIndex(entry *MagicEntry, occupied Bitboard) int {
-	return int(((occupied&entry.Mask)*entry.Magic)>>entry.Shift) + entry.Offset
+func MagicIndex(entry *MagicEntry, occ Bitboard) int {
+	return int(((occ&entry.Mask)*entry.Magic)>>entry.Shift) + entry.Offset
 }
 
 // iterate over all subsets of a bitboard

@@ -86,18 +86,18 @@ func knightAttacksSetwise(bb Bitboard) Bitboard {
 		notH.Shift(17) | notH.Shift(-15) | notGH.Shift(10) | notGH.Shift(-6)
 }
 
-func bishopAttacksSetwise(bb, occupied Bitboard) Bitboard {
+func bishopAttacksSetwise(bb, occ Bitboard) Bitboard {
 	out := EmptyBB
 	for bb != 0 {
-		out |= BishopAttacks(bb.PopLSB(), occupied)
+		out |= BishopAttacks(bb.PopLSB(), occ)
 	}
 	return out
 }
 
-func rookAttacksSetwise(bb, occupied Bitboard) Bitboard {
+func rookAttacksSetwise(bb, occ Bitboard) Bitboard {
 	out := EmptyBB
 	for bb != 0 {
-		out |= RookAttacks(bb.PopLSB(), occupied)
+		out |= RookAttacks(bb.PopLSB(), occ)
 	}
 	return out
 }

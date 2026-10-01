@@ -13,15 +13,15 @@ var (
 	}
 )
 
-func rookAttacksSlow(sq Square, occupied Bitboard) Bitboard {
-	return rayAttacks(sq, rookDirs, occupied)
+func rookAttacksSlow(sq Square, occ Bitboard) Bitboard {
+	return rayAttacks(sq, rookDirs, occ)
 }
 
-func bishopAttacksSlow(sq Square, occupied Bitboard) Bitboard {
-	return rayAttacks(sq, bishopDirs, occupied)
+func bishopAttacksSlow(sq Square, occ Bitboard) Bitboard {
+	return rayAttacks(sq, bishopDirs, occ)
 }
 
-func rayAttacks(sq Square, dirs [][2]int, occupied Bitboard) Bitboard {
+func rayAttacks(sq Square, dirs [][2]int, occ Bitboard) Bitboard {
 	bb := EmptyBB
 
 	for _, dir := range dirs {
@@ -38,7 +38,7 @@ func rayAttacks(sq Square, dirs [][2]int, occupied Bitboard) Bitboard {
 			}
 
 			bb.SetBit(currSq)
-			if occupied.IsBitSet(currSq) {
+			if occ.IsBitSet(currSq) {
 				break
 			}
 		}
@@ -46,14 +46,14 @@ func rayAttacks(sq Square, dirs [][2]int, occupied Bitboard) Bitboard {
 	return bb
 }
 
-func RookAttacks(sq Square, occupied Bitboard) Bitboard {
-	return RookMoves[MagicIndex(&RookMagics[sq], occupied)]
+func RookAttacks(sq Square, occ Bitboard) Bitboard {
+	return RookMoves[MagicIndex(&RookMagics[sq], occ)]
 }
 
-func BishopAttacks(sq Square, occupied Bitboard) Bitboard {
-	return BishopMoves[MagicIndex(&BishopMagics[sq], occupied)]
+func BishopAttacks(sq Square, occ Bitboard) Bitboard {
+	return BishopMoves[MagicIndex(&BishopMagics[sq], occ)]
 }
 
-func QueenAttacks(sq Square, occupied Bitboard) Bitboard {
-	return RookAttacks(sq, occupied) | BishopAttacks(sq, occupied)
+func QueenAttacks(sq Square, occ Bitboard) Bitboard {
+	return RookAttacks(sq, occ) | BishopAttacks(sq, occ)
 }

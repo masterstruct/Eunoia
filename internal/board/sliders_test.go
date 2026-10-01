@@ -6,10 +6,10 @@ import (
 
 func TestRookAttacks(t *testing.T) {
 	tests := []struct {
-		name     string
-		sq       Square
-		occupied Bitboard
-		want     Bitboard
+		name string
+		sq   Square
+		occ  Bitboard
+		want Bitboard
 	}{
 		{
 			"empty board center d4",
@@ -78,11 +78,11 @@ func TestRookAttacks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.occupied.SetBit(tt.sq)
+			tt.occ.SetBit(tt.sq)
 
-			got := RookAttacks(tt.sq, tt.occupied)
+			got := RookAttacks(tt.sq, tt.occ)
 			if got != tt.want {
-				t.Errorf("RookAttacks(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.occupied, got, tt.want)
+				t.Errorf("RookAttacks(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.occ, got, tt.want)
 			}
 		})
 	}
@@ -90,10 +90,10 @@ func TestRookAttacks(t *testing.T) {
 
 func TestBishopAttacks(t *testing.T) {
 	tests := []struct {
-		name     string
-		sq       Square
-		occupied Bitboard
-		want     Bitboard
+		name string
+		sq   Square
+		occ  Bitboard
+		want Bitboard
 	}{
 		{
 			"empty board center d4",
@@ -143,11 +143,11 @@ func TestBishopAttacks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.occupied.SetBit(tt.sq)
+			tt.occ.SetBit(tt.sq)
 
-			got := BishopAttacks(tt.sq, tt.occupied)
+			got := BishopAttacks(tt.sq, tt.occ)
 			if got != tt.want {
-				t.Errorf("BishopAttacks(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.occupied, got, tt.want)
+				t.Errorf("BishopAttacks(%v, %v):\ngot:\n%v\nwant:\n%v", tt.sq, tt.occ, got, tt.want)
 			}
 		})
 	}
@@ -155,9 +155,9 @@ func TestBishopAttacks(t *testing.T) {
 
 func TestQueenAttacks(t *testing.T) {
 	tests := []struct {
-		name     string
-		sq       Square
-		occupied Bitboard
+		name string
+		sq   Square
+		occ  Bitboard
 	}{
 		{"empty board center d4", D4, EmptyBB},
 		{"empty board corner a1", A1, EmptyBB},
@@ -170,12 +170,12 @@ func TestQueenAttacks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.occupied.SetBit(tt.sq)
+			tt.occ.SetBit(tt.sq)
 
-			want := RookAttacks(tt.sq, tt.occupied) | BishopAttacks(tt.sq, tt.occupied)
-			got := QueenAttacks(tt.sq, tt.occupied)
+			want := RookAttacks(tt.sq, tt.occ) | BishopAttacks(tt.sq, tt.occ)
+			got := QueenAttacks(tt.sq, tt.occ)
 			if got != want {
-				t.Errorf("QueenAttacks(%v, %v):\ngot:\n%v\nwant (rook|bishop):\n%v", tt.sq, tt.occupied, got, want)
+				t.Errorf("QueenAttacks(%v, %v):\ngot:\n%v\nwant (rook|bishop):\n%v", tt.sq, tt.occ, got, want)
 			}
 		})
 	}

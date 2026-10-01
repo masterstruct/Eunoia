@@ -680,7 +680,7 @@ func TestGenKingMoves(t *testing.T) {
 
 			var movelist Movelist
 			GenKingMoves(&pos, FullBB, &movelist)
-			genCastleMoves(&pos, pos.SideToMove, &movelist)
+			collectCastleMoves(&pos, pos.SideToMove, &movelist)
 			for i := range movelist.Len {
 				move := movelist.Moves[i]
 				if !slices.Contains(tt.to, move.To()) {
@@ -1037,7 +1037,7 @@ func BenchmarkGenKingMoves(b *testing.B) {
 		var movelist Movelist
 		pos := positions[i%len(positions)]
 		GenKingMoves(pos, FullBB, &movelist)
-		genCastleMoves(pos, pos.SideToMove, &movelist)
+		collectCastleMoves(pos, pos.SideToMove, &movelist)
 	}
 }
 

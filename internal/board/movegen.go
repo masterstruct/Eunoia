@@ -54,19 +54,19 @@ func IsSquareAttacked(pos *Position, sq Square, byColor Color) bool {
 		return true
 	}
 
-	occupied := pos.Occupied()
+	occ := pos.Occupied()
 
 	rooks := pos.PieceBB(Piece{Type: Rook, Color: byColor})
 	queens := pos.PieceBB(Piece{Type: Queen, Color: byColor})
 
-	rookAttacks := RookAttacks(sq, occupied)
+	rookAttacks := RookAttacks(sq, occ)
 	if rookAttacks&(rooks|queens) != 0 {
 		return true
 	}
 
 	bishops := pos.PieceBB(Piece{Type: Bishop, Color: byColor})
 
-	bishopAttacks := BishopAttacks(sq, occupied)
+	bishopAttacks := BishopAttacks(sq, occ)
 	if bishopAttacks&(bishops|queens) != 0 {
 		return true
 	}
@@ -79,45 +79,45 @@ func (pos *Position) InCheck() bool {
 }
 
 func GenKnightMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
-	color := pos.SideToMove
-	opponents := pos.Colors[color.Opponent()]
-	occupied := pos.Occupied()
-	pinned := pos.Pinned[color]
+	stm := pos.SideToMove
+	them := pos.Colors[stm.Opponent()]
+	occ := pos.Occupied()
+	pinned := pos.Pinned[stm]
 
 	// loop over each knight
-	knights := pos.PieceBB(Piece{Type: Knight, Color: color}) &^ pinned
+	knights := pos.PieceBB(Piece{Type: Knight, Color: stm}) &^ pinned
 	for knights != 0 {
 		from := knights.PopLSB()
 		attacks := KnightAttacks[from] & filterMask
-		addAttackMoves(movelist, from, attacks, opponents, occupied)
+		collectAttackMoves(movelist, from, attacks, them, occ)
 	}
 }
 
-func genSliderMoves(pos *Position, pieces, filterMask Bitboard, attacks func(Square, Bitboard) Bitboard, movelist *Movelist) {
-	color := pos.SideToMove
-	opponents := pos.Colors[color.Opponent()]
-	occupied := pos.Occupied()
-	kingSq := pos.KingSq[color]
-	pinned := pos.Pinned[color]
+func collectSliderMoves(pos *Position, pieces, filterMask Bitboard, attacks func(Square, Bitboard) Bitboard, movelist *Movelist) {
+	stm := pos.SideToMove
+	them := pos.Colors[stm.Opponent()]
+	occ := pos.Occupied()
+	kingSq := pos.KingSq[stm]
+	pinned := pos.Pinned[stm]
 
 	free := pieces &^ pinned
 	for free != 0 {
 		from := free.PopLSB()
-		attacks := attacks(from, occupied) & filterMask
-		addAttackMoves(movelist, from, attacks, opponents, occupied)
+		attacks := attacks(from, occ) & filterMask
+		collectAttackMoves(movelist, from, attacks, them, occ)
 	}
 
 	stuck := pieces & pinned
 	for stuck != 0 {
 		from := stuck.PopLSB()
-		attacks := attacks(from, occupied) & Extending(kingSq, from) & filterMask
-		addAttackMoves(movelist, from, attacks, opponents, occupied)
+		attacks := attacks(from, occ) & Extending(kingSq, from) & filterMask
+		collectAttackMoves(movelist, from, attacks, them, occ)
 	}
 }
 
-func addAttackMoves(movelist *Movelist, from Square, attacks, opponents, occupied Bitboard) {
-	captures := attacks & opponents
-	quiets := attacks &^ occupied
+func collectAttackMoves(movelist *Movelist, from Square, attacks, them, occ Bitboard) {
+	captures := attacks & them
+	quiets := attacks &^ occ
 	for captures != 0 {
 		// capture
 		movelist.Add(NewCapture(from, captures.PopLSB()))
@@ -130,24 +130,24 @@ func addAttackMoves(movelist *Movelist, from Square, attacks, opponents, occupie
 
 func GenBishopMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
 	bishops := pos.PieceBB(Piece{Type: Bishop, Color: pos.SideToMove})
-	genSliderMoves(pos, bishops, filterMask, BishopAttacks, movelist)
+	collectSliderMoves(pos, bishops, filterMask, BishopAttacks, movelist)
 }
 
 func GenRookMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
 	rooks := pos.PieceBB(Piece{Type: Rook, Color: pos.SideToMove})
-	genSliderMoves(pos, rooks, filterMask, RookAttacks, movelist)
+	collectSliderMoves(pos, rooks, filterMask, RookAttacks, movelist)
 }
 
 func GenQueenMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
 	queens := pos.PieceBB(Piece{Type: Queen, Color: pos.SideToMove})
-	genSliderMoves(pos, queens, filterMask, QueenAttacks, movelist)
+	collectSliderMoves(pos, queens, filterMask, QueenAttacks, movelist)
 }
 
 func GenPawnMoves(pos *Position, filter MoveFilter, evasionMask Bitboard, movelist *Movelist) {
-	color := pos.SideToMove
-	pinned := pos.Pinned[color]
-	kingSq := pos.KingSq[color]
-	pawns := pos.PieceBB(Piece{Type: Pawn, Color: color})
+	stm := pos.SideToMove
+	pinned := pos.Pinned[stm]
+	kingSq := pos.KingSq[stm]
+	pawns := pos.PieceBB(Piece{Type: Pawn, Color: stm})
 
 	if filter.genNoisies() {
 		if pos.EnPassant != NoSquare {
@@ -173,7 +173,8 @@ func GenPawnMoves(pos *Position, filter MoveFilter, evasionMask Bitboard, moveli
 
 func collectEnPassant(pos *Position, pawns Bitboard, movelist *Movelist) {
 	epSq := pos.EnPassant
-	attackers := PawnAttacks[pos.SideToMove.Opponent()][epSq] & pawns
+	nstm := pos.SideToMove.Opponent()
+	attackers := PawnAttacks[nstm][epSq] & pawns
 	for attackers != 0 {
 		move := NewEnPassant(attackers.PopLSB(), epSq)
 		if pos.IsLegal(move) {
@@ -183,20 +184,20 @@ func collectEnPassant(pos *Position, pawns Bitboard, movelist *Movelist) {
 }
 
 func collectPawnCaptures(pos *Position, pawns, pinned Bitboard, kingSq Square, evasionMask Bitboard, movelist *Movelist) {
-	color := pos.SideToMove
-	enemyOcc := pos.Colors[color.Opponent()]
+	stm := pos.SideToMove
+	them := pos.Colors[stm.Opponent()]
 
 	freePawns := pawns &^ pinned
 	pawnsLeft := freePawns
 	pawnsRight := freePawns
 
-	if color == Black {
+	if stm == Black {
 		if pinned != EmptyBB {
 			pawnsLeft |= pawns & pinned & Diagonal(kingSq, SouthEast)
 			pawnsRight |= pawns & pinned & Diagonal(kingSq, SouthWest)
 		}
-		capturesLeft := (pawnsLeft &^ FileH.Bits()).Shift(-7) & enemyOcc & evasionMask
-		capturesRight := (pawnsRight &^ FileA.Bits()).Shift(-9) & enemyOcc & evasionMask
+		capturesLeft := (pawnsLeft &^ FileH.Bits()).Shift(-7) & them & evasionMask
+		capturesRight := (pawnsRight &^ FileA.Bits()).Shift(-9) & them & evasionMask
 		collectPawnCaptureMoves(movelist, capturesLeft, -7, Rank1.Bits())
 		collectPawnCaptureMoves(movelist, capturesRight, -9, Rank1.Bits())
 	} else {
@@ -204,27 +205,27 @@ func collectPawnCaptures(pos *Position, pawns, pinned Bitboard, kingSq Square, e
 			pawnsLeft |= pawns & pinned & Diagonal(kingSq, NorthWest)
 			pawnsRight |= pawns & pinned & Diagonal(kingSq, NorthEast)
 		}
-		capturesLeft := (pawnsLeft &^ FileA.Bits()).Shift(7) & enemyOcc & evasionMask
-		capturesRight := (pawnsRight &^ FileH.Bits()).Shift(9) & enemyOcc & evasionMask
+		capturesLeft := (pawnsLeft &^ FileA.Bits()).Shift(7) & them & evasionMask
+		capturesRight := (pawnsRight &^ FileH.Bits()).Shift(9) & them & evasionMask
 		collectPawnCaptureMoves(movelist, capturesLeft, 7, Rank8.Bits())
 		collectPawnCaptureMoves(movelist, capturesRight, 9, Rank8.Bits())
 	}
 }
 
 func collectPawnPushes(pos *Position, pawns, pinned Bitboard, evasionMask Bitboard, filter MoveFilter, movelist *Movelist) (int8, Bitboard) {
-	color := pos.SideToMove
+	stm := pos.SideToMove
 	empty := ^pos.Occupied()
 
 	up := int8(8)
 	thirdRank := Rank3
 	promoRank := Rank8
-	if color == Black {
+	if stm == Black {
 		up = -8
 		thirdRank = Rank6
 		promoRank = Rank1
 	}
 
-	pushPawns := pawns & (^pinned | pos.KingSq[color].File().Bits())
+	pushPawns := pawns & (^pinned | pos.KingSq[stm].File().Bits())
 	oneStep := pushPawns.Shift(up) & empty
 	promoMask := promoRank.Bits()
 	promos := oneStep & promoMask & evasionMask
@@ -283,16 +284,16 @@ func collectPawnCaptureMoves(movelist *Movelist, destinations Bitboard, offset i
 }
 
 func GenKingMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
-	color := pos.SideToMove
-	from := pos.KingSq[color]
+	stm := pos.SideToMove
+	from := pos.KingSq[stm]
 
 	attacks := KingAttacks[from] &^ pos.Threats & filterMask
-	addAttackMoves(movelist, from, attacks, pos.Colors[color.Opponent()], pos.Occupied())
+	collectAttackMoves(movelist, from, attacks, pos.Colors[stm.Opponent()], pos.Occupied())
 }
 
-func genCastleMoves(pos *Position, color Color, movelist *Movelist) {
-	base := color * 2
-	kingSq := pos.KingSq[color]
+func collectCastleMoves(pos *Position, stm Color, movelist *Movelist) {
+	base := stm * 2
+	kingSq := pos.KingSq[stm]
 
 	queensideRook := pos.Castling[base]
 	kingsideRook := pos.Castling[base+1]
@@ -313,8 +314,8 @@ func canCastle(pos *Position, kingSq, rookSq Square) bool {
 	rookTravel := Between(rookSq, rookTo) | rookTo.Bit()
 
 	travel := (kingTravel | rookTravel) &^ kingSq.Bit()
-	occupied := pos.Occupied() &^ rookSq.Bit()
-	if travel&occupied != 0 {
+	occ := pos.Occupied() &^ rookSq.Bit()
+	if travel&occ != 0 {
 		return false
 	}
 
@@ -326,8 +327,8 @@ func canCastle(pos *Position, kingSq, rookSq Square) bool {
 	return !pos.Pinned[pos.SideToMove].IsBitSet(rookSq)
 }
 
-func castleTargets(color Color, kingside bool) (kingTo, rookTo Square) {
-	rank := color.ExpectedKingRank()
+func castleTargets(stm Color, kingside bool) (kingTo, rookTo Square) {
+	rank := stm.ExpectedKingRank()
 	if kingside {
 		return NewSquare(FileG, rank), NewSquare(FileF, rank)
 	}
@@ -335,10 +336,10 @@ func castleTargets(color Color, kingside bool) (kingTo, rookTo Square) {
 }
 
 func GenerateLegalMoves(pos *Position, movelist *Movelist, filter MoveFilter) {
-	color := pos.SideToMove
-	us := pos.Colors[color]
-	them := pos.Colors[color.Opponent()]
-	kingSq := pos.KingSq[color]
+	stm := pos.SideToMove
+	us := pos.Colors[stm]
+	them := pos.Colors[stm.Opponent()]
+	kingSq := pos.KingSq[stm]
 	inCheck := pos.Checkers != 0
 
 	filterMask := FullBB
@@ -351,7 +352,7 @@ func GenerateLegalMoves(pos *Position, movelist *Movelist, filter MoveFilter) {
 
 	GenKingMoves(pos, filterMask, movelist)
 	if !inCheck && filter.genQuiets() {
-		genCastleMoves(pos, color, movelist)
+		collectCastleMoves(pos, stm, movelist)
 	}
 
 	if pos.Checkers.CountBits() > 1 {
@@ -378,50 +379,50 @@ func GenerateLegalMoves(pos *Position, movelist *Movelist, filter MoveFilter) {
 }
 
 // squares attacked by opponent pieces
-func (pos *Position) calculateThreats(myColor Color) Bitboard {
-	occupied := pos.Occupied() &^ pos.KingSq[myColor].Bit()
-	enemyColor := myColor.Opponent()
-	enemyBB := pos.Colors[enemyColor]
+func (pos *Position) calculateThreats(stm Color) Bitboard {
+	occ := pos.Occupied() &^ pos.KingSq[stm].Bit()
+	nstm := stm.Opponent()
+	them := pos.Colors[nstm]
 
-	pawns := pos.Pieces[Pawn] & enemyBB
-	knights := pos.Pieces[Knight] & enemyBB
-	bishops := pos.Pieces[Bishop] & enemyBB
-	rooks := pos.Pieces[Rook] & enemyBB
-	queens := pos.Pieces[Queen] & enemyBB
+	pawns := pos.Pieces[Pawn] & them
+	knights := pos.Pieces[Knight] & them
+	bishops := pos.Pieces[Bishop] & them
+	rooks := pos.Pieces[Rook] & them
+	queens := pos.Pieces[Queen] & them
 
-	return pawnAttacksSetwise(pawns, enemyColor) |
+	return pawnAttacksSetwise(pawns, nstm) |
 		knightAttacksSetwise(knights) |
-		bishopAttacksSetwise(bishops|queens, occupied) |
-		rookAttacksSetwise(rooks|queens, occupied) |
-		KingAttacks[pos.KingSq[enemyColor]]
+		bishopAttacksSetwise(bishops|queens, occ) |
+		rookAttacksSetwise(rooks|queens, occ) |
+		KingAttacks[pos.KingSq[nstm]]
 }
 
 // pieces attacking the king
-func (pos *Position) calculateCheckers(myColor Color) Bitboard {
-	occupied := pos.Occupied()
-	kingSq := pos.KingSq[myColor]
-	enemyBB := pos.Colors[myColor.Opponent()]
+func (pos *Position) calculateCheckers(stm Color) Bitboard {
+	occ := pos.Occupied()
+	kingSq := pos.KingSq[stm]
+	them := pos.Colors[stm.Opponent()]
 
-	pawns := pos.Pieces[Pawn] & enemyBB
-	knights := pos.Pieces[Knight] & enemyBB
-	bishops := pos.Pieces[Bishop] & enemyBB
-	rooks := pos.Pieces[Rook] & enemyBB
-	queens := pos.Pieces[Queen] & enemyBB
+	pawns := pos.Pieces[Pawn] & them
+	knights := pos.Pieces[Knight] & them
+	bishops := pos.Pieces[Bishop] & them
+	rooks := pos.Pieces[Rook] & them
+	queens := pos.Pieces[Queen] & them
 
-	return PawnAttacks[myColor][kingSq]&pawns |
+	return PawnAttacks[stm][kingSq]&pawns |
 		KnightAttacks[kingSq]&knights |
-		BishopAttacks(kingSq, occupied)&(bishops|queens) |
-		RookAttacks(kingSq, occupied)&(rooks|queens)
+		BishopAttacks(kingSq, occ)&(bishops|queens) |
+		RookAttacks(kingSq, occ)&(rooks|queens)
 }
 
 func (pos *Position) calculateBothPinned() [2]Bitboard {
 	return [2]Bitboard{pos.calculatePinned(Black), pos.calculatePinned(White)}
 }
 
-func (pos *Position) calculatePinned(color Color) Bitboard {
-	king := pos.KingSq[color]
-	us := pos.Colors[color]
-	them := pos.Colors[color.Opponent()]
+func (pos *Position) calculatePinned(stm Color) Bitboard {
+	king := pos.KingSq[stm]
+	us := pos.Colors[stm]
+	them := pos.Colors[stm.Opponent()]
 
 	diagonals := (pos.Pieces[Bishop] | pos.Pieces[Queen]) & them
 	orthogonals := (pos.Pieces[Rook] | pos.Pieces[Queen]) & them
