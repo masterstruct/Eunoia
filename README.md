@@ -31,7 +31,6 @@ make linux
 - [@Cosmo](https://github.com/cosmobobak) for helpful [chess technique overview](https://asteri.sm/files/2023-02-20-viri-wiki)
 - [@Deez](https://github.com/Dejon51) for help
 - [@Matt](https://github.com/nocturn9x) for [OpenBench instance](https://chess.n9x.co/)
-- [@Dan](https://github.com/kelseyde) for Hobbes' legal movegen, which heavily inspired Eunoia's implementation
 - [Ronald Friederich](https://chessprogramming.org/Ronald_Friederich) for [PeSTO's Evaluation Function](https://chessprogramming.org/PeSTO's_Evaluation_Function)
 
 In no particular order, engines used for ideas or inspiration:
@@ -42,3 +41,4 @@ In no particular order, engines used for ideas or inspiration:
 - [Lacrima](https://github.com/Iron627/Lacrima)
 - [Ethereal](https://github.com/AndyGrant/Ethereal)
 - [Hobbes](https://github.com/kelseyde/hobbes-chess-engine)
+- [Reckless](https://github.com/codedeliveryservice/Reckless/)
