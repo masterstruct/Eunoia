@@ -37,6 +37,61 @@ func NewMovePicker(ttMove board.Move) MovePicker {
 	}
 }
 
+func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
+	stm := pos.SideToMove
+
+	var temp board.Movelist
+	board.GenerateLegalMoves(pos, &temp, board.Noisies)
+
+	for i := range temp.Len {
+		move := temp.Moves[i].Move
+		if move == mp.ttMove {
+			continue
+		}
+
+		from := move.From()
+		to := move.To()
+
+		// butterfly history
+		score := ss.butterflyHistory[stm][from][to]
+
+		// TODO: add queen promo bonus
+
+		// capture bonus and MVV-LVA
+		if move.IsCapture() {
+			victim := pos.Board[to].Type
+			if move.IsEnPassant() {
+				victim = board.Pawn
+			}
+
+			// TODO: remove capture bonus - no point because no longer mixing noisies/quiets
+			score += captureBonus + mvvlvaScore(victim, pos.Board[from].Type)
+		}
+
+		mp.movelist.AddScoredMove(move.ScoredMove(score))
+	}
+}
+
+func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
+	stm := pos.SideToMove
+
+	var temp board.Movelist
+	board.GenerateLegalMoves(pos, &temp, board.Quiets)
+
+	for i := range temp.Len {
+		move := temp.Moves[i]
+		if move.Move == mp.ttMove {
+			continue
+		}
+
+		from := move.Move.From()
+		to := move.Move.To()
+
+		move.Score = ss.butterflyHistory[stm][from][to]
+		mp.movelist.AddScoredMove(move)
+	}
+}
+
 func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist) {
 	n := movelist.Len
 	if n == 0 {
@@ -53,7 +108,7 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist)
 	}
 
 	// score moves
-	var scores [board.MaxMoves]int
+	var scores [board.MaxMoves]int32
 	for i := range n {
 		move := movelist.Moves[i].Move
 		from := move.From()
@@ -93,16 +148,16 @@ func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist)
 		}
 
 		scores[j+1] = score
-		movelist.Moves[j+1] = board.NewScoredMove(move, 0)
+		movelist.Moves[j+1] = move.ScoredMove(0)
 	}
 }
 
 // formula from https://asteri.sm/files/2023-02-20-viri-wiki#mvvlva
-func mvvlvaScore(victim, attacker board.PieceType) int {
-	return int(victim)*1000 + 60 - int(attacker)*10
+func mvvlvaScore(victim, attacker board.PieceType) int32 {
+	return int32(victim)*1000 + 60 - int32(attacker)*10
 }
 
-func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Square, bonus int) {
+func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Square, bonus int32) {
 	// history gravity
 	// https://chessprogramming.org/History_Heuristic#history-bonuses
 
