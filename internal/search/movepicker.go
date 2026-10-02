@@ -34,7 +34,56 @@ func NewMovePicker(ttMove board.Move) MovePicker {
 	return MovePicker{
 		movelist: board.Movelist{},
 		stage:    stage,
+		ttMove:   ttMove,
 	}
+}
+
+func (mp *MovePicker) Next(pos *board.Position, ss *SearchState, skipQuiets bool) board.Move {
+	if mp.stage == TTMove {
+		mp.stage = GenerateNoisies
+		if pos.IsLegal(mp.ttMove) {
+			return mp.ttMove
+		}
+	}
+
+	if mp.stage == GenerateNoisies {
+		mp.stage = Noisies
+		mp.genNoisies(pos, ss)
+	}
+
+	if mp.stage == Noisies {
+		if !mp.movelist.IsEmpty() {
+			return mp.pickBest()
+		}
+		if !skipQuiets {
+			mp.stage = Quiets
+			mp.genQuiets(pos, ss)
+		}
+	}
+
+	if mp.stage == Quiets {
+		if !skipQuiets && !mp.movelist.IsEmpty() {
+			return mp.pickBest()
+		}
+	}
+
+	return board.NullMove
+}
+
+func (mp *MovePicker) pickBest() board.Move {
+	bestIndex := 0
+	bestScore := int32(-2147483648)
+
+	for i := range mp.movelist.Len {
+		score := mp.movelist.Moves[i].Score
+		if score > bestScore {
+			bestScore = score
+			bestIndex = i
+		}
+	}
+	bestMove := mp.movelist.Moves[bestIndex].Move
+	mp.movelist.Remove(bestIndex)
+	return bestMove
 }
 
 func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
