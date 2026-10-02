@@ -49,6 +49,7 @@ func (mp *MovePicker) Next(pos *board.Position, ss *SearchState, skipQuiets bool
 	if mp.stage == GenerateNoisies {
 		mp.stage = Noisies
 		mp.genNoisies(pos, ss)
+		mp.removeTT()
 	}
 
 	if mp.stage == Noisies {
@@ -58,6 +59,7 @@ func (mp *MovePicker) Next(pos *board.Position, ss *SearchState, skipQuiets bool
 		if !skipQuiets {
 			mp.stage = Quiets
 			mp.genQuiets(pos, ss)
+			mp.removeTT()
 		}
 	}
 
@@ -94,10 +96,6 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 
 	for i := range temp.Len {
 		move := temp.Moves[i].Move
-		if move == mp.ttMove {
-			continue
-		}
-
 		from := move.From()
 		to := move.To()
 
@@ -129,10 +127,6 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 
 	for i := range temp.Len {
 		move := temp.Moves[i]
-		if move.Move == mp.ttMove {
-			continue
-		}
-
 		from := move.Move.From()
 		to := move.Move.To()
 
@@ -141,63 +135,12 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 	}
 }
 
-func (ss *SearchState) orderMoves(pos *board.Position, movelist *board.Movelist) {
-	n := movelist.Len
-	if n == 0 {
-		return
-	}
-
-	stm := pos.SideToMove
-
-	// TT lookup
-	entry, ttHit := ss.tt.Probe(pos.Hash)
-	var ttMove board.Move
-	if ttHit {
-		ttMove = entry.Move
-	}
-
-	// score moves
-	var scores [board.MaxMoves]int32
-	for i := range n {
-		move := movelist.Moves[i].Move
-		from := move.From()
-		to := move.To()
-
-		score := ss.butterflyHistory[stm][from][to]
-
-		if ttHit && move == ttMove {
-			score += ttMoveBonus
+func (mp *MovePicker) removeTT() {
+	for i := range mp.movelist.Len {
+		if mp.movelist.Moves[i].Move == mp.ttMove {
+			mp.movelist.Remove(i)
+			return
 		}
-
-		if move.IsCapture() {
-			attacker, _ := pos.PieceOn(from)
-			victim, _ := pos.PieceOn(to)
-
-			victimType := victim.Type
-			if move.IsEnPassant() {
-				victimType = board.Pawn
-			}
-
-			score += captureBonus + mvvlvaScore(victimType, attacker.Type)
-		}
-
-		scores[i] = score
-	}
-
-	// reverse insertion sort
-	for i := 1; i < n; i++ {
-		score := scores[i]
-		move := movelist.Moves[i].Move
-
-		j := i - 1
-		for j >= 0 && scores[j] < score {
-			scores[j+1] = scores[j]
-			movelist.Moves[j+1] = movelist.Moves[j]
-			j--
-		}
-
-		scores[j+1] = score
-		movelist.Moves[j+1] = move.ScoredMove(0)
 	}
 }
 
