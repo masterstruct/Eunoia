@@ -8,6 +8,8 @@ import (
 // https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/search/movepicker.rs
 
 const (
+	queenPromoBonus = 745
+
 	maxHistory = 2 << 13
 )
 
@@ -101,8 +103,6 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 
 		var score int32
 
-		// TODO: add queen promo bonus
-
 		// MVV-LVA
 		if move.IsCapture() {
 			victim := pos.Board[to].Type
@@ -111,6 +111,11 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 			}
 
 			score += mvvlvaScore(victim, pos.Board[from].Type)
+		}
+
+		// queen promo bonus
+		if move.IsPromo() && move.Promo() == board.Queen {
+			score += queenPromoBonus
 		}
 
 		mp.movelist.AddScoredMove(move.ScoredMove(score))
