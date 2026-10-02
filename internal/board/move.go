@@ -53,6 +53,15 @@ const (
 	flagPromoQueen  Move = 0x7000
 )
 
+type ScoredMove struct {
+	Move  Move
+	Score int32
+}
+
+func (m Move) ScoredMove(score int32) ScoredMove {
+	return ScoredMove{Move: m, Score: score}
+}
+
 func newMove(from, to Square, flags Move) Move {
 	return flags | Move(to)<<toShift | Move(from)
 }

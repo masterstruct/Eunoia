@@ -28,15 +28,6 @@ var (
 	allPromos   = [...]PieceType{Knight, Bishop, Rook, Queen}
 )
 
-type ScoredMove struct {
-	Move  Move
-	Score int16
-}
-
-func NewScoredMove(move Move, score int16) ScoredMove {
-	return ScoredMove{Move: move, Score: score}
-}
-
 const MaxMoves = 256
 
 type Movelist struct {
@@ -45,7 +36,12 @@ type Movelist struct {
 }
 
 func (ml *Movelist) Add(m Move) {
-	ml.Moves[ml.Len] = NewScoredMove(m, 0)
+	ml.Moves[ml.Len] = m.ScoredMove(0)
+	ml.Len++
+}
+
+func (ml *Movelist) AddScoredMove(m ScoredMove) {
+	ml.Moves[ml.Len] = m
 	ml.Len++
 }
 
