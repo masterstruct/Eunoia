@@ -5,8 +5,7 @@ import (
 )
 
 const (
-	ttMoveBonus  = 1_000_000
-	captureBonus = 100_000
+	ttMoveBonus = 1_000_000
 
 	maxHistory = 2 << 13
 )
@@ -111,8 +110,7 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 				victim = board.Pawn
 			}
 
-			// TODO: remove capture bonus - no point because no longer mixing noisies/quiets
-			score += captureBonus + mvvlvaScore(victim, pos.Board[from].Type)
+			score += mvvlvaScore(victim, pos.Board[from].Type)
 		}
 
 		mp.movelist.AddScoredMove(move.ScoredMove(score))
