@@ -208,7 +208,7 @@ func TestGenKnightMoves(t *testing.T) {
 			var movelist Movelist
 			GenKnightMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected knight move: %v\n%v", move, pos)
 				}
@@ -256,7 +256,7 @@ func TestGenBishopMoves(t *testing.T) {
 			var movelist Movelist
 			GenBishopMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected bishop move: %v\n%v", move, pos)
 				}
@@ -303,7 +303,7 @@ func TestGenRookMoves(t *testing.T) {
 			var movelist Movelist
 			GenRookMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected rook move: %v\n%v", move, pos)
 				}
@@ -350,7 +350,7 @@ func TestGenQueenMoves(t *testing.T) {
 			var movelist Movelist
 			GenQueenMoves(&pos, FullBB, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected queen move: %v\n%v", move, pos)
 				}
@@ -417,7 +417,7 @@ func TestGenPawnMoves(t *testing.T) {
 			var movelist Movelist
 			GenPawnMoves(&pos, All, FullBB, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos.String())
 				}
@@ -471,7 +471,7 @@ func TestGenPawnMoves_EnPassant(t *testing.T) {
 			var movelist Movelist
 			GenPawnMoves(&pos, All, FullBB, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos.String())
 				}
@@ -568,7 +568,7 @@ func TestGenPawnMoves_Promotion(t *testing.T) {
 			var movelist Movelist
 			GenPawnMoves(&pos, All, FullBB, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.wantMoves, move) {
 					t.Fatalf("unexpected pawn move: %v\n%v", move, pos)
 				}
@@ -682,7 +682,7 @@ func TestGenKingMoves(t *testing.T) {
 			GenKingMoves(&pos, FullBB, &movelist)
 			collectCastleMoves(&pos, pos.SideToMove, &movelist)
 			for i := range movelist.Len {
-				move := movelist.Moves[i]
+				move := movelist.Moves[i].Move
 				if !slices.Contains(tt.to, move.To()) {
 					t.Fatalf("unexpected king move: %v\n%v", move, pos.String())
 				}
@@ -1057,7 +1057,7 @@ func checkMoveFilter(t *testing.T, pos Position, depth int) {
 	var quiets Movelist
 	GenerateLegalMoves(&pos, &quiets, Quiets)
 	for i := range quiets.Len {
-		move := quiets.Moves[i]
+		move := quiets.Moves[i].Move
 		if move.IsCapture() {
 			t.Fatalf("depth %d: quiet move is a capture: %v\n%s", depth, move, pos.String())
 		}
@@ -1066,7 +1066,7 @@ func checkMoveFilter(t *testing.T, pos Position, depth int) {
 	var noisies Movelist
 	GenerateLegalMoves(&pos, &noisies, Noisies)
 	for i := range noisies.Len {
-		move := noisies.Moves[i]
+		move := noisies.Moves[i].Move
 		if !move.IsCapture() && !(move.IsPromo() && move.Promo() == Queen) {
 			t.Fatalf("depth %d: noisy move is not a capture or queen promo: %v\n%s", depth, move, pos.String())
 		}
@@ -1079,7 +1079,7 @@ func checkMoveFilter(t *testing.T, pos Position, depth int) {
 	}
 
 	for i := range all.Len {
-		checkMoveFilter(t, pos.MakeMove(all.Moves[i]), depth-1)
+		checkMoveFilter(t, pos.MakeMove(all.Moves[i].Move), depth-1)
 	}
 }
 

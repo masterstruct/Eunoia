@@ -53,6 +53,10 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			}
 		}
 	}
+	ttMove := board.NullMove
+	if ttHit {
+		ttMove = entry.Move
+	}
 
 	if depth <= 0 {
 		return ss.qsearch(pos, alpha, beta)
@@ -82,18 +86,14 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	var bestMove board.Move
 	movesSearched := 0
 
-	var movelist board.Movelist
-	board.GenerateLegalMoves(&pos, &movelist, board.All)
-	ss.orderMoves(&pos, &movelist)
+	movePicker := NewMovePicker(ttMove)
 
 	var quietsTried board.Movelist
 
 	var score int16
 
-	for i := range movelist.Len {
-		move := movelist.Moves[i]
-		newPos := pos.MakeMove(move)
-
+	nextMove := func() board.Move { return movePicker.Next(&pos, ss, false) }
+	for move := nextMove(); move != board.NullMove; move = nextMove() {
 		isCapture := move.IsCapture()
 
 		// late move pruning
@@ -101,6 +101,8 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			depth <= lmpMaxDepth && movesSearched >= lmpBase+lmpMultiplier*depth*depth {
 			continue
 		}
+
+		newPos := pos.MakeMove(move)
 
 		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
 		newDepth := depth - 1
@@ -157,12 +159,12 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		}
 		if score >= beta { // beta cutoff
 			if !isCapture {
-				bonus := 300*depth - 250
+				bonus := 300*int32(depth) - 250
 				ss.updateButterflyHistory(mover, move.From(), move.To(), bonus)
 
 				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
-					quietMove := quietsTried.Moves[i]
+					quietMove := quietsTried.Moves[i].Move
 					ss.updateButterflyHistory(mover, quietMove.From(), quietMove.To(), -bonus)
 				}
 			}

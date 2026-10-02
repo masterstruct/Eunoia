@@ -1,14 +1,19 @@
 package board
 
 func (pos *Position) IsLegal(move Move) bool {
+	stm := pos.SideToMove
 	from := move.From()
 	to := move.To()
+
+	if !pos.Colors[stm].IsBitSet(from) {
+		return false
+	}
 
 	if move.IsEnPassant() {
 		return isLegalEnPassant(pos, from, to)
 	}
 
-	kingSq := pos.KingSq[pos.SideToMove]
+	kingSq := pos.KingSq[stm]
 
 	if move.IsCastle() {
 		return canCastle(pos, kingSq, to)
@@ -18,7 +23,7 @@ func (pos *Position) IsLegal(move Move) bool {
 		return !pos.Threats.IsBitSet(to)
 	}
 
-	if pos.Pinned[pos.SideToMove].IsBitSet(from) {
+	if pos.Pinned[stm].IsBitSet(from) {
 		return pos.Checkers == 0 && Extending(kingSq, from).IsBitSet(to)
 	}
 

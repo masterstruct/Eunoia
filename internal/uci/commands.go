@@ -166,7 +166,7 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 		board.GenerateLegalMoves(&newPos, &movelist, board.All)
 
 		for i := range movelist.Len {
-			m := movelist.Moves[i]
+			m := movelist.Moves[i].Move
 			if matchesUCIMove(m, from, to, move) {
 				newPos = newPos.MakeMove(m)
 				hashes = append(hashes, newPos.Hash)
