@@ -107,7 +107,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		// late move reductions
 		isReduced := false
 		if movesSearched >= lmrMinMoves && depth >= lmrMinDepth &&
-			!isCapture {
+			isQuiet {
 			reduction := lmr[min(newDepth, lmrMaxDepth)][min(movesSearched, lmrMaxMoves)]
 
 			if reduction > 0 {
