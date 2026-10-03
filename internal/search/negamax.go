@@ -98,7 +98,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		isQuiet := !move.IsNoisy()
 
 		// late move pruning
-		if !isPV && !isRoot && !isCapture && !inCheck && !isMateScore(bestValue) &&
+		if !isPV && !isRoot && isQuiet && !inCheck && !isMateScore(bestValue) &&
 			depth <= lmpMaxDepth && movesSearched >= lmpBase+lmpMultiplier*depth*depth {
 			continue
 		}
