@@ -35,7 +35,7 @@ const (
 )
 
 const (
-	flagQuiet      Move = 0x0000
+	flagNormal     Move = 0x0000
 	flagDoublePush Move = 0x1000
 
 	castleMask          Move = 0xE000
@@ -77,12 +77,12 @@ func promoFlag(pt PieceType) Move {
 	case Queen:
 		return flagPromoQueen
 	default:
-		return flagQuiet
+		return flagNormal
 	}
 }
 
 func NewMove(from, to Square) Move {
-	return newMove(from, to, flagQuiet)
+	return newMove(from, to, flagNormal)
 }
 
 func NewDoublePush(from, to Square) Move {
@@ -160,8 +160,12 @@ func (m Move) IsDoublePush() bool {
 	return (m & flagMask) == flagDoublePush
 }
 
-func (m Move) IsQuiet() bool {
-	return (m & flagMask) == flagQuiet
+func (m Move) IsNormal() bool {
+	return (m & flagMask) == flagNormal
+}
+
+func (m Move) IsNoisy() bool {
+	return m.IsCapture() || (m.IsPromo() && m.Promo() == Queen)
 }
 
 func (m Move) String() string {
