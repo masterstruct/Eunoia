@@ -95,6 +95,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss, false) }
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
 		isCapture := move.IsCapture()
+		isQuiet := !move.IsNoisy()
 
 		// late move pruning
 		if !isPV && !isRoot && !isCapture && !inCheck && !isMateScore(bestValue) &&
@@ -171,7 +172,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 			break
 		}
 
-		if !isCapture {
+		if isQuiet {
 			quietsTried.Add(move)
 		}
 	}

@@ -89,8 +89,6 @@ func (mp *MovePicker) pickBest() board.Move {
 }
 
 func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
-	stm := pos.SideToMove
-
 	var temp board.Movelist
 	board.GenerateLegalMoves(pos, &temp, board.Noisies)
 
@@ -99,8 +97,7 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 		from := move.From()
 		to := move.To()
 
-		// butterfly history
-		score := ss.butterflyHistory[stm][from][to]
+		var score int32
 
 		// TODO: add queen promo bonus
 
