@@ -4,9 +4,10 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-const (
-	ttMoveBonus = 1_000_000
+// based on Hobbes implementation
+// https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/search/movepicker.rs
 
+const (
 	maxHistory = 2 << 13
 )
 
@@ -73,9 +74,9 @@ func (mp *MovePicker) Next(pos *board.Position, ss *SearchState, skipQuiets bool
 
 func (mp *MovePicker) pickBest() board.Move {
 	bestIndex := 0
-	bestScore := int32(-2147483648)
+	bestScore := mp.movelist.Moves[0].Score
 
-	for i := range mp.movelist.Len {
+	for i := 1; i < mp.movelist.Len; i++ {
 		score := mp.movelist.Moves[i].Score
 		if score > bestScore {
 			bestScore = score
@@ -103,7 +104,7 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 
 		// TODO: add queen promo bonus
 
-		// capture bonus and MVV-LVA
+		// MVV-LVA
 		if move.IsCapture() {
 			victim := pos.Board[to].Type
 			if move.IsEnPassant() {

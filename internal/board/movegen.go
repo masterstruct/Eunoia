@@ -1,8 +1,8 @@
 package board
 
-// Thank you Dan (Hobbes) and the Reckless team, for your movegen implementations this file is based on
+// Thank you Dan (Hobbes) for your movegen implementation this file is based on
 // https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/board/movegen.rs
-// https://github.com/codedeliveryservice/Reckless/blob/main/src/board/movegen.rs
+// also inspired by Reckless
 
 // All - all moves
 // Quiets - non-captures and underpromotions

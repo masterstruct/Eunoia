@@ -360,7 +360,7 @@ func BenchmarkMakeMove(b *testing.B) {
 		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(E8, E7), false},
 		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(H8, H7), false},
 		{"r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1", NewMove(A8, A6), false},
-		{"4k3/8/8/8/7r/8/8/R3K2R b KQkq - 0 1", NewCapture(H4, H1), false},
+		{"4k3/8/8/8/7r/8/8/R3K2R b KQ - 0 1", NewCapture(H4, H1), false},
 		{"4k3/8/8/8/8/8/8/R2RK2R w KQ - 0 1", NewMove(D1, D5), false},
 		{"4k3/8/8/3r4/1N6/8/8/R3K2R w KQ - 0 1", NewCapture(B4, D5), false},
 
@@ -372,7 +372,7 @@ func BenchmarkMakeMove(b *testing.B) {
 		{"4k3/8/8/8/8/8/8/5KRQ w G - 0 1", NewCastle(F1, G1), true},
 		{"2r3kr/8/8/8/8/8/8/RK1R4 b hc - 1 1", NewCastle(G8, H8), true},
 		{"3r2kr/8/8/8/8/8/8/RK3R2 w AF - 0 1", NewCastle(B1, A1), true},
-		{"1r1kr3/8/8/8/8/4R3/2K1R3/8 w bf - 0 1", NewCapture(E3, E8), true},
+		{"1r1kr3/8/8/8/8/4R3/2K1R3/8 w b - 0 1", NewCapture(E3, E8), true},
 	}
 
 	type fixture struct {
