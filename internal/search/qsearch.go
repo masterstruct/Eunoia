@@ -16,11 +16,10 @@ func (ss *SearchState) qsearch(pos board.Position, alpha, beta int16) int16 {
 		alpha = standPat
 	}
 
-	movePicker := NewMovePicker(board.NullMove)
-	nextMove := func() board.Move { return movePicker.Next(&pos, ss, true) }
+	movePicker := NewMovePicker(board.NullMove, true)
+	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
-		newPos := pos.MakeMove(move)
-		score := -ss.qsearch(newPos, -beta, -alpha)
+		score := -ss.qsearch(pos.MakeMove(move), -beta, -alpha)
 
 		if ss.ShouldStop(Hard) {
 			return 0

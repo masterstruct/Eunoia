@@ -21,24 +21,26 @@ const (
 )
 
 type MovePicker struct {
-	movelist board.Movelist
-	stage    Stage
-	ttMove   board.Move
+	movelist   board.Movelist
+	stage      Stage
+	ttMove     board.Move
+	skipQuiets bool
 }
 
-func NewMovePicker(ttMove board.Move) MovePicker {
+func NewMovePicker(ttMove board.Move, skipQuiets bool) MovePicker {
 	stage := TTMove
 	if ttMove == board.NullMove {
 		stage = GenerateNoisies
 	}
 	return MovePicker{
-		movelist: board.Movelist{},
-		stage:    stage,
-		ttMove:   ttMove,
+		movelist:   board.Movelist{},
+		stage:      stage,
+		ttMove:     ttMove,
+		skipQuiets: skipQuiets,
 	}
 }
 
-func (mp *MovePicker) Next(pos *board.Position, ss *SearchState, skipQuiets bool) board.Move {
+func (mp *MovePicker) Next(pos *board.Position, ss *SearchState) board.Move {
 	if mp.stage == TTMove {
 		mp.stage = GenerateNoisies
 		if pos.IsLegal(mp.ttMove) {
@@ -56,7 +58,7 @@ func (mp *MovePicker) Next(pos *board.Position, ss *SearchState, skipQuiets bool
 		if !mp.movelist.IsEmpty() {
 			return mp.pickBest()
 		}
-		if !skipQuiets {
+		if !mp.skipQuiets {
 			mp.stage = Quiets
 			mp.genQuiets(pos, ss)
 			mp.removeTT()
@@ -64,7 +66,7 @@ func (mp *MovePicker) Next(pos *board.Position, ss *SearchState, skipQuiets bool
 	}
 
 	if mp.stage == Quiets {
-		if !skipQuiets && !mp.movelist.IsEmpty() {
+		if !mp.skipQuiets && !mp.movelist.IsEmpty() {
 			return mp.pickBest()
 		}
 	}
