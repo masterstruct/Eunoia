@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/masterstruct/Eunoia/internal/board"
+	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
 const (
@@ -42,20 +43,25 @@ iterativeDeepening:
 			}
 
 			if score <= aw.alpha {
+				ss.pv.EnsureRoot(bestMove)
+				ss.printPV(os.Stdout, depth, score, tt.Upper)
+
 				aw.alpha = -INF
 				aw.beta = INF
 				// aw.widenDown()
 				continue
 			}
 			if score >= aw.beta {
+				ss.printPV(os.Stdout, depth, score, tt.Lower)
+
 				aw.alpha = -INF
 				aw.beta = INF
 				// aw.widenUp()
 				continue
 			}
 
-			bestMove = ss.pv.Line()[0]
-			ss.printPV(os.Stdout, depth, score)
+			bestMove = ss.pv.BestMove()
+			ss.printPV(os.Stdout, depth, score, tt.Exact)
 			lastScore = score
 			break
 		}

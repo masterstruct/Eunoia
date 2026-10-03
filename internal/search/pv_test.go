@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/masterstruct/Eunoia/internal/board"
+	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
 func BenchmarkPrintPV(b *testing.B) {
@@ -30,6 +31,6 @@ func BenchmarkPrintPV(b *testing.B) {
 	ss.Nodes = 25461085
 
 	for b.Loop() {
-		ss.printPV(io.Discard, 8, 38)
+		ss.printPV(io.Discard, 8, 38, tt.Exact)
 	}
 }
