@@ -1,17 +1,12 @@
 package search
 
 import (
-	"math"
-
 	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
 const (
 	nmpMinDepth = 3
-
-	lmrMinDepth = 3
-	lmrMinMoves = 2
 
 	lmpBase       = 4
 	lmpMultiplier = 3
@@ -113,7 +108,7 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 		isReduced := false
 		if movesSearched >= lmrMinMoves && depth >= lmrMinDepth &&
 			!isCapture {
-			reduction := int(0.99 + math.Log(float64(newDepth))*math.Log(float64(movesSearched))/3.14)
+			reduction := lmr[min(newDepth, lmrMaxDepth)][min(movesSearched, lmrMaxMoves)]
 
 			if reduction > 0 {
 				reducedDepth := max(newDepth-reduction, 1)
