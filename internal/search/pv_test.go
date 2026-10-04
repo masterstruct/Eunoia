@@ -24,7 +24,7 @@ func BenchmarkPrintPV(b *testing.B) {
 
 	var pv PVTable
 	copy(pv.line[0][:], moves)
-	pv.length[0] = len(moves)
+	pv.length[0] = uint16(len(moves))
 
 	ss := &SearchState{pv: &pv}
 	ss.StartTime = time.Now().Add(-5 * time.Second)

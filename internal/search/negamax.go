@@ -13,7 +13,7 @@ const (
 	lmpMaxDepth   = 4
 )
 
-func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta int16) int16 {
+func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int16) int16 {
 	ss.pv.Init(ply)
 
 	if ss.ShouldStop(Hard) {
@@ -191,24 +191,4 @@ func (ss *SearchState) negamax(pos board.Position, depth, ply int, alpha, beta i
 	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestValue, ply), uint8(depth), flag)
 
 	return bestValue
-}
-
-func scoreToTT(score int16, ply int) int16 {
-	if score >= MATE-int16(MaxPly) {
-		return score + int16(ply)
-	}
-	if score <= -MATE+int16(MaxPly) {
-		return score - int16(ply)
-	}
-	return score
-}
-
-func scoreFromTT(score int16, ply int) int16 {
-	if score >= MATE-int16(MaxPly) {
-		return score - int16(ply)
-	}
-	if score <= -MATE+int16(MaxPly) {
-		return score + int16(ply)
-	}
-	return score
 }

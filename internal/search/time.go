@@ -8,7 +8,7 @@ import (
 
 type TimeManager struct {
 	Stop     bool
-	MaxDepth int
+	MaxDepth uint16
 
 	// set once in ss.Init and changed with `UpdateMoveOverhead`.
 	// should persist between `ucinewgame` calls - do NOT clear
@@ -92,10 +92,10 @@ func (tm *TimeManager) resetTimeManager() {
 func (tm *TimeManager) SetLimits(limits GoLimits, stm board.Color) {
 	tm.resetTimeManager()
 
-	if limits.Depth <= 0 || limits.Depth > MaxPly || limits.Infinite {
-		limits.Depth = MaxPly
+	if limits.Depth <= 0 || limits.Depth > int64(MaxPly) || limits.Infinite {
+		limits.Depth = int64(MaxPly)
 	}
-	tm.MaxDepth = int(limits.Depth)
+	tm.MaxDepth = uint16(limits.Depth)
 
 	if limits.Nodes > 0 {
 		tm.MaxNodes = uint64(limits.Nodes)

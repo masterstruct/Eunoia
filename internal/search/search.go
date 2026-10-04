@@ -7,11 +7,6 @@ import (
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
-const (
-	MATE int16 = 30000
-	INF  int16 = 32000
-)
-
 func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 	bestMove := firstLegalMove(&pos)
 	if bestMove == board.NullMove {
@@ -23,7 +18,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 
 	// iterative deepening
 iterativeDeepening:
-	for depth := 1; depth <= ss.MaxDepth; depth++ {
+	for depth := 1; depth <= int(ss.MaxDepth); depth++ {
 		if ss.ShouldStop(Soft) || ss.ShouldStop(Hard) {
 			break
 		}

@@ -10,10 +10,10 @@ import (
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
-const MaxPly = 128
+const MaxPly uint16 = 128
 
 type PVTable struct {
-	length [MaxPly]int
+	length [MaxPly]uint16
 	line   [MaxPly][MaxPly]board.Move
 }
 
@@ -21,14 +21,14 @@ func NewPVTable() *PVTable {
 	return &PVTable{}
 }
 
-func (pv *PVTable) Init(ply int) {
+func (pv *PVTable) Init(ply uint16) {
 	if ply >= MaxPly {
 		return
 	}
 	pv.length[ply] = ply
 }
 
-func (pv *PVTable) Store(ply int, move board.Move) {
+func (pv *PVTable) Store(ply uint16, move board.Move) {
 	if ply >= MaxPly {
 		return
 	}
@@ -128,25 +128,4 @@ func writeMove(buf *bytes.Buffer, move board.Move, chess960 bool) {
 	if move.IsPromo() {
 		buf.WriteByte(move.Promo().String())
 	}
-}
-
-func isMateScore(score int16) bool {
-	return score >= MATE-int16(MaxPly) || score <= -MATE+int16(MaxPly)
-}
-
-func mateInMoves(score int16) int {
-	var plies int16
-	if score > 0 {
-		plies = MATE - score
-	} else {
-		plies = MATE + score
-	}
-	if plies <= 0 {
-		plies = 1
-	}
-	moves, _ := board.PlyToFullmoves(uint16(plies - 1))
-	if score < 0 {
-		return -int(moves)
-	}
-	return int(moves)
 }
