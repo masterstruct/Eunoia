@@ -12,7 +12,7 @@ const (
 	lmpMultiplier = 3
 	lmpMaxDepth   = 4
 
-	fpMaxDepth = 3
+	fpMaxDepth = 5
 
 	hpMaxDepth   = 4
 	hpMultiplier = -2048
