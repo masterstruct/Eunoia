@@ -11,6 +11,8 @@ const (
 	lmpBase       = 4
 	lmpMultiplier = 3
 	lmpMaxDepth   = 4
+
+	fpMaxDepth = 3
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int16) int16 {
@@ -90,6 +92,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
 		isQuiet := !move.IsNoisy()
+
+		// futility pruning
+		if !isRoot && isQuiet && !inCheck && !isMated(bestValue) &&
+			depth < fpMaxDepth && staticEval+150 <= alpha {
+			movePicker.skipQuiets = true
+			continue
+		}
 
 		// late move pruning
 		if !isPV && !isRoot && isQuiet && !inCheck && !isMateScore(bestValue) &&
