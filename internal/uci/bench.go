@@ -8,7 +8,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
-const benchDepth = 9
+const benchDepth = 11
 
 type benchResult struct {
 	nodes uint64
