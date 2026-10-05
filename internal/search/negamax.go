@@ -70,7 +70,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	}
 
 	// null move pruning
-	if !inCheck && depth >= nmpMinDepth {
+	if !inCheck && staticEval >= beta && depth >= nmpMinDepth {
 		reduction := 3
 		newPos := pos.MakeNullMove()
 		score := -ss.negamax(newPos, depth-reduction, ply+1, -beta, -beta+1)
