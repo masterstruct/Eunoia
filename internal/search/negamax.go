@@ -12,7 +12,7 @@ const (
 	lmpMultiplier = 3
 	lmpMaxDepth   = 4
 
-	fpMaxDepth = 3
+	fpMaxDepth = 5
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int16) int16 {
