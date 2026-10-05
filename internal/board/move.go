@@ -165,7 +165,7 @@ func (m Move) IsNormal() bool {
 }
 
 func (m Move) IsNoisy() bool {
-	return m.IsCapture() || (m.IsPromo() && m.Promo() == Queen)
+	return m.IsCapture() || m&0x7000 == flagPromoQueen
 }
 
 func (m Move) String() string {

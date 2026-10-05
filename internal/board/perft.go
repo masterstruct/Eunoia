@@ -50,11 +50,16 @@ func SplitPerft(pos *Position, depth int) PerftResult {
 	var movelist Movelist
 	GenerateLegalMoves(pos, &movelist, All)
 
-	for i := 0; i < movelist.Len; i++ {
-		newPos := pos.MakeMove(movelist.Moves[i].Move)
-		nodes := perft(newPos, depth-1)
-		fmt.Println(movelist.Moves[i], nodes)
-		total += nodes
+	if depth <= 1 {
+		total = uint64(movelist.Len)
+
+	} else {
+		for i := 0; i < movelist.Len; i++ {
+			newPos := pos.MakeMove(movelist.Moves[i].Move)
+			nodes := perft(newPos, depth-1)
+			fmt.Println(movelist.Moves[i], nodes)
+			total += nodes
+		}
 	}
 
 	elapsed := time.Since(start)
