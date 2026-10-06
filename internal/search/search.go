@@ -46,6 +46,7 @@ iterativeDeepening:
 				// aw.widenDown()
 				continue
 			}
+			bestMove = ss.pv.BestMove()
 			if score >= aw.beta {
 				ss.printPV(os.Stdout, depth, score, tt.Lower)
 
@@ -55,7 +56,6 @@ iterativeDeepening:
 				continue
 			}
 
-			bestMove = ss.pv.BestMove()
 			ss.printPV(os.Stdout, depth, score, tt.Exact)
 			lastScore = score
 			break
