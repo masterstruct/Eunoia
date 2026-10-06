@@ -5,7 +5,6 @@ import (
 )
 
 func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int16) int16 {
-	ss.Nodes++
 	inCheck := pos.InCheck()
 
 	best := -INF
@@ -25,6 +24,7 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int16
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
 		legalMoves++
 		score := -ss.qsearch(pos.MakeMove(move), ply+1, -beta, -alpha)
+		ss.Nodes++
 		if ss.ShouldStop(Hard) {
 			return 0
 		}
