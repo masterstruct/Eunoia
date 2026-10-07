@@ -79,6 +79,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
 
 		if score >= beta {
+			if isMateScore(score) {
+				score = beta
+			}
 			return score
 		}
 	}
