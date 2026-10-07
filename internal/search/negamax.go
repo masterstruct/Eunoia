@@ -33,7 +33,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
-	if ttHit && !isRoot && !isPV && entry.Depth >= uint8(depth) {
+	if ttHit && !isPV && entry.Depth >= uint8(depth) {
 		score := scoreFromTT(entry.Score, ply)
 		switch entry.Flag {
 		case tt.Exact:
@@ -68,7 +68,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	}
 
 	// null move pruning
-	if !inCheck && staticEval >= beta && depth >= nmpMinDepth {
+	if !inCheck && !isPV && staticEval >= beta && depth >= nmpMinDepth {
 		reduction := 3
 		newPos := pos.MakeNullMove()
 		ss.Nodes++
@@ -100,7 +100,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		// late move pruning
-		if !isPV && !isRoot && isQuiet && !inCheck && !isMateScore(bestValue) &&
+		if !isPV && isQuiet && !inCheck && !isMateScore(bestValue) &&
 			depth <= lmpMaxDepth && movesSearched >= lmpBase+lmpMultiplier*depth*depth {
 			movePicker.skipQuiets = true
 			continue
