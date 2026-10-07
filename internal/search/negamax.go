@@ -70,9 +70,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	// null move pruning
 	if !inCheck && !isPV && staticEval >= beta && depth >= nmpMinDepth {
 		reduction := 3
+
 		newPos := pos.MakeNullMove()
 		ss.Nodes++
+
+		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
 		score := -ss.negamax(newPos, depth-reduction, ply+1, -beta, -beta+1)
+		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
+
 		if score >= beta {
 			return score
 		}
