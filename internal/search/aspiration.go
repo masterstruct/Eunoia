@@ -6,9 +6,9 @@ const (
 )
 
 type aspirationWindow struct {
-	alpha int16
-	beta  int16
-	delta int16 // doubles after every widening
+	alpha int32
+	beta  int32
+	delta int32 // doubles after every widening
 }
 
 func (aw *aspirationWindow) widenDown() {
@@ -21,7 +21,7 @@ func (aw *aspirationWindow) widenUp() {
 	aw.delta *= 2
 }
 
-func (aw *aspirationWindow) centerAround(score int16) {
+func (aw *aspirationWindow) centerAround(score int32) {
 	aw.alpha = max(score-windowSize, -MATE)
 	aw.beta = min(score+windowSize, MATE)
 	aw.delta = initialDelta

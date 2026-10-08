@@ -15,7 +15,7 @@ const (
 	fpMaxDepth = 3
 )
 
-func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int16) int16 {
+func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
 	ss.pv.Init(ply)
 
 	if ss.ShouldStop(Hard) {
@@ -62,7 +62,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	// reverse futility pruning
 	staticEval := evaluate(&pos)
-	margin := 150 * int16(depth)
+	margin := 150 * int32(depth)
 	if !isPV && !ttHit && !inCheck && staticEval >= beta+margin {
 		return staticEval
 	}
@@ -98,7 +98,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	var quietsTried board.Movelist
 
-	var score int16
+	var score int32
 
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
@@ -196,7 +196,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	if movesSearched == 0 {
 		if inCheck {
 			// checkmate
-			return -MATE + int16(ply)
+			return -MATE + int32(ply)
 		}
 		// stalemate
 		return 0

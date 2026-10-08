@@ -13,7 +13,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 		return board.NullMove
 	}
 
-	var lastScore int16
+	var lastScore int32
 	aw := newAspirationWindow() // [-INF; +INF]
 
 	// iterative deepening

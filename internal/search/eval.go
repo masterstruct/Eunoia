@@ -4,14 +4,14 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-func evaluate(pos *board.Position) int16 {
-	var score int
+func evaluate(pos *board.Position) int32 {
+	var score int32
 
 	// PSQT
-	score += evaluatePSQT(pos)
+	score += int32(evaluatePSQT(pos))
 
 	if pos.SideToMove == board.Black {
-		return int16(-score)
+		return -score
 	}
-	return int16(score)
+	return score
 }

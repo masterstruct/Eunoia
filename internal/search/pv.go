@@ -61,7 +61,7 @@ func (pv *PVTable) EnsureRoot(move board.Move) {
 	}
 }
 
-func (ss *SearchState) printPV(w io.Writer, depth int, score int16, bound tt.Flag) {
+func (ss *SearchState) printPV(w io.Writer, depth int, score int32, bound tt.Flag) {
 	if ss.Quiet {
 		return
 	}

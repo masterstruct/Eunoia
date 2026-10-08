@@ -3,43 +3,44 @@ package search
 import "github.com/masterstruct/Eunoia/internal/board"
 
 const (
-	MATE int16 = 30000
-	INF  int16 = 32000
+	MATE int32 = 30000
+	INF  int32 = 32000
 )
 
-func isMateScore(score int16) bool {
+func isMateScore(score int32) bool {
 	return isMating(score) || isMated(score)
 }
 
-func isMating(score int16) bool {
-	return score >= MATE-int16(MaxPly)
+func isMating(score int32) bool {
+	return score >= MATE-int32(MaxPly)
 }
 
-func isMated(score int16) bool {
-	return score <= -MATE+int16(MaxPly)
+func isMated(score int32) bool {
+	return score <= -MATE+int32(MaxPly)
 }
 
-func scoreToTT(score int16, ply uint16) int16 {
-	if score >= MATE-int16(MaxPly) {
-		return score + int16(ply)
+func scoreToTT(score int32, ply uint16) int16 {
+	if isMating(score) {
+		return int16(score) + int16(ply)
 	}
-	if score <= -MATE+int16(MaxPly) {
-		return score - int16(ply)
+	if isMated(score) {
+		return int16(score) - int16(ply)
 	}
-	return score
+	return int16(score)
 }
 
-func scoreFromTT(score int16, ply uint16) int16 {
-	if score >= MATE-int16(MaxPly) {
-		return score - int16(ply)
+func scoreFromTT(score int16, ply uint16) int32 {
+	s := int32(score)
+	if isMating(s) {
+		return s - int32(ply)
 	}
-	if score <= -MATE+int16(MaxPly) {
-		return score + int16(ply)
+	if isMated(s) {
+		return s + int32(ply)
 	}
-	return score
+	return s
 }
 
-func mateInMoves(score int16) int {
+func mateInMoves(score int32) int {
 	moves, _ := board.PlyToFullmoves(mateInPlies(score) - 1)
 	if score < 0 {
 		return -int(moves)
@@ -47,7 +48,7 @@ func mateInMoves(score int16) int {
 	return int(moves)
 }
 
-func mateInPlies(score int16) uint16 {
+func mateInPlies(score int32) uint16 {
 	plies := MATE
 	if score > 0 {
 		plies -= score
