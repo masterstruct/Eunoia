@@ -4,7 +4,7 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int16) int16 {
+func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32) int32 {
 	inCheck := pos.InCheck()
 
 	best := -INF
@@ -40,7 +40,7 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int16
 	}
 
 	if inCheck && legalMoves == 0 {
-		return -MATE + int16(ply)
+		return -MATE + int32(ply)
 	}
 	return best
 }
