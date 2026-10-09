@@ -29,6 +29,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return 0
 	}
 
+	// mate distance pruning
+	alpha = max(alpha, matedIn(ply))
+	beta = min(beta, mateIn(ply))
+	if alpha >= beta {
+		return alpha
+	}
+
 	alphaOrig := alpha
 
 	// TT lookup
