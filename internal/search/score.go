@@ -19,6 +19,14 @@ func isMated(score int32) bool {
 	return score <= -MATE+int32(MaxPly)
 }
 
+func mateIn(ply uint16) int32 {
+	return MATE - int32(ply)
+}
+
+func matedIn(ply uint16) int32 {
+	return -MATE + int32(ply)
+}
+
 func scoreToTT(score int32, ply uint16) int16 {
 	if isMating(score) {
 		return int16(score) + int16(ply)
