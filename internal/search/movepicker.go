@@ -163,17 +163,8 @@ func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Sq
 	//                 ||----w |
 	//                 ||     ||
 
-	clampedBonus := bonus
-	if clampedBonus > maxHistory {
-		clampedBonus = maxHistory
-	} else if clampedBonus < -maxHistory {
-		clampedBonus = -maxHistory
-	}
-
-	absBonus := clampedBonus
-	if absBonus < 0 {
-		absBonus = -absBonus
-	}
+	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
+	absBonus := max(clampedBonus, -clampedBonus)             // abs
 
 	ss.butterflyHistory[stm][from][to] += clampedBonus - ss.butterflyHistory[stm][from][to]*absBonus/maxHistory
 }
