@@ -23,8 +23,12 @@ iterativeDeepening:
 			break
 		}
 
-		if depth > 5 {
+		if depth > 5 && !isMateScore(lastScore) {
 			aw.centerAround(lastScore)
+		} else {
+			aw.alpha = -INF
+			aw.beta = INF
+			aw.delta = initialDelta
 		}
 
 		// aspiration search
@@ -39,7 +43,7 @@ iterativeDeepening:
 
 			if score <= aw.alpha {
 				ss.pv.EnsureRoot(bestMove)
-				ss.printPV(os.Stdout, depth, score, tt.Upper)
+				ss.printPV(os.Stdout, depth, max(score, aw.alpha), tt.Upper)
 
 				aw.alpha = -INF
 				aw.beta = INF
@@ -48,7 +52,7 @@ iterativeDeepening:
 			}
 			bestMove = ss.pv.BestMove()
 			if score >= aw.beta {
-				ss.printPV(os.Stdout, depth, score, tt.Lower)
+				ss.printPV(os.Stdout, depth, min(score, aw.beta), tt.Lower)
 
 				aw.alpha = -INF
 				aw.beta = INF
