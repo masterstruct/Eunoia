@@ -14,6 +14,10 @@ type SearchState struct {
 	bestScore int32
 	depth     int
 
+	rootPV         [MaxPly + 1]board.Move
+	rootPVLen      int
+	completedDepth int
+
 	tt *tt.Table
 	pv *PVTable
 
@@ -32,8 +36,16 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 
 func (ss *SearchState) PrepareForSearch() {
 	ss.Quiet = false
+	ss.bestMove = board.NullMove
+	ss.bestScore = 0
 	ss.depth = 1
+	ss.completedDepth = 0
+	ss.rootPVLen = 0
 	ss.resetTimeManager()
+}
+
+func (ss *SearchState) saveRootPV() {
+	ss.rootPVLen = copy(ss.rootPV[:], ss.pv.Line())
 }
 
 func (ss *SearchState) ClearTables() {

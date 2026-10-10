@@ -9,7 +9,7 @@ import (
 )
 
 func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
-	ss.pv.Init(0)
+	ss.pv.Clear(0)
 
 	var rootMoves board.Movelist
 	board.GenerateLegalMoves(&pos, &rootMoves, board.All)
@@ -22,13 +22,10 @@ func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 
 	aw := newAspirationWindow() // [-INF; +INF]
 	var score int32
-	bound := tt.Exact
-	printed := true
 
 	// iterative deepening
 iterativeDeepening:
 	for ss.depth <= int(MaxPly) && !ss.ShouldStop(Soft) {
-		printed = false
 		if ss.depth >= aspirationMinDepth {
 			aw.centerAround(score)
 		}
@@ -36,15 +33,12 @@ iterativeDeepening:
 		// aspiration search
 		for {
 			score = ss.negamax(pos, ss.depth, 0, aw.alpha, aw.beta)
-			if ss.ShouldStop(Hard) {
-				// interruped before first move search completed,
-				// discard results from this depth
+			if ss.depth > 1 && ss.Stop {
 				break iterativeDeepening
 			}
 
-			bound = tt.FlagFromScore(score, aw.alpha, aw.beta)
+			bound := tt.FlagFromScore(score, aw.alpha, aw.beta)
 			ss.printPV(os.Stdout, max(aw.alpha, min(score, aw.beta)), bound)
-			printed = true
 
 			if isMateScore(score) {
 				ss.bestScore = score
@@ -67,12 +61,11 @@ iterativeDeepening:
 			break
 		}
 
+		ss.completedDepth = ss.depth
 		ss.depth++
 	}
 
-	if !printed {
-		ss.printPV(os.Stdout, ss.bestScore, tt.Exact)
-	}
+	ss.printInfo(os.Stdout, ss.completedDepth, ss.bestScore, tt.Exact, ss.rootPV[:ss.rootPVLen])
 
 	return ss.bestMove
 }
@@ -95,8 +88,8 @@ func (ss *SearchState) handleOneLegalMove(pos *board.Position, rootMoves *board.
 	ss.bestMove = move
 	ss.bestScore = evaluate(pos)
 
+	ss.pv.Clear(1)
 	ss.pv.Store(0, move)
-	ss.pv.length[0] = 1
 
 	ss.printPV(os.Stdout, ss.bestScore, tt.Exact)
 	return move
