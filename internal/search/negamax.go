@@ -63,7 +63,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	// reverse futility pruning
 	staticEval := evaluate(&pos)
 	margin := 150 * int32(depth)
-	if !isPV && !ttHit && !inCheck && staticEval >= beta+margin {
+	if !isPV && !inCheck && staticEval >= beta+margin {
 		return staticEval
 	}
 
