@@ -49,26 +49,21 @@ func (pv *PVTable) Line() []board.Move {
 	return pv.line[0][:pv.length[0]]
 }
 
-func (pv *PVTable) BestMove() board.Move {
-	return pv.line[0][0]
-}
-
-// after fail-low no move was stored
-func (pv *PVTable) EnsureRoot(move board.Move) {
-	if pv.length[0] == 0 {
-		pv.line[0][0] = move
-		pv.length[0] = 1
-	}
-}
-
-func (ss *SearchState) printPV(w io.Writer, depth int, score int32, bound tt.Flag) {
+func (ss *SearchState) printPV(w io.Writer, score int32, bound tt.Flag) {
 	if ss.Quiet {
+		return
+	}
+
+	pv := ss.pv.Line()
+	if len(pv) == 0 {
 		return
 	}
 
 	var buf bytes.Buffer
 
 	nodes := ss.Nodes
+	depth := ss.depth
+
 	elapsed := max(time.Since(ss.StartTime).Milliseconds(), 1)
 	nps := 1000 * nodes / uint64(elapsed)
 
@@ -100,7 +95,7 @@ func (ss *SearchState) printPV(w io.Writer, depth int, score int32, bound tt.Fla
 	buf.WriteString(" pv")
 
 	chess960 := board.IsChess960()
-	for _, move := range ss.pv.Line() {
+	for _, move := range pv {
 		buf.WriteByte(' ')
 		writeMove(&buf, move, chess960)
 	}

@@ -27,10 +27,11 @@ func BenchmarkPrintPV(b *testing.B) {
 	pv.length[0] = uint16(len(moves))
 
 	ss := &SearchState{pv: &pv}
+	ss.depth = 8
 	ss.StartTime = time.Now().Add(-5 * time.Second)
 	ss.Nodes = 25461085
 
 	for b.Loop() {
-		ss.printPV(io.Discard, 8, 38, tt.Exact)
+		ss.printPV(io.Discard, 38, tt.Exact)
 	}
 }

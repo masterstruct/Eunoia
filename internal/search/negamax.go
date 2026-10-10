@@ -16,8 +16,6 @@ const (
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
-	ss.pv.Init(ply)
-
 	if ss.ShouldStop(Hard) {
 		return 0
 	}
@@ -27,6 +25,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	if !isRoot && ss.isDraw(&pos) {
 		return 0
+	}
+
+	if isPV {
+		ss.pv.Init(ply)
 	}
 
 	alphaOrig := alpha
@@ -90,7 +92,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 	}
 
-	bestValue := -INF
+	bestScore := -INF
 	var bestMove board.Move
 	movesSearched := 0
 
@@ -105,14 +107,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		isQuiet := !move.IsNoisy()
 
 		// futility pruning
-		if !isRoot && isQuiet && !inCheck && !isMated(bestValue) &&
+		if !isRoot && isQuiet && !inCheck && !isMated(bestScore) &&
 			depth < fpMaxDepth && staticEval+150 <= alpha {
 			movePicker.skipQuiets = true
 			continue
 		}
 
 		// late move pruning
-		if !isPV && isQuiet && !inCheck && !isMateScore(bestValue) &&
+		if !isPV && isQuiet && !inCheck && !isMateScore(bestScore) &&
 			depth <= lmpMaxDepth && movesSearched >= lmpBase+lmpMultiplier*depth*depth {
 			movePicker.skipQuiets = true
 			continue
@@ -166,14 +168,23 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		movesSearched++
 
-		if score > bestValue {
-			bestValue = score
+		if score > bestScore {
+			bestScore = score
 			bestMove = move
-			if score > alpha {
-				alpha = score
-				ss.pv.Store(ply, move)
+		}
+
+		if isPV && (score > alpha || (isRoot && movesSearched == 1)) {
+			ss.pv.Store(ply, move)
+		}
+
+		if score > alpha {
+			alpha = score
+
+			if isRoot {
+				ss.bestMove = move
 			}
 		}
+
 		if score >= beta { // beta cutoff
 			if isQuiet {
 				bonus := 300*int32(depth) - 250
@@ -203,13 +214,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	}
 
 	flag := tt.Exact
-	if bestValue <= alphaOrig {
+	if bestScore <= alphaOrig {
 		flag = tt.Upper
-	} else if bestValue >= beta {
+	} else if bestScore >= beta {
 		flag = tt.Lower
 	}
 
-	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestValue, ply), uint8(depth), flag)
+	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestScore, ply), uint8(depth), flag)
 
-	return bestValue
+	return bestScore
 }

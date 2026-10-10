@@ -1,6 +1,7 @@
 package search
 
 import (
+	"github.com/masterstruct/Eunoia/internal/board"
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
@@ -8,6 +9,10 @@ type SearchState struct {
 	Quiet bool // avoid printing output
 
 	TimeManager
+
+	bestMove  board.Move
+	bestScore int32
+	depth     int
 
 	tt *tt.Table
 	pv *PVTable
@@ -19,6 +24,7 @@ type SearchState struct {
 }
 
 func (ss *SearchState) Init(ttSizeMiB uint) {
+	ss.depth = 1
 	ss.tt = tt.NewTable(ttSizeMiB)
 	ss.pv = NewPVTable()
 	ss.butterflyHistory = &[2][64][64]int32{}
@@ -26,6 +32,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 
 func (ss *SearchState) PrepareForSearch() {
 	ss.Quiet = false
+	ss.depth = 1
 	ss.resetTimeManager()
 }
 

@@ -24,6 +24,16 @@ type Entry struct {
 	Flag  Flag
 }
 
+func FlagFromScore(score, alpha, beta int32) Flag {
+	if score <= alpha {
+		return Upper
+	}
+	if score >= beta {
+		return Lower
+	}
+	return Exact
+}
+
 const DefaultSizeMiB uint = 64
 
 type Table struct {
