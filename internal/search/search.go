@@ -9,6 +9,8 @@ import (
 )
 
 func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
+	ss.pv.Clear(0)
+
 	var rootMoves board.Movelist
 	board.GenerateLegalMoves(&pos, &rootMoves, board.All)
 	if rootMoves.Len == 0 {
@@ -29,20 +31,16 @@ iterativeDeepening:
 
 		// aspiration search
 		for {
-			ss.pv.Clear(0)
 			score = ss.negamax(pos, ss.depth, 0, aw.alpha, aw.beta)
 			if ss.ShouldStop(Hard) {
 				break iterativeDeepening
 			}
 
 			bound := tt.FlagFromScore(score, aw.alpha, aw.beta)
-			if bound == tt.Upper {
-				// fail-low, so PV is empty
-				ss.pv.Clear(1)
-				ss.pv.Store(0, ss.bestMove)
-			} else if line := ss.pv.Line(); len(line) > 0 {
+			if line := ss.pv.Line(); len(line) > 0 {
 				ss.bestMove = line[0]
 			}
+			ss.pv.EnsureRoot(ss.bestMove)
 			ss.printPV(os.Stdout, max(aw.alpha, min(score, aw.beta)), bound)
 
 			if score <= aw.alpha {

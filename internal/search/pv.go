@@ -13,8 +13,8 @@ import (
 const MaxPly uint16 = 128
 
 type PVTable struct {
-	length [MaxPly + 1]uint16
-	line   [MaxPly + 1][MaxPly + 1]board.Move
+	length [MaxPly]uint16
+	line   [MaxPly][MaxPly]board.Move
 }
 
 func NewPVTable() *PVTable {
@@ -22,26 +22,42 @@ func NewPVTable() *PVTable {
 }
 
 func (pv *PVTable) Clear(ply uint16) {
-	pv.length[ply] = 0
+	if ply >= MaxPly {
+		return
+	}
+	pv.length[ply] = ply
 }
 
 func (pv *PVTable) Store(ply uint16, move board.Move) {
-	n := pv.length[ply+1]
-	pv.line[ply][0] = move
-	copy(pv.line[ply][1:n+1], pv.line[ply+1][:n])
-	pv.length[ply] = n + 1
+	if ply >= MaxPly {
+		return
+	}
+	pv.line[ply][ply] = move
+	child := ply + 1
+	if child >= MaxPly {
+		pv.length[ply] = child
+		return
+	}
+	for next := child; next < pv.length[child]; next++ {
+		pv.line[ply][next] = pv.line[child][next]
+	}
+	pv.length[ply] = pv.length[child]
 }
 
 func (pv *PVTable) Line() []board.Move {
 	return pv.line[0][:pv.length[0]]
 }
 
-func (ss *SearchState) printPV(w io.Writer, score int32, bound tt.Flag) {
-	ss.printInfo(w, ss.depth, score, bound, ss.pv.Line())
+// after fail-low no move was stored
+func (pv *PVTable) EnsureRoot(move board.Move) {
+	if pv.length[0] == 0 {
+		pv.line[0][0] = move
+		pv.length[0] = 1
+	}
 }
 
-func (ss *SearchState) printInfo(w io.Writer, depth int, score int32, bound tt.Flag, pv []board.Move) {
-	if ss.Quiet || len(pv) == 0 {
+func (ss *SearchState) printPV(w io.Writer, score int32, bound tt.Flag) {
+	if ss.Quiet {
 		return
 	}
 
@@ -53,7 +69,7 @@ func (ss *SearchState) printInfo(w io.Writer, depth int, score int32, bound tt.F
 	nps := 1000 * nodes / uint64(elapsed)
 
 	buf.WriteString("info depth ")
-	buf.WriteString(strconv.Itoa(depth))
+	buf.WriteString(strconv.Itoa(ss.depth))
 	if isMateScore(score) {
 		buf.WriteString(" score mate ")
 		buf.WriteString(strconv.Itoa(mateInMoves(score)))
@@ -80,7 +96,7 @@ func (ss *SearchState) printInfo(w io.Writer, depth int, score int32, bound tt.F
 	buf.WriteString(" pv")
 
 	chess960 := board.IsChess960()
-	for _, move := range pv {
+	for _, move := range ss.pv.Line() {
 		buf.WriteByte(' ')
 		writeMove(&buf, move, chess960)
 	}
