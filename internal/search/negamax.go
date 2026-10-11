@@ -16,8 +16,6 @@ const (
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
-	ss.pv.Clear(ply)
-
 	if ss.ShouldStop(Hard) {
 		return 0
 	}
@@ -118,6 +116,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			continue
 		}
 
+		if isPV {
+			ss.pv.Clear(ply + 1)
+		}
+
 		newPos := pos.MakeMove(move)
 		ss.Nodes++
 
@@ -171,16 +173,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			bestMove = move
 		}
 
-		if isPV && (score > alpha || (isRoot && movesSearched == 1)) {
-			ss.pv.Store(ply, move)
-		}
-
 		if score > alpha {
 			alpha = score
-
-			if isRoot {
-				ss.bestMove = move
-				ss.saveRootPV()
+			if isPV {
+				ss.pv.Store(ply, move)
 			}
 		}
 
