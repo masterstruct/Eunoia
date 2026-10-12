@@ -1,6 +1,8 @@
 package search
 
 const (
+	aspirationMinDepth = 6
+
 	windowSize   = 35
 	initialDelta = 50
 )

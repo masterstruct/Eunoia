@@ -21,7 +21,7 @@ func NewPVTable() *PVTable {
 	return &PVTable{}
 }
 
-func (pv *PVTable) Init(ply uint16) {
+func (pv *PVTable) Clear(ply uint16) {
 	if ply >= MaxPly {
 		return
 	}
@@ -33,7 +33,6 @@ func (pv *PVTable) Store(ply uint16, move board.Move) {
 		return
 	}
 	pv.line[ply][ply] = move
-
 	child := ply + 1
 	if child >= MaxPly {
 		pv.length[ply] = child
@@ -49,10 +48,6 @@ func (pv *PVTable) Line() []board.Move {
 	return pv.line[0][:pv.length[0]]
 }
 
-func (pv *PVTable) BestMove() board.Move {
-	return pv.line[0][0]
-}
-
 // after fail-low no move was stored
 func (pv *PVTable) EnsureRoot(move board.Move) {
 	if pv.length[0] == 0 {
@@ -61,7 +56,7 @@ func (pv *PVTable) EnsureRoot(move board.Move) {
 	}
 }
 
-func (ss *SearchState) printPV(w io.Writer, depth int, score int32, bound tt.Flag) {
+func (ss *SearchState) printPV(w io.Writer, score int32, bound tt.Flag) {
 	if ss.Quiet {
 		return
 	}
@@ -69,11 +64,12 @@ func (ss *SearchState) printPV(w io.Writer, depth int, score int32, bound tt.Fla
 	var buf bytes.Buffer
 
 	nodes := ss.Nodes
+
 	elapsed := max(time.Since(ss.StartTime).Milliseconds(), 1)
 	nps := 1000 * nodes / uint64(elapsed)
 
 	buf.WriteString("info depth ")
-	buf.WriteString(strconv.Itoa(depth))
+	buf.WriteString(strconv.Itoa(ss.depth))
 	if isMateScore(score) {
 		buf.WriteString(" score mate ")
 		buf.WriteString(strconv.Itoa(mateInMoves(score)))

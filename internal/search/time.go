@@ -29,28 +29,37 @@ const (
 	MaxMoveOverhead     = 5000
 )
 
-func (tm *TimeManager) hardLimitReached() bool {
-	if tm.Stop {
+func (ss *SearchState) hardLimitReached() bool {
+	if ss.Stop {
 		return true
 	}
-	if tm.MaxNodes > 0 && tm.Nodes >= tm.MaxNodes {
+	if ss.MaxNodes > 0 && ss.Nodes >= ss.MaxNodes {
 		return true
 	}
-	if tm.Nodes&2047 == 0 && // check hard time limit every 2048 nodes
-		!tm.MaxTime.IsZero() && time.Now().After(tm.MaxTime) {
+	if ss.Nodes&2047 == 0 && // check hard time limit every 2048 nodes
+		!ss.MaxTime.IsZero() && time.Now().After(ss.MaxTime) {
+		return true
+	}
+	if ss.depth > int(ss.MaxDepth) {
 		return true
 	}
 	return false
 }
 
-func (tm *TimeManager) softLimitReached() bool {
-	return tm.Stop ||
-		(tm.SoftNodes > 0 && tm.Nodes >= tm.SoftNodes) ||
-		(!tm.SoftTime.IsZero() && time.Now().After(tm.SoftTime))
+func (ss *SearchState) softLimitReached() bool {
+	return ss.Stop ||
+		(ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) ||
+		ss.depth > int(ss.MaxDepth) ||
+		(!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime))
 }
 
-func (tm *TimeManager) ShouldStop(limitType LimitType) bool {
-	if tm.Stop {
+func (ss *SearchState) ShouldStop(limitType LimitType) bool {
+	// always complete first depth
+	if ss.depth <= 1 {
+		return false
+	}
+
+	if ss.Stop {
 		return true
 	}
 
@@ -58,13 +67,13 @@ func (tm *TimeManager) ShouldStop(limitType LimitType) bool {
 
 	switch limitType {
 	case Soft:
-		stop = tm.softLimitReached()
+		stop = ss.softLimitReached()
 	case Hard:
-		stop = tm.hardLimitReached()
+		stop = ss.hardLimitReached()
 	}
 
 	if stop {
-		tm.Stop = true
+		ss.Stop = true
 	}
 	return stop
 }

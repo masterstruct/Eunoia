@@ -16,7 +16,7 @@ const (
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
-	ss.pv.Init(ply)
+	ss.pv.Clear(ply)
 
 	if ss.ShouldStop(Hard) {
 		return 0
@@ -90,7 +90,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 	}
 
-	bestValue := -INF
+	bestScore := -INF
 	var bestMove board.Move
 	movesSearched := 0
 
@@ -105,14 +105,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		isQuiet := !move.IsNoisy()
 
 		// futility pruning
-		if !isRoot && isQuiet && !inCheck && !isMated(bestValue) &&
+		if !isRoot && isQuiet && !inCheck && !isMated(bestScore) &&
 			depth < fpMaxDepth && staticEval+150 <= alpha {
 			movePicker.skipQuiets = true
 			continue
 		}
 
 		// late move pruning
-		if !isPV && isQuiet && !inCheck && !isMateScore(bestValue) &&
+		if !isPV && isQuiet && !inCheck && !isMateScore(bestScore) &&
 			depth <= lmpMaxDepth && movesSearched >= lmpBase+lmpMultiplier*depth*depth {
 			movePicker.skipQuiets = true
 			continue
@@ -166,14 +166,18 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		movesSearched++
 
-		if score > bestValue {
-			bestValue = score
+		if score > bestScore {
+			bestScore = score
 			bestMove = move
-			if score > alpha {
-				alpha = score
+		}
+
+		if score > alpha {
+			alpha = score
+			if isPV {
 				ss.pv.Store(ply, move)
 			}
 		}
+
 		if score >= beta { // beta cutoff
 			if isQuiet {
 				bonus := 300*int32(depth) - 250
@@ -202,14 +206,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return 0
 	}
 
-	flag := tt.Exact
-	if bestValue <= alphaOrig {
-		flag = tt.Upper
-	} else if bestValue >= beta {
-		flag = tt.Lower
-	}
+	flag := tt.FlagFromScore(bestScore, alphaOrig, beta)
+	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestScore, ply), uint8(depth), flag)
 
-	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestValue, ply), uint8(depth), flag)
-
-	return bestValue
+	return bestScore
 }
