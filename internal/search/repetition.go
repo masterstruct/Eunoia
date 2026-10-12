@@ -18,7 +18,7 @@ func (k *Keys) IsRepetition(hash uint64, halfmoveClock uint8) bool {
 		if k.keys[idx] != hash {
 			continue
 		}
-		if idx >= k.len {
+		if idx >= k.len-1 {
 			return true
 		}
 		reps++
