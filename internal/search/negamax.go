@@ -99,7 +99,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	bestScore := -INF
 	var bestMove board.Move
-	movesSearched := 0
+
+	legalMoves := 0
+	searchedMoves := 0
 
 	movePicker := NewMovePicker(ttMove, false)
 
@@ -109,6 +111,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
+		legalMoves++
+
 		isQuiet := !move.IsNoisy()
 
 		// futility pruning
@@ -120,7 +124,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		// late move pruning
 		if !isPV && isQuiet && !inCheck && !isMateScore(bestScore) &&
-			depth <= lmpMaxDepth && movesSearched >= lmpBase+lmpMultiplier*depth*depth {
+			depth <= lmpMaxDepth && searchedMoves >= lmpBase+lmpMultiplier*depth*depth {
 			movePicker.skipQuiets = true
 			continue
 		}
@@ -133,9 +137,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		// late move reductions
 		isReduced := false
-		if movesSearched >= lmrMinMoves && depth >= lmrMinDepth &&
+		if searchedMoves >= lmrMinMoves && depth >= lmrMinDepth &&
 			isQuiet {
-			reduction := lmr[min(newDepth, lmrMaxDepth)][min(movesSearched, lmrMaxMoves)]
+			reduction := lmr[min(newDepth, lmrMaxDepth)][min(searchedMoves, lmrMaxMoves)]
 
 			if reduction > 0 {
 				reducedDepth := max(newDepth-reduction, 1)
@@ -153,7 +157,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		// principal variation search
 		if !isReduced {
-			if movesSearched == 0 {
+			if searchedMoves == 0 {
 				// full window search for principal variation
 				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
 			} else {
@@ -167,11 +171,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
 
+		searchedMoves++
+
 		if ss.ShouldStop(Hard) {
 			return 0
 		}
-
-		movesSearched++
 
 		if score > bestScore {
 			bestScore = score
@@ -204,7 +208,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 	}
 
-	if movesSearched == 0 {
+	if legalMoves == 0 {
 		if inCheck {
 			// checkmate
 			return matedIn(ply)
