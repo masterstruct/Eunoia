@@ -17,7 +17,7 @@ import (
 type engine struct {
 	mu          sync.Mutex
 	pos         board.Position
-	gameHistory []uint64
+	gameHistory search.Keys
 	state       *search.SearchState
 	running     sync.WaitGroup
 }
@@ -27,7 +27,7 @@ func newEngine() *engine {
 		pos:   board.StartingPosition(),
 		state: &search.SearchState{},
 	}
-	e.gameHistory = []uint64{e.pos.Hash}
+	e.gameHistory.SetGamePosition(e.pos.Hash)
 	e.state.UpdateMoveOverhead(search.DefaultMoveOverhead)
 	return e
 }
