@@ -81,9 +81,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		newPos := pos.MakeNullMove()
 		ss.Nodes++
 
-		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
+		ss.Keys.Push(newPos.Hash)
 		score := -ss.negamax(newPos, depth-reduction, ply+1, -beta, -beta+1)
-		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
+		ss.Keys.Pop()
 
 		if ss.ShouldStop(Hard) {
 			return 0
@@ -130,9 +130,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		newPos := pos.MakeMove(move)
+		ss.Keys.Push(newPos.Hash)
 		ss.Nodes++
 
-		ss.keyHistory = append(ss.keyHistory, newPos.Hash)
 		newDepth := depth - 1
 
 		// late move reductions
@@ -169,8 +169,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 				}
 			}
 		}
-		ss.keyHistory = ss.keyHistory[:len(ss.keyHistory)-1]
 
+		ss.Keys.Pop()
 		searchedMoves++
 
 		if ss.ShouldStop(Hard) {

@@ -15,7 +15,7 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 	state := e.state
 	state.PrepareForSearch()
 	pos := e.pos
-	state.SetHistory(e.gameHistory)
+	state.Keys.SetFromGame(&e.gameHistory)
 	e.mu.Unlock()
 
 	limits := search.GoLimits{}
@@ -120,7 +120,7 @@ func (e *engine) handlePosition(args []string) error {
 		return fmt.Errorf("uci: unknown position type %q", args[0])
 	}
 
-	e.gameHistory = append(e.gameHistory[:0], e.pos.Hash)
+	e.gameHistory.SetGamePosition(e.pos.Hash)
 
 	if len(rest) == 0 {
 		return nil
@@ -134,7 +134,7 @@ func (e *engine) handlePosition(args []string) error {
 		return err
 	}
 	e.pos = p
-	e.gameHistory = append(e.gameHistory, hashes...)
+	e.gameHistory.AppendGame(hashes...)
 	return nil
 }
 

@@ -3,11 +3,11 @@ package search
 import "github.com/masterstruct/Eunoia/internal/board"
 
 func (ss *SearchState) isDraw(pos *board.Position) bool {
-	return pos.HalfmoveClock >= 100 || ss.isRepetition(pos.Hash, pos.HalfmoveClock)
+	return pos.HalfmoveClock >= 100 || ss.Keys.IsRepetition(pos.Hash, pos.HalfmoveClock)
 }
 
-func (ss *SearchState) isRepetition(hash uint64, halfmoveClock uint8) bool {
-	n := len(ss.keyHistory)
+func (k *Keys) IsRepetition(hash uint64, halfmoveClock uint8) bool {
+	n := len(k.keys)
 	if n == 0 {
 		return false
 	}
@@ -15,10 +15,10 @@ func (ss *SearchState) isRepetition(hash uint64, halfmoveClock uint8) bool {
 	reps := 0
 	for d := 4; d <= int(halfmoveClock) && d <= cur; d += 2 {
 		idx := cur - d
-		if ss.keyHistory[idx] != hash {
+		if k.keys[idx] != hash {
 			continue
 		}
-		if idx >= ss.keyHistoryLen {
+		if idx >= k.len {
 			return true
 		}
 		reps++
@@ -27,4 +27,32 @@ func (ss *SearchState) isRepetition(hash uint64, halfmoveClock uint8) bool {
 		}
 	}
 	return false
+}
+
+type Keys struct {
+	keys []uint64
+	len  int
+}
+
+func (k *Keys) Push(hash uint64) {
+	k.keys = append(k.keys, hash)
+}
+
+func (k *Keys) Pop() {
+	k.keys = k.keys[:len(k.keys)-1]
+}
+
+func (k *Keys) SetFromGame(gameHistory *Keys) {
+	k.keys = append(k.keys[:0], gameHistory.keys[:gameHistory.len]...)
+	k.len = gameHistory.len
+}
+
+func (k *Keys) SetGamePosition(hash uint64) {
+	k.keys = append(k.keys[:0], hash)
+	k.len = 1
+}
+
+func (k *Keys) AppendGame(hashes ...uint64) {
+	k.keys = append(k.keys, hashes...)
+	k.len += len(hashes)
 }
