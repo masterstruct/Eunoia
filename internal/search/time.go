@@ -149,7 +149,10 @@ func (tm *TimeManager) SetLimits(limits GoLimits, stm board.Color) {
 		}
 	}
 
-	hardTime = max(hardTime-int64(tm.MoveOverhead), 1)
+	if remainingTime > 0 {
+		hardTime = min(hardTime, max(remainingTime-int64(tm.MoveOverhead), 1))
+	}
+
 	tm.MaxTime = tm.StartTime.Add(time.Duration(hardTime) * time.Millisecond)
 }
 
