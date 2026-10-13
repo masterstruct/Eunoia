@@ -75,11 +75,6 @@ func (e *engine) handleGo(w io.Writer, args []string) {
 			fmt.Fprintln(w, "bestmove 0000")
 			return
 		}
-
-		e.mu.Lock()
-		e.pos = pos.MakeMove(move)
-		e.mu.Unlock()
-
 		fmt.Fprintf(w, "bestmove %s\n", move.String())
 	})
 }
