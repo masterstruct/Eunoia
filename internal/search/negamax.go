@@ -114,16 +114,17 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		legalMoves++
 
 		isQuiet := !move.IsNoisy()
+		isMated := isMated(bestScore)
 
 		// futility pruning
-		if !isRoot && isQuiet && !inCheck && !isMated(bestScore) &&
+		if !isRoot && isQuiet && !inCheck && !isMated &&
 			depth < fpMaxDepth && staticEval+150 <= alpha {
 			movePicker.skipQuiets = true
 			continue
 		}
 
 		// late move pruning
-		if !isPV && isQuiet && !inCheck && !isMateScore(bestScore) &&
+		if !isPV && isQuiet && !inCheck && !isMated &&
 			depth <= lmpMaxDepth && searchedMoves >= lmpBase+lmpMultiplier*depth*depth {
 			movePicker.skipQuiets = true
 			continue
