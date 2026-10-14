@@ -9,6 +9,8 @@ import (
 
 const (
 	maxHistory = 2 << 13
+
+	killerBonus = 10_000_000
 )
 
 type Stage uint8
@@ -25,9 +27,10 @@ type MovePicker struct {
 	stage      Stage
 	ttMove     board.Move
 	skipQuiets bool
+	ply        uint16
 }
 
-func NewMovePicker(ttMove board.Move, skipQuiets bool) MovePicker {
+func NewMovePicker(ply uint16, ttMove board.Move, skipQuiets bool) MovePicker {
 	stage := TTMove
 	if ttMove == board.NullMove {
 		stage = GenerateNoisies
@@ -37,6 +40,7 @@ func NewMovePicker(ttMove board.Move, skipQuiets bool) MovePicker {
 		stage:      stage,
 		ttMove:     ttMove,
 		skipQuiets: skipQuiets,
+		ply:        ply,
 	}
 }
 
@@ -129,6 +133,9 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 		to := move.Move.To()
 
 		move.Score = ss.butterflyHistory[stm][from][to]
+		if mp.ply < uint16(len(ss.killers)) && ss.killers[mp.ply] == move.Move {
+			move.Score += killerBonus
+		}
 		mp.movelist.AddScoredMove(move)
 	}
 }

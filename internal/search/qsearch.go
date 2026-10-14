@@ -17,7 +17,7 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 		alpha = max(alpha, standPat)
 	}
 
-	movePicker := NewMovePicker(board.NullMove, !inCheck)
+	movePicker := NewMovePicker(ply, board.NullMove, !inCheck)
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 
 	legalMoves := 0
