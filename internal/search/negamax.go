@@ -14,6 +14,8 @@ const (
 
 	fpMaxDepth = 3
 
+	iirMinDepth = 5
+
 	hpMaxDepth   = 4
 	hpMultiplier = -2048
 )
@@ -60,6 +62,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	ttMove := board.NullMove
 	if ttHit {
 		ttMove = entry.Move
+	}
+
+	// internal iterative reductions
+	if isPV && depth >= iirMinDepth && !ttHit {
+		depth--
 	}
 
 	stm := pos.SideToMove
