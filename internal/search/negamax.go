@@ -13,6 +13,8 @@ const (
 	lmpMaxDepth   = 4
 
 	fpMaxDepth = 3
+
+	iirMinDepth = 5
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
@@ -60,6 +62,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	if depth <= 0 {
 		return ss.qsearch(pos, ply, alpha, beta)
+	}
+
+	// internal iterative reductions
+	if isPV && depth >= iirMinDepth && !ttHit {
+		depth--
 	}
 
 	mover := pos.SideToMove
