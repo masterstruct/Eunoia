@@ -46,6 +46,8 @@ func (ss *SearchState) PrepareForSearch() {
 	ss.bestMoveStability = 0
 	ss.depth = 1
 	ss.resetTimeManager()
+
+	clear(ss.killers[:])
 }
 
 func (ss *SearchState) ClearTables() {
