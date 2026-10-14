@@ -14,6 +14,8 @@ const (
 
 	fpMaxDepth = 5
 
+	iirMinDepth = 5
+
 	hpMaxDepth = 4
 	hpScale    = -2048
 
@@ -82,6 +84,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 				}
 			}
 		}
+	}
+
+	// internal iterative reductions
+	if isPV && depth >= iirMinDepth && !ttHit {
+		depth--
 	}
 
 	stm := pos.SideToMove
