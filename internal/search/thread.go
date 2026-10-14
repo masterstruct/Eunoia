@@ -25,6 +25,7 @@ type SearchState struct {
 
 	butterflyHistory *[2][64][64]int32
 	corrHist         *CorrHist
+	killers          *[MaxPly + 1]board.Move
 }
 
 func (ss *SearchState) Init(ttSizeMiB uint) {
@@ -35,6 +36,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 	ss.stack = newNodeStack()
 	ss.butterflyHistory = &[2][64][64]int32{}
 	ss.corrHist = &CorrHist{}
+	ss.killers = &[MaxPly + 1]board.Move{}
 }
 
 func (ss *SearchState) PrepareForSearch() {
@@ -51,6 +53,7 @@ func (ss *SearchState) ClearTables() {
 	*ss.pv = PVTable{}
 	clear(ss.butterflyHistory[:])
 	ss.corrHist.Clear()
+	clear(ss.killers[:])
 }
 
 // clears ONLY the TT - intended for `setoption name Clear Hash`.
