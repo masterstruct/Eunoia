@@ -130,6 +130,12 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			continue
 		}
 
+		// SEE pruning
+		seeThreshold := seeNoisyMultiplier * int32(depth)
+		if !isQuiet && !isMateScore(bestScore) && !see(&pos, move, seeThreshold) {
+			continue
+		}
+
 		newPos := pos.MakeMove(move)
 		ss.Keys.Push(newPos.Hash)
 		ss.Nodes++
