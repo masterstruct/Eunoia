@@ -22,6 +22,12 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 
 	legalMoves := 0
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
+
+		// SEE pruning
+		if !see(&pos, move, 0) {
+			continue
+		}
+
 		legalMoves++
 		score := -ss.qsearch(pos.MakeMove(move), ply+1, -beta, -alpha)
 		ss.Nodes++
