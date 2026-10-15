@@ -2,6 +2,9 @@ package search
 
 import "github.com/masterstruct/Eunoia/internal/board"
 
+// Based on Hobbes implementation
+// https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/search/see.rs
+
 const (
 	seePawnValue   = 100
 	seeKnightValue = 300
