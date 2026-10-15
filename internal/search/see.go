@@ -11,6 +11,8 @@ const (
 	seeBishopValue = 330
 	seeRookValue   = 500
 	seeQueenValue  = 900
+
+	seeNoisyMultiplier = -100
 )
 
 func seeValue(pt board.PieceType) int32 {
