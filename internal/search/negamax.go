@@ -131,8 +131,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		// SEE pruning
-		seeThreshold := seeNoisyMultiplier * int32(depth)
-		if !isQuiet && !isMateScore(bestScore) && !see(&pos, move, seeThreshold) {
+		var seeThreshold int32
+		if isQuiet {
+			seeThreshold = seeQuietMultiplier * int32(depth)
+		} else {
+			seeThreshold = seeNoisyMultiplier * int32(depth)
+		}
+		if !isMated && !see(&pos, move, seeThreshold) {
 			continue
 		}
 
