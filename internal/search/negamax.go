@@ -17,8 +17,9 @@ const (
 	hpMaxDepth = 4
 	hpScale    = -2048
 
-	rfpScale    = 150
-	rfpImpScale = 50
+	rfpScale      = 150
+	rfpImpScale   = 50
+	rfpLerpFactor = 50
 
 	fpBase  = 100
 	fpScale = 50
@@ -110,8 +111,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	if !isPV && !inCheck && !singularSearch {
 		// reverse futility pruning
 		rfpMargin := rfpMargin(depth, improving)
-		if !ttHit && staticEval >= beta+rfpMargin {
-			return staticEval
+		if !ttHit && staticEval-rfpMargin >= beta {
+			return lerp(beta, staticEval, rfpLerpFactor)
 		}
 
 		// null move pruning
