@@ -68,3 +68,8 @@ func mateInPlies(score int32) uint16 {
 	}
 	return uint16(plies)
 }
+
+// t = [0; 100]
+func lerp(a, b, t int32) int32 {
+	return (a*(100-t) + b*t) / 100
+}

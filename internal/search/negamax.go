@@ -16,6 +16,9 @@ const (
 
 	hpMaxDepth   = 4
 	hpMultiplier = -2048
+
+	rfpMultiplier = 150
+	rfpLerpFactor = 50
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
@@ -80,9 +83,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	}
 
 	// reverse futility pruning
-	margin := 150 * int32(depth)
-	if !isPV && !ttHit && !inCheck && staticEval >= beta+margin {
-		return staticEval
+	rfpMargin := rfpMultiplier * int32(depth)
+	if !isPV && !ttHit && !inCheck && staticEval-rfpMargin >= beta {
+		return lerp(beta, staticEval, rfpLerpFactor)
 	}
 
 	// null move pruning
