@@ -7,13 +7,13 @@ import (
 func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32) int32 {
 	inCheck := pos.InCheck()
 
-	best := -INF
+	bestScore := -INF
 	if !inCheck {
 		standPat := evaluate(&pos)
 		if standPat >= beta {
 			return standPat
 		}
-		best = standPat
+		bestScore = standPat
 		alpha = max(alpha, standPat)
 	}
 
@@ -21,21 +21,23 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 
 	legalMoves := 0
+	searchedMoves := 0
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
+		legalMoves++
 
 		// SEE pruning
-		if !see(&pos, move, 0) {
+		if !inCheck && !see(&pos, move, 0) {
 			continue
 		}
 
-		legalMoves++
 		score := -ss.qsearch(pos.MakeMove(move), ply+1, -beta, -alpha)
+		searchedMoves++
 		ss.Nodes++
 		if ss.ShouldStop(Hard) {
 			return 0
 		}
-		if score > best {
-			best = score
+		if score > bestScore {
+			bestScore = score
 			if score > alpha {
 				alpha = score
 				if score >= beta {
@@ -48,5 +50,5 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	if inCheck && legalMoves == 0 {
 		return matedIn(ply)
 	}
-	return best
+	return bestScore
 }
