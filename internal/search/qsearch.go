@@ -21,7 +21,13 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 
 	legalMoves := 0
+	searchedMoves := 0
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
+
+		// late move pruning
+		if !inCheck && !isMateScore(best) && searchedMoves >= 4 {
+			break
+		}
 
 		// SEE pruning
 		if !see(&pos, move, 0) {
@@ -31,6 +37,7 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 		legalMoves++
 		score := -ss.qsearch(pos.MakeMove(move), ply+1, -beta, -alpha)
 		ss.Nodes++
+		searchedMoves++
 		if ss.ShouldStop(Hard) {
 			return 0
 		}
