@@ -5,16 +5,17 @@ import "github.com/masterstruct/Eunoia/internal/board"
 type CorrHist [2][corrHistSize]int32
 
 const (
-	corrHistMax  = 2 << 13
+	corrHistMax  = 1024
 	corrHistSize = 16384
 	corrHistMask = corrHistSize - 1
 
-	pawnCorrHistMultiplier = 2
+	corrHistMaxBonus = corrHistMax / 4
 )
 
 func (hist *CorrHist) update(stm board.Color, key uint64, bonus int32) {
 	index := key & corrHistMask
 	entry := &hist[stm][index]
+	bonus = min(max(bonus, -corrHistMaxBonus), corrHistMaxBonus)
 	*entry = gravity(*entry, bonus, corrHistMax)
 }
 
@@ -23,7 +24,12 @@ func (hist *CorrHist) updatePawnCorrHist(pos *board.Position, depth int, staticE
 	diff := bestScore - staticEval
 
 	key := getPawnKey(pos)
-	hist.update(stm, key, pawnCorrHistMultiplier*diff*int32(depth))
+	hist.update(stm, key, diff*int32(depth)/8)
+}
+
+func (hist *CorrHist) correction(pos *board.Position) int32 {
+	index := getPawnKey(pos) & corrHistMask
+	return 128 * hist[pos.SideToMove][index] / 2048
 }
 
 func getPawnKey(pos *board.Position) uint64 {

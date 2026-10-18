@@ -9,7 +9,7 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 
 	best := -INF
 	if !inCheck {
-		standPat := evaluate(&pos)
+		standPat := evaluate(&pos) + ss.pawnCorrHist.correction(&pos)
 		if standPat >= beta {
 			return standPat
 		}
