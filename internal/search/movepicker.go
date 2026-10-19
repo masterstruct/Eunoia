@@ -164,7 +164,18 @@ func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Sq
 	//                 ||     ||
 
 	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
-	absBonus := max(clampedBonus, -clampedBonus)             // abs
+	ss.butterflyHistory[stm][from][to] =
+		gravity(ss.butterflyHistory[stm][from][to], clampedBonus, maxHistory)
+}
 
-	ss.butterflyHistory[stm][from][to] += clampedBonus - ss.butterflyHistory[stm][from][to]*absBonus/maxHistory
+func gravity(current, update, max int32) int32 {
+	return gravityBase(current, update, current, max)
+}
+
+func gravityBase(current, update, base, max int32) int32 {
+	absUpdate := update
+	if absUpdate < 0 {
+		absUpdate = -absUpdate
+	}
+	return current + update - base*absUpdate/max
 }

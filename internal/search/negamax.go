@@ -36,8 +36,6 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return alpha
 	}
 
-	alphaOrig := alpha
-
 	// TT lookup
 	entry, ttHit := ss.tt.Probe(pos.Hash)
 	if ttHit && !isPV && entry.Depth >= uint8(depth) {
@@ -67,8 +65,17 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	mover := pos.SideToMove
 	inCheck := pos.InCheck()
 
+	// static eval
+	rawEval := -INF
+	staticEval := -INF
+	correction := int32(0)
+	if !inCheck {
+		rawEval = evaluate(&pos)
+		correction = ss.pawnCorrHist.correction(&pos)
+		staticEval = rawEval + correction
+	}
+
 	// reverse futility pruning
-	staticEval := evaluate(&pos)
 	margin := 150 * int32(depth)
 	if !isPV && !ttHit && !inCheck && staticEval >= beta+margin {
 		return staticEval
@@ -98,10 +105,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	}
 
 	bestScore := -INF
-	var bestMove board.Move
-
+	bestMove := board.NullMove
 	legalMoves := 0
 	searchedMoves := 0
+	flag := tt.Upper
 
 	movePicker := NewMovePicker(ttMove, false)
 
@@ -196,12 +203,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		if score > alpha {
 			alpha = score
+			flag = tt.Exact
 			if isPV {
 				ss.pv.Store(ply, move)
 			}
 		}
 
 		if score >= beta { // beta cutoff
+			flag = tt.Lower
 			if isQuiet {
 				bonus := 300*int32(depth) - 250
 				ss.updateButterflyHistory(mover, move.From(), move.To(), bonus)
@@ -229,7 +238,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return 0
 	}
 
-	flag := tt.FlagFromScore(bestScore, alphaOrig, beta)
+	// update corrhist
+	if !inCheck && !bestMove.IsNoisy() && !isMateScore(bestScore) &&
+		!(flag == tt.Upper && bestScore >= staticEval) &&
+		!(flag == tt.Lower && bestScore <= staticEval) {
+		ss.pawnCorrHist.updatePawnCorrHist(&pos, depth, staticEval, bestScore)
+	}
+
 	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestScore, ply), uint8(depth), flag)
 
 	return bestScore
