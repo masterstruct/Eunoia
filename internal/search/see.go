@@ -12,6 +12,7 @@ const (
 	seeRookValue   = 500
 	seeQueenValue  = 900
 
+	seeQuietMultiplier = -80
 	seeNoisyMultiplier = -100
 )
 
