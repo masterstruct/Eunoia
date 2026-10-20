@@ -20,7 +20,7 @@ type SearchState struct {
 	Keys Keys // history of position hashes for 3fold detection
 
 	butterflyHistory *[2][64][64]int32
-	pawnCorrHist     *CorrHist
+	corrHist         *CorrHist
 }
 
 func (ss *SearchState) Init(ttSizeMiB uint) {
@@ -29,7 +29,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 	ss.pv = NewPVTable()
 	ss.Keys = Keys{keys: make([]uint64, 0, MaxPly)}
 	ss.butterflyHistory = &[2][64][64]int32{}
-	ss.pawnCorrHist = &CorrHist{}
+	ss.corrHist = &CorrHist{}
 }
 
 func (ss *SearchState) PrepareForSearch() {
@@ -44,7 +44,7 @@ func (ss *SearchState) ClearTables() {
 	ss.ClearTT()
 	*ss.pv = PVTable{}
 	clear(ss.butterflyHistory[:])
-	clear(ss.pawnCorrHist[:])
+	ss.corrHist.Clear()
 }
 
 // clears ONLY the TT - intended for `setoption name Clear Hash`.
