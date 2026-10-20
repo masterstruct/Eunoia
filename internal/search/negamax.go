@@ -71,7 +71,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	correction := int32(0)
 	if !inCheck {
 		rawEval = evaluate(&pos)
-		correction = ss.pawnCorrHist.correction(&pos)
+		correction = ss.corrHist.Correction(&pos)
 		staticEval = rawEval + correction
 	}
 
@@ -242,7 +242,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	if !inCheck && !bestMove.IsNoisy() && !isMateScore(bestScore) &&
 		!(flag == tt.Upper && bestScore >= staticEval) &&
 		!(flag == tt.Lower && bestScore <= staticEval) {
-		ss.pawnCorrHist.updatePawnCorrHist(&pos, depth, staticEval, bestScore)
+		ss.corrHist.Update(&pos, depth, staticEval, bestScore)
 	}
 
 	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestScore, ply), uint8(depth), flag)
