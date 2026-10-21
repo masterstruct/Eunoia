@@ -34,9 +34,9 @@ const (
 	corrNonPawnBonusDiv  = 128
 	corrNonPawnWeight    = 256
 
-	corrMinorBonusMult = 16
+	corrMinorBonusMult = 8
 	corrMinorBonusDiv  = 128
-	corrMinorWeight    = 256
+	corrMinorWeight    = 128
 )
 
 type CorrHist struct {
