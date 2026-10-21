@@ -20,7 +20,6 @@ const (
 	corrWhite
 	corrBlack
 	corrMinor
-	corrMajor
 
 	numCorrBuckets
 )
@@ -38,10 +37,6 @@ const (
 	corrMinorBonusMult = 16
 	corrMinorBonusDiv  = 128
 	corrMinorWeight    = 256
-
-	corrMajorBonusMult = 16
-	corrMajorBonusDiv  = 128
-	corrMajorWeight    = 256
 )
 
 type CorrHist struct {
@@ -68,7 +63,6 @@ func (ch *CorrHist) Correction(pos *board.Position) int32 {
 	sum += ch.get(stm, getNonPawnKey(pos, board.White), corrWhite) * corrNonPawnWeight
 	sum += ch.get(stm, getNonPawnKey(pos, board.Black), corrBlack) * corrNonPawnWeight
 	sum += ch.get(stm, getMinorKey(pos), corrMinor) * corrMinorWeight
-	sum += ch.get(stm, getMajorKey(pos), corrMajor) * corrMajorWeight
 
 	cp := sum / (corrHistGrain * corrWeightScale)
 	return min(max(cp, -corrMaxCP), corrMaxCP)
@@ -82,7 +76,6 @@ func (ch *CorrHist) Update(pos *board.Position, depth int, staticEval, bestScore
 	ch.update(stm, getNonPawnKey(pos, board.White), corrWhite, corrBonus(diff, depth, corrNonPawnBonusMult, corrNonPawnBonusDiv))
 	ch.update(stm, getNonPawnKey(pos, board.Black), corrBlack, corrBonus(diff, depth, corrNonPawnBonusMult, corrNonPawnBonusDiv))
 	ch.update(stm, getMinorKey(pos), corrMinor, corrBonus(diff, depth, corrMinorBonusMult, corrMinorBonusDiv))
-	ch.update(stm, getMajorKey(pos), corrMajor, corrBonus(diff, depth, corrMajorBonusMult, corrMajorBonusDiv))
 }
 
 func corrBonus(diff int32, depth int, mult, div int32) int32 {
@@ -118,17 +111,6 @@ func getNonPawnKey(pos *board.Position, stm board.Color) uint64 {
 func getMinorKey(pos *board.Position) uint64 {
 	var key uint64
 	pieces := pos.Pieces[board.Knight] | pos.Pieces[board.Bishop] | pos.Pieces[board.King]
-	for pieces != 0 {
-		sq := pieces.PopLSB()
-		p := pos.Board[sq]
-		key ^= board.ZobristTable.PieceKey(p.Color, p.Type, sq)
-	}
-	return key
-}
-
-func getMajorKey(pos *board.Position) uint64 {
-	var key uint64
-	pieces := pos.Pieces[board.Rook] | pos.Pieces[board.Queen] | pos.Pieces[board.King]
 	for pieces != 0 {
 		sq := pieces.PopLSB()
 		p := pos.Board[sq]
