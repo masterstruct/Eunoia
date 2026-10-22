@@ -40,17 +40,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	entry, ttHit := ss.tt.Probe(pos.Hash)
 	if ttHit && !isPV && entry.Depth >= uint8(depth) {
 		score := scoreFromTT(entry.Score, ply)
-		switch entry.Flag {
-		case tt.Exact:
+		if entry.Flag.BoundsMatch(score, alpha, beta) {
 			return score
-		case tt.Lower:
-			if score >= beta {
-				return score
-			}
-		case tt.Upper:
-			if score <= alpha {
-				return score
-			}
 		}
 	}
 	ttMove := board.NullMove
@@ -242,8 +233,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	// update corrhist
 	if !inCheck && !bestMove.IsNoisy() && !isMateScore(bestScore) &&
-		!(flag == tt.Upper && bestScore >= staticEval) &&
-		!(flag == tt.Lower && bestScore <= staticEval) {
+		flag.BoundsMatch(bestScore, staticEval, staticEval) {
 		ss.corrHist.Update(&pos, depth, staticEval, bestScore)
 	}
 
