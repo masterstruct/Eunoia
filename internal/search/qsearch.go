@@ -21,12 +21,13 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	inCheck := pos.InCheck()
 
 	// TT lookup
-	entry, ttHit := ss.tt.Probe(pos.Hash)
+	entry := ss.tt.Probe(pos.Hash)
+	ttHit := pos.Hash == entry.Key
 	ttMove := board.NullMove
 	if ttHit {
-		score := scoreFromTT(entry.Score, ply)
-		if entry.Flag.BoundsMatch(score, alpha, beta) {
-			return score
+		ttScore := scoreFromTT(entry.Score, ply)
+		if entry.Flag.BoundsMatch(ttScore, alpha, beta) {
+			return ttScore
 		}
 		if inCheck || entry.Move.IsNoisy() {
 			ttMove = entry.Move
