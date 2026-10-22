@@ -16,6 +16,18 @@ const (
 	Lower
 )
 
+func (f Flag) BoundsMatch(score, lower, upper int32) bool {
+	switch f {
+	case Exact:
+		return true
+	case Lower:
+		return score >= upper
+	case Upper:
+		return score <= lower
+	}
+	panic("unreachable")
+}
+
 type Entry struct {
 	Key   uint64
 	Move  board.Move
