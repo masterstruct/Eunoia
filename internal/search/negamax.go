@@ -29,6 +29,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	isRoot := ply == 0
 	isPV := beta > alpha+1
 
+	if depth <= 0 {
+		return ss.qsearch(pos, ply, alpha, beta)
+	}
+
 	if !isRoot && ss.isDraw(&pos) {
 		return 0
 	}
