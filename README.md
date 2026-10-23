@@ -32,6 +32,7 @@ make linux
 - [@Deez](https://github.com/Dejon51) for help
 - [@Matt](https://github.com/nocturn9x) for [OpenBench instance](https://chess.n9x.co/)
 - [Ronald Friederich](https://chessprogramming.org/Ronald_Friederich) for [PeSTO's Evaluation Function](https://chessprogramming.org/PeSTO's_Evaluation_Function)
+- [@Naman](https://github.com/namanthanki) for [TT prefetch](https://github.com/nescitus/Rodent-V/blob/main/prefetch_amd64.s)
 
 In no particular order, engines used for ideas or inspiration:
 
