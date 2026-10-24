@@ -27,6 +27,12 @@ const (
 	MinMoveOverhead     = 0
 	DefaultMoveOverhead = 20
 	MaxMoveOverhead     = 5000
+
+	softScale    = 33
+	softIncScale = 700
+
+	hardScale    = 333
+	hardIncScale = 700
 )
 
 func (ss *SearchState) hardLimitReached() bool {
@@ -135,10 +141,12 @@ func (tm *TimeManager) SetLimits(limits GoLimits, stm board.Color) {
 	var hardTime, softTime int64
 
 	if remainingTime > 0 {
-		softTime = max((remainingTime/30+increment*7/10)-int64(tm.MoveOverhead), 1)
+		softTime = remainingTime*softScale/1000 + increment*softIncScale/1000
+		softTime = max(softTime-int64(tm.MoveOverhead), 1)
 		tm.SoftTime = tm.StartTime.Add(time.Duration(softTime) * time.Millisecond)
 
-		hardTime = max(remainingTime/3+increment*7/10, 1)
+		hardTime = remainingTime*hardScale/1000 + increment*hardIncScale/1000
+		hardTime = max(hardTime, 1)
 	}
 
 	if limits.MoveTime > 0 {
