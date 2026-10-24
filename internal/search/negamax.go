@@ -13,6 +13,9 @@ const (
 	lmpMaxDepth   = 4
 
 	fpMaxDepth = 3
+
+	hpMaxDepth   = 4
+	hpMultiplier = -2048
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
@@ -62,7 +65,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return ss.qsearch(pos, ply, alpha, beta)
 	}
 
-	mover := pos.SideToMove
+	stm := pos.SideToMove
 	inCheck := pos.InCheck()
 
 	// static eval
@@ -123,6 +126,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
+		var historyScore int32
+		if isQuiet {
+			historyScore = ss.butterflyHistory[stm][move.From()][move.To()]
+		}
 
 		// futility pruning
 		if !isRoot && isQuiet && !inCheck && !isMated &&
@@ -134,6 +141,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		// late move pruning
 		if !isPV && isQuiet && !inCheck && !isMated &&
 			depth <= lmpMaxDepth && searchedMoves >= lmpBase+lmpMultiplier*depth*depth {
+			movePicker.skipQuiets = true
+			continue
+		}
+
+		// history pruning
+		if !isRoot && !isMated && isQuiet && depth <= hpMaxDepth &&
+			historyScore < hpMultiplier*int32(depth*depth) {
 			movePicker.skipQuiets = true
 			continue
 		}
@@ -215,12 +229,12 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			flag = tt.Lower
 			if isQuiet {
 				bonus := 300*int32(depth) - 250
-				ss.updateButterflyHistory(mover, move.From(), move.To(), bonus)
+				ss.updateButterflyHistory(stm, move.From(), move.To(), bonus)
 
 				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
 					quietMove := quietsTried.Moves[i].Move
-					ss.updateButterflyHistory(mover, quietMove.From(), quietMove.To(), -bonus)
+					ss.updateButterflyHistory(stm, quietMove.From(), quietMove.To(), -bonus)
 				}
 			}
 			break
