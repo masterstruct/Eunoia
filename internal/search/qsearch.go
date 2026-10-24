@@ -24,7 +24,7 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
 
 		// SEE pruning
-		if !see(&pos, move, 0) {
+		if !inCheck && !see(&pos, move, 0) {
 			continue
 		}
 
