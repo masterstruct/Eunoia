@@ -86,7 +86,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	// null move pruning
 	if !inCheck && !isPV && staticEval >= beta && depth >= nmpMinDepth {
-		reduction := 3
+		reduction := 3 + depth/5
 
 		newPos := pos.MakeNullMove()
 		ss.tt.Prefetch(newPos.Hash)
