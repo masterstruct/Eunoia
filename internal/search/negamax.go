@@ -124,7 +124,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 		}
 
 		// razoring
-		if !isPV && staticEval < alpha-razorBase-razorMultiplier*int32(depth*depth) {
+		if staticEval < alpha-razorBase-razorMultiplier*depth*depth {
 			return ss.qsearch(pos, ply, alpha, beta)
 		}
 
