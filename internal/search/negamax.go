@@ -20,6 +20,7 @@ const (
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
 	ss.pv.Clear(ply)
+	ss.selDepth = max(ss.selDepth, ply)
 
 	if ss.ShouldStop(Hard) {
 		return 0

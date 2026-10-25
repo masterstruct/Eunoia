@@ -5,6 +5,10 @@ import (
 )
 
 func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32) int32 {
+	ss.pv.Clear(ply)
+	ss.selDepth = max(ss.selDepth, ply)
+
+	isPV := beta > alpha+1
 	inCheck := pos.InCheck()
 
 	best := -INF
@@ -40,6 +44,9 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 			best = score
 			if score > alpha {
 				alpha = score
+				if isPV {
+					ss.pv.Store(ply, move)
+				}
 				if score >= beta {
 					break
 				}
