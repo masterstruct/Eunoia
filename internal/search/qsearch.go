@@ -8,6 +8,10 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	ss.pv.Clear(ply)
 	ss.selDepth = max(ss.selDepth, ply)
 
+	if ss.isDraw(&pos) {
+		return 0
+	}
+
 	isPV := beta > alpha+1
 	inCheck := pos.InCheck()
 
@@ -26,20 +30,25 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 
 	legalMoves := 0
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
+		legalMoves++
 
 		// SEE pruning
 		if !inCheck && !see(&pos, move, 0) {
 			continue
 		}
 
-		legalMoves++
 		newPos := pos.MakeMove(move)
 		ss.tt.Prefetch(newPos.Hash)
-		score := -ss.qsearch(newPos, ply+1, -beta, -alpha)
 		ss.Nodes++
+
+		ss.Keys.Push(newPos.Hash)
+		score := -ss.qsearch(newPos, ply+1, -beta, -alpha)
+		ss.Keys.Pop()
+
 		if ss.ShouldStop(Hard) {
 			return 0
 		}
+
 		if score > best {
 			best = score
 			if score > alpha {
