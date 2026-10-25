@@ -24,6 +24,9 @@ const (
 	fpScale = 50
 
 	seDoubleExtMargin = 20
+
+	razorBase       = 300
+	razorMultiplier = 250
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alpha, beta int32) int32 {
@@ -118,6 +121,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 		rfpMargin := rfpMargin(depth, improving)
 		if !ttHit && staticEval >= beta+rfpMargin {
 			return staticEval
+		}
+
+		// razoring
+		if !isPV && staticEval < alpha-razorBase-razorMultiplier*int32(depth*depth) {
+			return ss.qsearch(pos, ply, alpha, beta)
 		}
 
 		// null move pruning
