@@ -16,6 +16,9 @@ const (
 
 	hpMaxDepth   = 4
 	hpMultiplier = -2048
+
+	razorBase       = 300
+	razorMultiplier = 250
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
@@ -85,6 +88,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	margin := 150 * int32(depth)
 	if !isPV && !ttHit && !inCheck && staticEval >= beta+margin {
 		return staticEval
+	}
+
+	// razoring
+	if !isPV && staticEval < alpha-razorBase-razorMultiplier*int32(depth*depth) {
+		return ss.qsearch(pos, ply, alpha, beta)
 	}
 
 	// null move pruning
