@@ -13,6 +13,7 @@ type SearchState struct {
 	bestMove  board.Move
 	bestScore int32
 	depth     int
+	nmpMinPly uint16
 
 	tt *tt.Table
 	pv *PVTable

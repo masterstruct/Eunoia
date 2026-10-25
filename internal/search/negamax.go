@@ -87,13 +87,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	// null move pruning
 	if !inCheck && !isPV && staticEval >= beta && depth >= nmpMinDepth {
 		reduction := 3 + depth/5
+		reducedDepth := depth - reduction
 
 		newPos := pos.MakeNullMove()
 		ss.tt.Prefetch(newPos.Hash)
 		ss.Nodes++
 
 		ss.Keys.Push(newPos.Hash)
-		score := -ss.negamax(newPos, depth-reduction, ply+1, -beta, -beta+1)
+		score := -ss.negamax(newPos, reducedDepth, ply+1, -beta, -beta+1)
 		ss.Keys.Pop()
 
 		if ss.ShouldStop(Hard) {
@@ -101,10 +102,27 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		if score >= beta {
-			if isMateScore(score) {
-				score = beta
+			// at low depths we can return NMP result directly
+			if depth <= 14 || ss.nmpMinPly > 0 {
+				if isMateScore(score) {
+					return beta
+				} else {
+					return score
+				}
 			}
-			return score
+
+			// verification search
+			ss.nmpMinPly = ply + 3*uint16(reducedDepth)/4
+			verifScore := ss.negamax(pos, reducedDepth, ply, beta-1, beta)
+			ss.nmpMinPly = 0
+
+			if ss.ShouldStop(Hard) {
+				return 0
+			}
+
+			if verifScore >= beta {
+				return score
+			}
 		}
 	}
 
