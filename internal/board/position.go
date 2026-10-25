@@ -50,6 +50,10 @@ func (pos *Position) PieceOn(sq Square) (Piece, bool) {
 	return piece, piece != NoPiece
 }
 
+func (pos *Position) HasNonPawns() bool {
+	return pos.Colors[pos.SideToMove]&^(pos.Pieces[King]|pos.Pieces[Pawn]) != 0
+}
+
 func newBoard() [64]Piece {
 	var board [64]Piece
 	for sq := range board {
