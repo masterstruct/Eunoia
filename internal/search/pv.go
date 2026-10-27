@@ -70,6 +70,8 @@ func (ss *SearchState) printPV(w io.Writer, score int32, bound tt.Flag) {
 
 	buf.WriteString("info depth ")
 	buf.WriteString(strconv.Itoa(ss.depth))
+	buf.WriteString(" seldepth ")
+	buf.WriteString(strconv.Itoa(int(ss.selDepth)))
 	if isMateScore(score) {
 		buf.WriteString(" score mate ")
 		buf.WriteString(strconv.Itoa(mateInMoves(score)))
