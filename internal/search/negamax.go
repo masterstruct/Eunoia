@@ -98,7 +98,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	}
 
 	// null move pruning
-	if !inCheck && !isPV && pos.HasNonPawns() && staticEval >= beta && depth >= nmpMinDepth {
+	if !inCheck && !isPV && pos.HasNonPawns() && staticEval >= beta+30 && depth >= nmpMinDepth {
 		reduction := 3 + depth/5
 		reducedDepth := depth - reduction
 
