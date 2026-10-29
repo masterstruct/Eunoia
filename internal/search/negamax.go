@@ -62,12 +62,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		ttMove = entry.Move
 	}
 
-	if depth <= 0 {
+	stm := pos.SideToMove
+	inCheck := pos.InCheck()
+
+	if depth <= 0 && !inCheck {
 		return ss.qsearch(pos, ply, alpha, beta)
 	}
 
-	stm := pos.SideToMove
-	inCheck := pos.InCheck()
+	depth = max(depth, 0)
 
 	// static eval
 	rawEval := -INF
