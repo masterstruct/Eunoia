@@ -266,7 +266,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 	}
 
-	if legalMoves == 0 {
+	if searchedMoves == 0 {
+		if legalMoves > 0 {
+			return alpha
+		}
 		if inCheck {
 			// checkmate
 			return matedIn(ply)
