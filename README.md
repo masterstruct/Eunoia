@@ -1,8 +1,19 @@
-# Eunoia
+<div align="center">
 
-UCI Chess Engine written in Go
+<img
+  width="250"
+  alt="Eunoia logo"
+  src="resources/eunoia.png">
+ 
+<h3>Eunoia</h3>
 
+<b>UCI chess engine written in Go</b>
+
+<br>
 Eunoia (/juːˈnɔɪ.ə/) is a Greek word meaning "beautiful thinking".
+<br>
+</div>
+
 
 ## Requirements
 
