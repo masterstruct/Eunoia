@@ -1079,7 +1079,7 @@ func checkMoveFilter(t *testing.T, pos Position, depth int) {
 	}
 
 	for i := range all.Len {
-		checkMoveFilter(t, pos.MakeMove(all.Moves[i].Move), depth-1)
+		checkMoveFilter(t, pos.Make(all.Moves[i].Move), depth-1)
 	}
 }
 

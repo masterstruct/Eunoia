@@ -276,7 +276,7 @@ func TestMakeMove(t *testing.T) {
 				t.Fatalf("bad test FEN: %v", err)
 			}
 
-			got := pos.MakeMove(tt.move)
+			got := pos.Make(tt.move)
 
 			want, err := ParseFEN(tt.wantFEN)
 			if err != nil {
@@ -395,7 +395,7 @@ func BenchmarkMakeMove(b *testing.B) {
 		if f.chess960 {
 			SetChess960(true)
 		}
-		_ = f.pos.MakeMove(f.move)
+		_ = f.pos.Make(f.move)
 		if f.chess960 {
 			SetChess960(false)
 		}
@@ -479,7 +479,7 @@ func TestMakeMove_Chess960(t *testing.T) {
 				t.Fatalf("bad test FEN: %v", err)
 			}
 
-			got := pos.MakeMove(tt.move)
+			got := pos.Make(tt.move)
 
 			want, err := ParseFEN(tt.wantFEN)
 			if err != nil {

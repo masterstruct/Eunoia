@@ -1,10 +1,6 @@
 package board
 
-func (pos *Position) MakeMove(move Move) Position {
-	// To optimize this further, you can add 2 helper
-	// functions: MakeBlackMove and MakeWhiteMove.
-	// currently color checks add 3 code branches.
-
+func (pos *Position) Make(move Move) Position {
 	newPos := *pos
 	from, to := move.From(), move.To()
 	piece, _ := newPos.PieceOn(from)

@@ -36,7 +36,7 @@ func perft(pos Position, depth int) uint64 {
 
 	var nodes uint64
 	for i := 0; i < movelist.Len; i++ {
-		newPos := pos.MakeMove(movelist.Moves[i].Move)
+		newPos := pos.Make(movelist.Moves[i].Move)
 		nodes += perft(newPos, depth-1)
 	}
 
@@ -55,7 +55,7 @@ func SplitPerft(pos *Position, depth int) PerftResult {
 
 	} else {
 		for i := 0; i < movelist.Len; i++ {
-			newPos := pos.MakeMove(movelist.Moves[i].Move)
+			newPos := pos.Make(movelist.Moves[i].Move)
 			nodes := perft(newPos, depth-1)
 			fmt.Println(movelist.Moves[i], nodes)
 			total += nodes

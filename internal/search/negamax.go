@@ -184,7 +184,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			continue
 		}
 
-		newPos := pos.MakeMove(move)
+		newPos := pos.Make(move)
 		ss.tt.Prefetch(newPos.Hash)
 		ss.Keys.Push(newPos.Hash)
 		ss.Nodes++
