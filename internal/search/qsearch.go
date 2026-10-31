@@ -37,7 +37,8 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 			continue
 		}
 
-		newPos := pos.Make(move)
+		newPos := pos
+		newPos.Make(move)
 		ss.tt.Prefetch(newPos.Hash)
 		ss.Nodes++
 

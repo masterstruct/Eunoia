@@ -29,7 +29,8 @@ func walkAndVerifyHash(t *testing.T, pos Position, depth int, checked *int) {
 	GenerateLegalMoves(&pos, &movelist, All)
 
 	for i := 0; i < movelist.Len; i++ {
-		newPos := pos.Make(movelist.Moves[i].Move)
+		newPos := pos
+		newPos.Make(movelist.Moves[i].Move)
 
 		want := ZobristTable.ComputeHash(&newPos)
 		if newPos.Hash != want {

@@ -276,14 +276,14 @@ func TestMakeMove(t *testing.T) {
 				t.Fatalf("bad test FEN: %v", err)
 			}
 
-			got := pos.Make(tt.move)
+			pos.Make(tt.move)
 
 			want, err := ParseFEN(tt.wantFEN)
 			if err != nil {
 				t.Fatalf("failed to generate FEN: %v", err)
 			}
 
-			makemove_assertPositionEqual(t, got, want)
+			makemove_assertPositionEqual(t, pos, want)
 		})
 	}
 }
@@ -395,7 +395,7 @@ func BenchmarkMakeMove(b *testing.B) {
 		if f.chess960 {
 			SetChess960(true)
 		}
-		_ = f.pos.Make(f.move)
+		f.pos.Make(f.move)
 		if f.chess960 {
 			SetChess960(false)
 		}
@@ -479,14 +479,14 @@ func TestMakeMove_Chess960(t *testing.T) {
 				t.Fatalf("bad test FEN: %v", err)
 			}
 
-			got := pos.Make(tt.move)
+			pos.Make(tt.move)
 
 			want, err := ParseFEN(tt.wantFEN)
 			if err != nil {
 				t.Fatalf("failed to generate FEN: %v", err)
 			}
 
-			makemove_assertPositionEqual(t, got, want)
+			makemove_assertPositionEqual(t, pos, want)
 		})
 	}
 }

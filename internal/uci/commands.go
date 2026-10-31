@@ -163,7 +163,7 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 		for i := range movelist.Len {
 			m := movelist.Moves[i].Move
 			if matchesUCIMove(m, from, to, move) {
-				newPos = newPos.Make(m)
+				newPos.Make(m)
 				hashes = append(hashes, newPos.Hash)
 				success = true
 				break
