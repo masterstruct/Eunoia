@@ -1,14 +1,11 @@
 package search
 
-import "github.com/masterstruct/Eunoia/internal/board"
-
 type Node struct {
-	move     board.Move
-	piece    board.Piece
-	captured board.Piece
+	// TODO: add fields, update MakeMove and UnmakeMove
 }
 
 type NodeStack struct {
+	// headroom if accessing stack[ply+N]
 	data [MaxPly + 8]Node
 }
 
@@ -16,9 +13,7 @@ func newNodeStack() NodeStack {
 	var stack NodeStack
 	for i := range stack.data {
 		stack.data[i] = Node{
-			move:     board.NullMove,
-			piece:    board.NoPiece,
-			captured: board.NoPiece,
+			// TODO: set defaults
 		}
 	}
 	return stack

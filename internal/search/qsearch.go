@@ -38,13 +38,9 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 		}
 
 		newPos := pos
-		newPos.Make(move)
-		ss.tt.Prefetch(newPos.Hash)
-		ss.Nodes++
-
-		ss.Keys.Push(newPos.Hash)
+		ss.makeMove(&newPos, move)
 		score := -ss.qsearch(newPos, ply+1, -beta, -alpha)
-		ss.Keys.Pop()
+		ss.unmakeMove()
 
 		if ss.ShouldStop(Hard) {
 			return 0
