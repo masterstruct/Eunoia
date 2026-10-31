@@ -19,7 +19,8 @@ type SearchState struct {
 	tt *tt.Table
 	pv *PVTable
 
-	Keys Keys // history of position hashes for 3fold detection
+	Keys  Keys // history of position hashes for 3fold detection
+	stack NodeStack
 
 	butterflyHistory *[2][64][64]int32
 	corrHist         *CorrHist
@@ -30,6 +31,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 	ss.tt = tt.NewTable(ttSizeMiB)
 	ss.pv = NewPVTable()
 	ss.Keys = Keys{keys: make([]uint64, 0, MaxPly)}
+	ss.stack = newNodeStack()
 	ss.butterflyHistory = &[2][64][64]int32{}
 	ss.corrHist = &CorrHist{}
 }
