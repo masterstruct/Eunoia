@@ -17,7 +17,7 @@ type benchResult struct {
 
 func Bench() {
 	eng := newEngine()
-	eng.state.Init(tt.DefaultSizeMiB)
+	eng.ss.Init(tt.DefaultSizeMiB)
 
 	var totalNodes uint64
 	var totalTime time.Duration
@@ -25,15 +25,15 @@ func Bench() {
 	fmt.Println("Benchmarking...")
 
 	for _, benchStruct := range benchPositions {
-		eng.state.PrepareForSearch()
-		eng.state.ClearTables()
-		eng.state.Quiet = true
-		eng.state.MaxDepth = benchDepth
+		eng.ss.PrepareForSearch()
+		eng.ss.ClearTables()
+		eng.ss.Quiet = true
+		eng.ss.MaxDepth = benchDepth
 
 		board.SetChess960(benchStruct.frc)
 		pos, err := board.ParseFEN(benchStruct.fen)
 		if err != nil {
-			panic("Bad bench fen: " + benchStruct.fen)
+			panic("Bad bench FEN: " + benchStruct.fen)
 		}
 		eng.pos = pos
 
@@ -52,10 +52,10 @@ func Bench() {
 func (e *engine) searchBenchPos() benchResult {
 	start := time.Now()
 
-	e.state.SearchBestMove(e.pos)
+	e.ss.SearchBestMove(e.pos)
 
 	return benchResult{
-		nodes: e.state.Nodes,
+		nodes: e.ss.Nodes,
 		time:  time.Since(start),
 	}
 }

@@ -7,10 +7,10 @@
 *.dll
 *.so
 *.dylib
-dev
-base
-eunoia
-Eunoia
+/dev
+/base
+/eunoia
+/Eunoia
 
 # fastchess
 config.json

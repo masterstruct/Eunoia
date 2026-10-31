@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,30 +17,25 @@ type engine struct {
 	mu          sync.Mutex
 	pos         board.Position
 	gameHistory search.Keys
-	state       *search.SearchState
+	ss          *search.SearchState
 	running     sync.WaitGroup
 }
 
 func newEngine() *engine {
 	e := &engine{
-		pos:   board.StartingPosition(),
-		state: &search.SearchState{},
+		pos: board.StartingPosition(),
+		ss:  &search.SearchState{},
 	}
 	e.gameHistory.SetGamePosition(e.pos.Hash)
-	e.state.UpdateMoveOverhead(search.DefaultMoveOverhead)
+	e.ss.UpdateMoveOverhead(search.DefaultMoveOverhead)
 	return e
 }
 
 func Loop(r io.Reader, w io.Writer) {
-	if len(os.Args) > 1 && os.Args[1] == "bench" {
-		Bench()
-		return
-	}
-
 	scanner := bufio.NewScanner(r)
 
 	eng := newEngine()
-	eng.state.Init(tt.DefaultSizeMiB)
+	eng.ss.Init(tt.DefaultSizeMiB)
 
 	for scanner.Scan() {
 		_ = scanner.Err()
@@ -81,8 +75,8 @@ func Loop(r io.Reader, w io.Writer) {
 		case "ucinewgame":
 			eng.cancelSearchAndWait()
 			eng.mu.Lock()
-			eng.state.PrepareForSearch()
-			eng.state.ClearTables()
+			eng.ss.PrepareForSearch()
+			eng.ss.ClearTables()
 			eng.mu.Unlock()
 
 		case "isready":
@@ -127,7 +121,7 @@ func Loop(r io.Reader, w io.Writer) {
 
 func (e *engine) cancelSearch() {
 	e.mu.Lock()
-	e.state.Stop = true
+	e.ss.Stop = true
 	e.mu.Unlock()
 }
 
