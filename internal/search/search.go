@@ -79,3 +79,14 @@ func (ss *SearchState) handleNoLegalMoves(pos *board.Position) board.Move {
 	ss.bestScore = score
 	return ss.bestMove
 }
+
+func (ss *SearchState) makeMove(pos *board.Position, move board.Move) {
+	pos.Make(move)
+	ss.Keys.Push(pos.Hash)
+	ss.tt.Prefetch(pos.Hash)
+	ss.Nodes++
+}
+
+func (ss *SearchState) unmakeMove() {
+	ss.Keys.Pop()
+}

@@ -92,7 +92,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		reduction := 3 + depth/5
 		reducedDepth := depth - reduction
 
-		newPos := pos.MakeNullMove()
+		newPos := pos
+		newPos.MakeNullMove()
 		ss.tt.Prefetch(newPos.Hash)
 		ss.Nodes++
 
@@ -184,10 +185,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			continue
 		}
 
-		newPos := pos.MakeMove(move)
-		ss.tt.Prefetch(newPos.Hash)
-		ss.Keys.Push(newPos.Hash)
-		ss.Nodes++
+		newPos := pos
+		ss.makeMove(&newPos, move)
 
 		newDepth := depth - 1
 
@@ -226,7 +225,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			}
 		}
 
-		ss.Keys.Pop()
+		ss.unmakeMove()
 		searchedMoves++
 
 		if ss.ShouldStop(Hard) {
