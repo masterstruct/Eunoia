@@ -158,6 +158,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
+		isKiller := ss.killers[ply] == move
+
 		var historyScore int32
 		if isQuiet {
 			historyScore = ss.butterflyHistory[stm][move.From()][move.To()]
@@ -178,7 +180,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		// history pruning
-		if !isRoot && !isMated && isQuiet && depth <= hpMaxDepth &&
+		if !isRoot && !isMated && !isKiller && isQuiet && depth <= hpMaxDepth &&
 			historyScore < hpMultiplier*int32(depth*depth) {
 			movePicker.skipQuiets = true
 			continue
