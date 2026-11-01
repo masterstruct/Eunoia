@@ -16,6 +16,9 @@ const (
 
 	hpMaxDepth   = 4
 	hpMultiplier = -2048
+
+	rfpMultiplier    = 150
+	rfpImpMultiplier = 50
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
@@ -80,10 +83,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		correction = ss.corrHist.Correction(&pos)
 		staticEval = rawEval + correction
 	}
+	ss.stack[ply].staticEval = staticEval
+
+	improving := ss.improvement(ply, staticEval, inCheck) > 0
 
 	// reverse futility pruning
-	margin := 150 * int32(depth)
-	if !isPV && !ttHit && !inCheck && staticEval >= beta+margin {
+	rfpMargin := rfpMargin(depth, improving)
+	if !isPV && !ttHit && !inCheck && staticEval >= beta+rfpMargin {
 		return staticEval
 	}
 
@@ -287,4 +293,21 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	ss.tt.Store(pos.Hash, bestMove, scoreToTT(bestScore, ply), uint8(depth), flag)
 
 	return bestScore
+}
+
+func (ss *SearchState) improvement(ply uint16, staticEval int32, inCheck bool) int32 {
+	if !inCheck && ply >= 2 && isDefined(ss.stack[ply-2].staticEval) {
+		return staticEval - ss.stack[ply-2].staticEval
+	}
+	if !inCheck && ply >= 4 && isDefined(ss.stack[ply-4].staticEval) {
+		return staticEval - ss.stack[ply-4].staticEval
+	}
+	return 0
+}
+
+func rfpMargin(depth int, improving bool) int32 {
+	if improving {
+		return int32(depth) * rfpImpMultiplier
+	}
+	return int32(depth) * rfpMultiplier
 }
