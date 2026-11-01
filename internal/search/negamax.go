@@ -205,6 +205,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		if searchedMoves >= lmrMinMoves && depth >= lmrMinDepth &&
 			isQuiet {
 			reduction := lmr[min(newDepth, lmrMaxDepth)][min(searchedMoves, lmrMaxMoves)]
+			if !improving {
+				reduction += 1
+			}
 
 			if reduction > 0 {
 				reducedDepth := max(newDepth-reduction, 1)
