@@ -86,6 +86,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	ss.stack[ply].staticEval = staticEval
 
 	improving := ss.improvement(ply, staticEval, inCheck) > 0
+	improvingInt := 0
+	if improving {
+		improvingInt = 1
+	}
 
 	// reverse futility pruning
 	rfpMargin := rfpMargin(depth, improving)
@@ -168,7 +172,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		// late move pruning
 		if !isPV && isQuiet && !inCheck && !isMated &&
-			depth <= lmpMaxDepth && searchedMoves >= lmpBase+lmpMultiplier*depth*depth {
+			depth <= lmpMaxDepth && searchedMoves >= lmpBase+(lmpMultiplier*depth*depth)/(2-improvingInt) {
 			movePicker.skipQuiets = true
 			continue
 		}
