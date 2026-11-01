@@ -27,6 +27,10 @@ func matedIn(ply uint16) int32 {
 	return -MATE + int32(ply)
 }
 
+func isDefined(score int32) bool {
+	return score >= -MATE && score <= MATE
+}
+
 func scoreToTT(score int32, ply uint16) int16 {
 	if isMating(score) {
 		return int16(score) + int16(ply)
