@@ -162,7 +162,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
-		isKiller := ss.killers[ply] == move
+		isKiller := ss.stack[ply].killer == move
 
 		var historyScore int32
 		if isQuiet {
@@ -267,7 +267,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		if score >= beta { // beta cutoff
 			flag = tt.Lower
 			if isQuiet {
-				ss.killers[ply] = bestMove
+				ss.stack[ply].killer = bestMove
 
 				bonus := 300*int32(depth) - 250
 				ss.updateButterflyHistory(stm, move.From(), move.To(), bonus)

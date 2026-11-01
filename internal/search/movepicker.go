@@ -133,7 +133,9 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 		to := move.Move.To()
 
 		move.Score = ss.butterflyHistory[stm][from][to]
-		if mp.ply < uint16(len(ss.killers)) && ss.killers[mp.ply] == move.Move {
+
+		// killer move bonus
+		if ss.stack[mp.ply].killer == move.Move {
 			move.Score += killerBonus
 		}
 		mp.movelist.AddScoredMove(move)
