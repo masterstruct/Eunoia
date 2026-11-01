@@ -80,6 +80,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		correction = ss.corrHist.Correction(&pos)
 		staticEval = rawEval + correction
 	}
+	ss.stack[ply].staticEval = staticEval
 
 	// reverse futility pruning
 	margin := 150 * int32(depth)
