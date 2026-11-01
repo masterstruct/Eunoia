@@ -36,6 +36,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return 0
 	}
 
+	if ply >= MaxPly {
+		return evaluate(&pos)
+	}
+
 	// mate distance pruning
 	alpha = max(alpha, matedIn(ply))
 	beta = min(beta, mateIn(ply))

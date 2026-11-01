@@ -12,6 +12,10 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 		return 0
 	}
 
+	if ply >= MaxPly {
+		return evaluate(&pos)
+	}
+
 	isPV := beta > alpha+1
 	inCheck := pos.InCheck()
 
