@@ -33,19 +33,7 @@ const (
 
 	hardScale    = 333
 	hardIncScale = 700
-
-	bestMoveBase  = 1800
-	bestMoveScale = 100
-	bestMoveMin   = 900
 )
-
-func (ss *SearchState) updateTM(previousMove board.Move) {
-	if previousMove == ss.bestMove {
-		ss.bestMoveStability++
-	} else {
-		ss.bestMoveStability = 0
-	}
-}
 
 func (ss *SearchState) hardLimitReached() bool {
 	if ss.Stop {
@@ -68,7 +56,7 @@ func (ss *SearchState) softLimitReached() bool {
 	return ss.Stop ||
 		(ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) ||
 		ss.depth > int(ss.MaxDepth) ||
-		(!ss.SoftTime.IsZero() && time.Now().After(ss.scaledSoftLimit(ss.bestMoveStability)))
+		(!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime))
 }
 
 func (ss *SearchState) ShouldStop(limitType LimitType) bool {
@@ -94,16 +82,6 @@ func (ss *SearchState) ShouldStop(limitType LimitType) bool {
 		ss.Stop = true
 	}
 	return stop
-}
-
-func (tm *TimeManager) scaledSoftLimit(bestMoveStability uint8) time.Time {
-	softTime := tm.SoftTime.Sub(tm.StartTime)
-	return tm.StartTime.Add(time.Duration(float64(softTime) * bestMoveStabilityScale(bestMoveStability)))
-}
-
-func bestMoveStabilityScale(stability uint8) float64 {
-	scale := max(bestMoveBase-bestMoveScale*int(stability), bestMoveMin)
-	return float64(scale) / 1000
 }
 
 type GoLimits struct {
