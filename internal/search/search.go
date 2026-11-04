@@ -47,9 +47,6 @@ iterativeDeepening:
 			ss.pv.EnsureRoot(ss.bestMove)
 			ss.printPV(os.Stdout, max(aw.alpha, min(score, aw.beta)), bound)
 
-			ss.updateTM(previousMove)
-			previousMove = ss.bestMove
-
 			if score <= aw.alpha {
 				aw.widenDown(score)
 				continue
@@ -59,6 +56,8 @@ iterativeDeepening:
 				continue
 			}
 			ss.bestScore = score
+			ss.updateTM(previousMove)
+			previousMove = ss.bestMove
 			break
 		}
 
