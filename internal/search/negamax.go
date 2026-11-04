@@ -8,20 +8,20 @@ import (
 const (
 	nmpMinDepth = 3
 
-	lmpBase       = 4
-	lmpMultiplier = 3
-	lmpMaxDepth   = 4
+	lmpBase     = 4
+	lmpScale    = 3
+	lmpMaxDepth = 4
 
 	fpMaxDepth = 5
 
-	hpMaxDepth   = 4
-	hpMultiplier = -2048
+	hpMaxDepth = 4
+	hpScale    = -2048
 
-	rfpMultiplier    = 150
-	rfpImpMultiplier = 50
+	rfpScale    = 150
+	rfpImpScale = 50
 
-	fpBase       = 100
-	fpMultiplier = 50
+	fpBase  = 100
+	fpScale = 50
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
@@ -187,7 +187,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		// futility pruning
-		futilityMargin := fpBase + fpMultiplier*int32(depth)
+		futilityMargin := fpBase + fpScale*int32(depth)
 		if !isRoot && isQuiet && !inCheck && !isMated &&
 			depth < fpMaxDepth && staticEval+futilityMargin <= alpha {
 			movePicker.skipQuiets = true
@@ -196,14 +196,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		// late move pruning
 		if !isPV && isQuiet && !inCheck && !isMated &&
-			depth <= lmpMaxDepth && searchedMoves >= lmpBase+(lmpMultiplier*depth*depth)/(2-improvingInt) {
+			depth <= lmpMaxDepth && searchedMoves >= lmpBase+(lmpScale*depth*depth)/(2-improvingInt) {
 			movePicker.skipQuiets = true
 			continue
 		}
 
 		// history pruning
 		if !isRoot && !isMated && isQuiet && depth <= hpMaxDepth &&
-			historyScore < hpMultiplier*int32(depth*depth) {
+			historyScore < hpScale*int32(depth*depth) {
 			movePicker.skipQuiets = true
 			continue
 		}
@@ -211,9 +211,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		// SEE pruning
 		var seeThreshold int32
 		if isQuiet {
-			seeThreshold = seeQuietMultiplier * int32(depth)
+			seeThreshold = seeQuietScale * int32(depth)
 		} else {
-			seeThreshold = seeNoisyMultiplier * int32(depth)
+			seeThreshold = seeNoisyScale * int32(depth)
 		}
 		if !isMated && !see(&pos, move, seeThreshold) {
 			continue
@@ -357,7 +357,7 @@ func (ss *SearchState) improvement(ply uint16, staticEval int32, inCheck bool) i
 
 func rfpMargin(depth int, improving bool) int32 {
 	if improving {
-		return int32(depth) * rfpImpMultiplier
+		return int32(depth) * rfpImpScale
 	}
-	return int32(depth) * rfpMultiplier
+	return int32(depth) * rfpScale
 }

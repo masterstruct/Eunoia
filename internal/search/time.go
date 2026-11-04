@@ -34,9 +34,9 @@ const (
 	hardScale    = 333
 	hardIncScale = 700
 
-	bestMoveBase  = 1800
-	bestMoveScale = 100
-	bestMoveMin   = 900
+	moveStabilityBase  = 1800
+	moveStabilityScale = 100
+	moveStabilityMin   = 900
 )
 
 func (ss *SearchState) updateTM(previousMove board.Move) {
@@ -98,11 +98,11 @@ func (ss *SearchState) ShouldStop(limitType LimitType) bool {
 
 func (tm *TimeManager) scaledSoftLimit(bestMoveStability uint8) time.Time {
 	softTime := tm.SoftTime.Sub(tm.StartTime)
-	return tm.StartTime.Add(time.Duration(float64(softTime) * bestMoveStabilityScale(bestMoveStability)))
+	return tm.StartTime.Add(time.Duration(float64(softTime) * moveStability(bestMoveStability)))
 }
 
-func bestMoveStabilityScale(stability uint8) float64 {
-	scale := max(bestMoveBase-bestMoveScale*int(stability), bestMoveMin)
+func moveStability(stability uint8) float64 {
+	scale := max(moveStabilityBase-moveStabilityScale*int(stability), moveStabilityMin)
 	return float64(scale) / 1000
 }
 
