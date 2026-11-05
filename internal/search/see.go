@@ -12,8 +12,8 @@ const (
 	seeRookValue   = 500
 	seeQueenValue  = 900
 
-	seeQuietMultiplier = -80
-	seeNoisyMultiplier = -100
+	seeQuietScale = -80
+	seeNoisyScale = -100
 )
 
 func seeValue(pt board.PieceType) int32 {

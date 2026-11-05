@@ -14,8 +14,9 @@ type TimeManager struct {
 	// should persist between `ucinewgame` calls - do NOT clear
 	MoveOverhead uint
 
-	Nodes, MaxNodes, SoftNodes   uint64
-	StartTime, MaxTime, SoftTime time.Time
+	Nodes, MaxNodes, SoftNodes uint64
+	StartTime                  time.Time
+	MaxTime, SoftTime          time.Duration
 }
 
 type LimitType int
@@ -33,6 +34,11 @@ const (
 
 	hardScale    = 333
 	hardIncScale = 700
+
+	moveStabilityHead     = 1.8
+	moveStabilityDecay    = 1.5
+	moveStabilityMin      = 0.6
+	moveStabilityMinDepth = 5
 )
 
 func (ss *SearchState) hardLimitReached() bool {
@@ -43,7 +49,7 @@ func (ss *SearchState) hardLimitReached() bool {
 		return true
 	}
 	if ss.Nodes&2047 == 0 && // check hard time limit every 2048 nodes
-		!ss.MaxTime.IsZero() && time.Now().After(ss.MaxTime) {
+		ss.MaxTime > 0 && time.Since(ss.StartTime) >= ss.MaxTime {
 		return true
 	}
 	if ss.depth > int(ss.MaxDepth) {
@@ -56,7 +62,7 @@ func (ss *SearchState) softLimitReached() bool {
 	return ss.Stop ||
 		(ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) ||
 		ss.depth > int(ss.MaxDepth) ||
-		(!ss.SoftTime.IsZero() && time.Now().After(ss.SoftTime))
+		(ss.SoftTime > 0 && time.Since(ss.StartTime) >= ss.scaledSoftTime())
 }
 
 func (ss *SearchState) ShouldStop(limitType LimitType) bool {
@@ -84,6 +90,33 @@ func (ss *SearchState) ShouldStop(limitType LimitType) bool {
 	return stop
 }
 
+func (ss *SearchState) updateTM(previousMove board.Move) {
+	if previousMove == ss.bestMove {
+		ss.bestMoveStability++
+	} else {
+		ss.bestMoveStability = 0
+	}
+}
+
+func (ss *SearchState) scaledSoftTime() time.Duration {
+	softTime := ss.SoftTime
+	if ss.depth >= moveStabilityMinDepth {
+		softTime = time.Duration(float64(softTime) * moveStability(ss.bestMoveStability))
+	}
+	if ss.MaxTime > 0 {
+		softTime = min(softTime, ss.MaxTime)
+	}
+	return softTime
+}
+
+func moveStability(stability uint8) float64 {
+	// not asspulled, tested in desmos
+	// c + a / (1 + bx)
+	// a - head; b - decay; c - min; x - stability
+	// stability starts at 0
+	return moveStabilityMin + (moveStabilityHead / (1 + moveStabilityDecay*float64(stability)))
+}
+
 type GoLimits struct {
 	WTime, BTime int64
 	WInc, BInc   int64
@@ -100,8 +133,8 @@ func (tm *TimeManager) resetTimeManager() {
 	tm.MaxNodes = 0
 	tm.SoftNodes = 0
 	tm.StartTime = time.Now()
-	tm.MaxTime = time.Time{}
-	tm.SoftTime = time.Time{}
+	tm.MaxTime = 0
+	tm.SoftTime = 0
 }
 
 func (tm *TimeManager) SetLimits(limits GoLimits, stm board.Color) {
@@ -143,7 +176,7 @@ func (tm *TimeManager) SetLimits(limits GoLimits, stm board.Color) {
 	if remainingTime > 0 {
 		softTime = remainingTime*softScale/1000 + increment*softIncScale/1000
 		softTime = max(softTime-int64(tm.MoveOverhead), 1)
-		tm.SoftTime = tm.StartTime.Add(time.Duration(softTime) * time.Millisecond)
+		tm.SoftTime = time.Duration(softTime) * time.Millisecond
 
 		hardTime = remainingTime*hardScale/1000 + increment*hardIncScale/1000
 		hardTime = max(hardTime, 1)
@@ -161,7 +194,7 @@ func (tm *TimeManager) SetLimits(limits GoLimits, stm board.Color) {
 		hardTime = min(hardTime, max(remainingTime-int64(tm.MoveOverhead), 1))
 	}
 
-	tm.MaxTime = tm.StartTime.Add(time.Duration(hardTime) * time.Millisecond)
+	tm.MaxTime = time.Duration(hardTime) * time.Millisecond
 }
 
 func (tm *TimeManager) UpdateMoveOverhead(ms int) {

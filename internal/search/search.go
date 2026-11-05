@@ -54,6 +54,8 @@ iterativeDeepening:
 				continue
 			}
 			ss.bestScore = score
+			ss.updateTM(previousMove)
+			previousMove = ss.bestMove
 			break
 		}
 
