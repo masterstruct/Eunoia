@@ -14,6 +14,7 @@ type SearchState struct {
 	bestMove          board.Move
 	bestScore         int32
 	bestMoveStability uint8
+	scoreStability    uint8
 	depth             int
 	selDepth          uint16
 	nmpMinPly         uint16
@@ -43,6 +44,7 @@ func (ss *SearchState) PrepareForSearch() {
 	ss.bestMove = board.NullMove
 	ss.bestScore = 0
 	ss.bestMoveStability = 0
+	ss.scoreStability = 0
 	ss.depth = 1
 	ss.resetTimeManager()
 	ss.stack.reset()
