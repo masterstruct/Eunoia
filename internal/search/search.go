@@ -22,6 +22,8 @@ func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 	aw := newAspirationWindow() // [-INF; +INF]
 	var score int32
 
+	previousMove := board.NullMove
+
 	// iterative deepening
 iterativeDeepening:
 	for ss.depth <= int(MaxPly) && !ss.ShouldStop(Soft) {

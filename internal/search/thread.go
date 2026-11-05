@@ -10,11 +10,12 @@ type SearchState struct {
 
 	TimeManager
 
-	bestMove  board.Move
-	bestScore int32
-	depth     int
-	selDepth  uint16
-	nmpMinPly uint16
+	bestMove          board.Move
+	bestScore         int32
+	bestMoveStability uint8
+	depth             int
+	selDepth          uint16
+	nmpMinPly         uint16
 
 	tt *tt.Table
 	pv *PVTable
