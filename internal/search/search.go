@@ -23,6 +23,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 	var score int32
 
 	previousMove := board.NullMove
+	avgScore := -INF
 
 	// iterative deepening
 iterativeDeepening:
@@ -55,11 +56,17 @@ iterativeDeepening:
 				aw.widenUp(score)
 				continue
 			}
-			ss.bestScore = score
-			ss.updateTM(previousMove)
-			previousMove = ss.bestMove
 			break
 		}
+
+		ss.bestScore = score
+		if avgScore == -INF {
+			avgScore = score
+		} else {
+			avgScore = (avgScore + score) / 2
+			ss.updateTM(previousMove, avgScore, score)
+		}
+		previousMove = ss.bestMove
 
 		ss.depth++
 	}
