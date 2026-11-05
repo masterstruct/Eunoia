@@ -39,6 +39,11 @@ const (
 	moveStabilityDecay    = 1.5
 	moveStabilityMin      = 0.6
 	moveStabilityMinDepth = 5
+
+	scoreStabilityThreshold = 14
+	scoreStabilityBase      = 1.23
+	scoreStabilityScale     = 0.045
+	scoreStabilityMin       = 0.9
 )
 
 func (ss *SearchState) hardLimitReached() bool {
@@ -90,18 +95,24 @@ func (ss *SearchState) ShouldStop(limitType LimitType) bool {
 	return stop
 }
 
-func (ss *SearchState) updateTM(previousMove board.Move) {
+func (ss *SearchState) updateTM(previousMove board.Move, avgScore, score int32) {
 	if previousMove == ss.bestMove {
 		ss.bestMoveStability++
 	} else {
 		ss.bestMoveStability = 0
+	}
+
+	if score > avgScore-scoreStabilityThreshold && score < avgScore+scoreStabilityThreshold {
+		ss.scoreStability++
+	} else {
+		ss.scoreStability = 0
 	}
 }
 
 func (ss *SearchState) scaledSoftTime() time.Duration {
 	softTime := ss.SoftTime
 	if ss.depth >= moveStabilityMinDepth {
-		softTime = time.Duration(float64(softTime) * moveStability(ss.bestMoveStability))
+		softTime = time.Duration(float64(softTime) * moveStability(ss.bestMoveStability) * scoreStability(ss.scoreStability))
 	}
 	if ss.MaxTime > 0 {
 		softTime = min(softTime, ss.MaxTime)
@@ -115,6 +126,10 @@ func moveStability(stability uint8) float64 {
 	// a - head; b - decay; c - min; x - stability
 	// stability starts at 0
 	return moveStabilityMin + (moveStabilityHead / (1 + moveStabilityDecay*float64(stability)))
+}
+
+func scoreStability(stability uint8) float64 {
+	return max(scoreStabilityMin, scoreStabilityBase-float64(stability)*scoreStabilityScale)
 }
 
 type GoLimits struct {
