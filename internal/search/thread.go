@@ -41,6 +41,7 @@ func (ss *SearchState) PrepareForSearch() {
 	ss.Quiet = false
 	ss.bestMove = board.NullMove
 	ss.bestScore = 0
+	ss.bestMoveStability = 0
 	ss.depth = 1
 	ss.resetTimeManager()
 }
