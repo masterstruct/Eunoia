@@ -35,9 +35,9 @@ const (
 	hardScale    = 333
 	hardIncScale = 700
 
-	moveStabilityBase     = 1.3
-	moveStabilityScale    = 0.1
-	moveStabilityMin      = 0.7
+	moveStabilityHead     = 1.8
+	moveStabilityDecay    = 1.5
+	moveStabilityMin      = 0.6
 	moveStabilityMinDepth = 5
 )
 
@@ -110,9 +110,11 @@ func (ss *SearchState) scaledSoftTime() time.Duration {
 }
 
 func moveStability(stability uint8) float64 {
-	return max(
-		moveStabilityBase-moveStabilityScale*float64(stability),
-		moveStabilityMin)
+	// not asspulled, tested in desmos
+	// c + a / (1 + bx)
+	// a - head; b - decay; c - min; x - stability
+	// stability starts at 0
+	return moveStabilityMin + (moveStabilityHead / (1 + moveStabilityDecay*float64(stability)))
 }
 
 type GoLimits struct {
