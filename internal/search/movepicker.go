@@ -166,6 +166,9 @@ func mvvlvaScore(victim, attacker board.PieceType) int32 {
 }
 
 func isGoodNoisy(pos *board.Position, move board.Move) bool {
+	if move.IsPromo() && move.Promo() == board.Queen {
+		return true
+	}
 	threshold := int32(-100)
 	return see(pos, move, threshold)
 }
