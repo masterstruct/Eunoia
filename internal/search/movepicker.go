@@ -182,25 +182,20 @@ func isGoodNoisy(pos *board.Position, move board.Move) bool {
 	return see(pos, move, threshold)
 }
 
+// TODO: refactor
 func (ss *SearchState) updateQuietHistory(stm board.Color, from, to board.Square, bonus int32) {
 	// history gravity
 	// https://chessprogramming.org/History_Heuristic#history-bonuses
 
-	// 	_____________________
-	// /        scaler       \
-	// | 25k: -1.61 +- 3.63  |
-	// | STC: -0.97 +- 9.20  |
-	// \ LTC: 35.39 +- 12.74 /
-	//  ---------------------
-	//         \   ^__^
-	//          \  (oo)\_______
-	//             (__)\       )\/\
-	//                 ||----w |
-	//                 ||     ||
-
 	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
 	ss.quietHistory[stm][from][to] =
 		gravity(ss.quietHistory[stm][from][to], clampedBonus, maxHistory)
+}
+
+func (ss *SearchState) updateCaptureHistory(stm board.Color, attacker, victim board.PieceType, to board.Square, bonus int32) {
+	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
+	ss.captureHistory[stm][attacker][victim][to] =
+		gravity(ss.captureHistory[stm][attacker][victim][to], clampedBonus, maxHistory)
 }
 
 func gravity(current, update, max int32) int32 {

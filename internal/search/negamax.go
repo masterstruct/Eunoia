@@ -170,7 +170,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 	movePicker := NewMovePicker(ply, ttMove, false)
 
+	// TODO: replace movelist with a cheaper list
 	var quietsTried board.Movelist
+	var noisiesTried board.Movelist
 
 	var score int32
 
@@ -184,12 +186,15 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
 		isKiller := ss.stack[ply].killer == move
-
+		from := move.From()
+		to := move.To()
 		extension := 0
 
 		var historyScore int32
 		if isQuiet {
-			historyScore = ss.quietHistory[stm][move.From()][move.To()]
+			historyScore = ss.quietHistory[stm][from][to]
+		} else {
+			historyScore = ss.captureHistory[stm][pos.Board[from].Type][pos.Board[to].Type][to]
 		}
 
 		// futility pruning
@@ -307,11 +312,12 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		if score >= beta { // beta cutoff
 			flag = tt.Lower
-			if isQuiet {
+			bonus := 300*int32(depth) - 250
+			if !isQuiet {
+				ss.updateCaptureHistory(stm, pos.Board[from].Type, pos.Board[to].Type, to, bonus)
+			} else {
 				ss.stack[ply].killer = bestMove
-
-				bonus := 300*int32(depth) - 250
-				ss.updateQuietHistory(stm, move.From(), move.To(), bonus)
+				ss.updateQuietHistory(stm, from, to, bonus)
 
 				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
@@ -319,11 +325,19 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 					ss.updateQuietHistory(stm, quietMove.From(), quietMove.To(), -bonus)
 				}
 			}
+			for i := range noisiesTried.Len {
+				// penalize all noisies that didn't cause beta cutoff
+				// regardless if the best move is quiet or noisy
+				noisyMove := noisiesTried.Moves[i].Move
+				ss.updateQuietHistory(stm, noisyMove.From(), noisyMove.To(), -bonus)
+			}
 			break
 		}
 
 		if isQuiet {
 			quietsTried.Add(move)
+		} else {
+			noisiesTried.Add(move)
 		}
 	}
 

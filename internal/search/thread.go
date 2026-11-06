@@ -23,8 +23,9 @@ type SearchState struct {
 	Keys  Keys // history of position hashes for 3fold detection
 	stack NodeStack
 
-	quietHistory *[2][64][64]int32
-	corrHist     *CorrHist
+	quietHistory   *[2][64][64]int32   // [stm][from][to]
+	captureHistory *[2][6][7][64]int32 // [stm][attacker][victim][to]
+	corrHist       *CorrHist
 }
 
 func (ss *SearchState) Init(ttSizeMiB uint) {
@@ -34,6 +35,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 	ss.Keys = Keys{keys: make([]uint64, 0, MaxPly)}
 	ss.stack.reset()
 	ss.quietHistory = &[2][64][64]int32{}
+	ss.captureHistory = &[2][6][7][64]int32{}
 	ss.corrHist = &CorrHist{}
 }
 
@@ -51,6 +53,7 @@ func (ss *SearchState) ClearTables() {
 	ss.ClearTT()
 	*ss.pv = PVTable{}
 	clear(ss.quietHistory[:])
+	clear(ss.captureHistory[:])
 	ss.corrHist.Clear()
 }
 
