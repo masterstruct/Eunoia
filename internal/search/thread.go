@@ -32,7 +32,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 	ss.tt = tt.NewTable(ttSizeMiB)
 	ss.pv = NewPVTable()
 	ss.Keys = Keys{keys: make([]uint64, 0, MaxPly)}
-	ss.stack = newNodeStack()
+	ss.stack.reset()
 	ss.butterflyHistory = &[2][64][64]int32{}
 	ss.corrHist = &CorrHist{}
 }
@@ -44,6 +44,7 @@ func (ss *SearchState) PrepareForSearch() {
 	ss.bestMoveStability = 0
 	ss.depth = 1
 	ss.resetTimeManager()
+	ss.stack.reset()
 }
 
 func (ss *SearchState) ClearTables() {

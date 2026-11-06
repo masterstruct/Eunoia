@@ -39,6 +39,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return 0
 	}
 
+	if ply >= MaxPly {
+		return evaluate(&pos)
+	}
+
 	// mate distance pruning
 	alpha = max(alpha, matedIn(ply))
 	beta = min(beta, mateIn(ply))
@@ -164,7 +168,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	searchedMoves := 0
 	flag := tt.Upper
 
-	movePicker := NewMovePicker(ttMove, false)
+	movePicker := NewMovePicker(ply, ttMove, false)
 
 	var quietsTried board.Movelist
 
@@ -179,6 +183,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
+		isKiller := ss.stack[ply].killer == move
+
 		extension := 0
 
 		var historyScore int32
@@ -202,7 +208,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		// history pruning
-		if !isRoot && !isMated && isQuiet && depth <= hpMaxDepth &&
+		if !isRoot && !isMated && !isKiller && isQuiet && depth <= hpMaxDepth &&
 			historyScore < hpScale*int32(depth*depth) {
 			movePicker.skipQuiets = true
 			continue
@@ -302,6 +308,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		if score >= beta { // beta cutoff
 			flag = tt.Lower
 			if isQuiet {
+				ss.stack[ply].killer = bestMove
+
 				bonus := 300*int32(depth) - 250
 				ss.updateButterflyHistory(stm, move.From(), move.To(), bonus)
 
