@@ -189,7 +189,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		var historyScore int32
 		if isQuiet {
-			historyScore = ss.butterflyHistory[stm][move.From()][move.To()]
+			historyScore = ss.quietHistory[stm][move.From()][move.To()]
 		}
 
 		// futility pruning
@@ -311,12 +311,12 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 				ss.stack[ply].killer = bestMove
 
 				bonus := 300*int32(depth) - 250
-				ss.updateButterflyHistory(stm, move.From(), move.To(), bonus)
+				ss.updateQuietHistory(stm, move.From(), move.To(), bonus)
 
 				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
 					quietMove := quietsTried.Moves[i].Move
-					ss.updateButterflyHistory(stm, quietMove.From(), quietMove.To(), -bonus)
+					ss.updateQuietHistory(stm, quietMove.From(), quietMove.To(), -bonus)
 				}
 			}
 			break

@@ -150,7 +150,7 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 		from := move.Move.From()
 		to := move.Move.To()
 
-		move.Score = ss.butterflyHistory[stm][from][to]
+		move.Score = ss.quietHistory[stm][from][to]
 
 		// killer move bonus
 		if ss.stack[mp.ply].killer == move.Move {
@@ -182,7 +182,7 @@ func isGoodNoisy(pos *board.Position, move board.Move) bool {
 	return see(pos, move, threshold)
 }
 
-func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Square, bonus int32) {
+func (ss *SearchState) updateQuietHistory(stm board.Color, from, to board.Square, bonus int32) {
 	// history gravity
 	// https://chessprogramming.org/History_Heuristic#history-bonuses
 
@@ -199,8 +199,8 @@ func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Sq
 	//                 ||     ||
 
 	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
-	ss.butterflyHistory[stm][from][to] =
-		gravity(ss.butterflyHistory[stm][from][to], clampedBonus, maxHistory)
+	ss.quietHistory[stm][from][to] =
+		gravity(ss.quietHistory[stm][from][to], clampedBonus, maxHistory)
 }
 
 func gravity(current, update, max int32) int32 {
