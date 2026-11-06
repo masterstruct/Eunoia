@@ -102,7 +102,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		correction = ss.corrHist.Correction(&pos)
 		staticEval = rawEval + correction
 	}
+
 	ss.stack[ply].staticEval = staticEval
+	ss.stack[ply+1].killer = board.NullMove
 
 	improving := ss.improvement(ply, staticEval, inCheck) > 0
 	improvingInt := 0
