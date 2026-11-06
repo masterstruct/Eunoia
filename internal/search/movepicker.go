@@ -172,6 +172,12 @@ func isGoodNoisy(pos *board.Position, move board.Move) bool {
 	return see(pos, move, threshold)
 }
 
+func (ss *SearchState) updateCaptureHistory(stm board.Color, attacker, victim board.PieceType, to board.Square, bonus int32) {
+	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
+	ss.captureHistory[stm][attacker][victim][to] =
+		gravity(ss.captureHistory[stm][attacker][victim][to], clampedBonus, maxHistory)
+}
+
 func gravity(current, update, max int32) int32 {
 	return gravityBase(current, update, current, max)
 }
