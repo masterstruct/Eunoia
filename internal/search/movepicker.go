@@ -16,8 +16,9 @@ type Stage uint8
 const (
 	TTMove Stage = iota
 	GenerateNoisies
-	Noisies
+	GoodNoisies
 	Quiets
+	BadNoisies
 )
 
 type MovePicker struct {
@@ -25,6 +26,7 @@ type MovePicker struct {
 	stage      Stage
 	ttMove     board.Move
 	skipQuiets bool
+	badNoisies board.Movelist
 }
 
 func NewMovePicker(ttMove board.Move, skipQuiets bool) MovePicker {
@@ -49,50 +51,58 @@ func (mp *MovePicker) Next(pos *board.Position, ss *SearchState) board.Move {
 	}
 
 	if mp.stage == GenerateNoisies {
-		mp.stage = Noisies
+		mp.stage = GoodNoisies
 		mp.genNoisies(pos, ss)
-		mp.removeTT()
 	}
 
-	if mp.stage == Noisies {
+	if mp.stage == GoodNoisies {
 		if !mp.movelist.IsEmpty() {
-			return mp.pickBest()
+			return pickBest(&mp.movelist)
 		}
-		if !mp.skipQuiets {
+		if mp.skipQuiets {
+			mp.stage = BadNoisies
+		} else {
 			mp.stage = Quiets
 			mp.genQuiets(pos, ss)
-			mp.removeTT()
 		}
 	}
 
 	if mp.stage == Quiets {
 		if !mp.skipQuiets && !mp.movelist.IsEmpty() {
-			return mp.pickBest()
+			return pickBest(&mp.movelist)
+		}
+		mp.stage = BadNoisies
+	}
+
+	if mp.stage == BadNoisies {
+		if !mp.badNoisies.IsEmpty() {
+			return pickBest(&mp.badNoisies)
 		}
 	}
 
 	return board.NullMove
 }
 
-func (mp *MovePicker) pickBest() board.Move {
+func pickBest(movelist *board.Movelist) board.Move {
 	bestIndex := 0
-	bestScore := mp.movelist.Moves[0].Score
+	bestScore := movelist.Moves[0].Score
 
-	for i := 1; i < mp.movelist.Len; i++ {
-		score := mp.movelist.Moves[i].Score
+	for i := 1; i < movelist.Len; i++ {
+		score := movelist.Moves[i].Score
 		if score > bestScore {
 			bestScore = score
 			bestIndex = i
 		}
 	}
-	bestMove := mp.movelist.Moves[bestIndex].Move
-	mp.movelist.Remove(bestIndex)
+	bestMove := movelist.Moves[bestIndex].Move
+	movelist.Remove(bestIndex)
 	return bestMove
 }
 
 func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 	var temp board.Movelist
 	board.GenerateLegalMoves(pos, &temp, board.Noisies)
+	mp.removeTT(&temp)
 
 	for i := range temp.Len {
 		move := temp.Moves[i].Move
@@ -113,7 +123,14 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 			score += mvvlvaScore(victim, pos.Board[from].Type)
 		}
 
-		mp.movelist.AddScoredMove(move.ScoredMove(score))
+		scoredMove := move.ScoredMove(score)
+
+		if !isGoodNoisy(pos, move) {
+			mp.badNoisies.AddScoredMove(scoredMove)
+			continue
+		}
+
+		mp.movelist.AddScoredMove(scoredMove)
 	}
 }
 
@@ -122,6 +139,7 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 
 	var temp board.Movelist
 	board.GenerateLegalMoves(pos, &temp, board.Quiets)
+	mp.removeTT(&temp)
 
 	for i := range temp.Len {
 		move := temp.Moves[i]
@@ -133,10 +151,10 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 	}
 }
 
-func (mp *MovePicker) removeTT() {
-	for i := range mp.movelist.Len {
-		if mp.movelist.Moves[i].Move == mp.ttMove {
-			mp.movelist.Remove(i)
+func (mp *MovePicker) removeTT(movelist *board.Movelist) {
+	for i := range movelist.Len {
+		if movelist.Moves[i].Move == mp.ttMove {
+			movelist.Remove(i)
 			return
 		}
 	}
@@ -145,6 +163,14 @@ func (mp *MovePicker) removeTT() {
 // formula from https://asteri.sm/files/2023-02-20-viri-wiki#mvvlva
 func mvvlvaScore(victim, attacker board.PieceType) int32 {
 	return int32(victim)*1000 + 60 - int32(attacker)*10
+}
+
+func isGoodNoisy(pos *board.Position, move board.Move) bool {
+	if move.IsPromo() && move.Promo() == board.Queen {
+		return true
+	}
+	threshold := int32(-100)
+	return see(pos, move, threshold)
 }
 
 func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Square, bonus int32) {
