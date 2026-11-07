@@ -28,7 +28,7 @@ func evaluatePSQT(pos *board.Position) int {
 	occ := pos.Occ()
 	for occ != 0 {
 		sq := occ.PopLSB()
-		piece, _ := pos.PieceOn(sq)
+		piece := pos.PieceOn(sq)
 		pieceColor := piece.Color()
 		pieceType := piece.Type()
 		mg[pieceColor] += mgTable[pieceColor][pieceType][sq]

@@ -8,7 +8,7 @@ type Movelist struct {
 }
 
 func (ml *Movelist) Add(m Move) {
-	ml.Moves[ml.Len] = m.ScoredMove(0)
+	ml.Moves[ml.Len] = m.Score(0)
 	ml.Len++
 }
 

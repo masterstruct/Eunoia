@@ -172,8 +172,7 @@ func (pos *Position) FEN() string {
 				skip = 0
 			}
 
-			piece, _ := pos.PieceOn(sq)
-			sb.WriteByte(piece.String())
+			sb.WriteByte(pos.PieceOn(sq).String())
 		}
 
 		// reached end of rank

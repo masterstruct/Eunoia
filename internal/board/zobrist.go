@@ -71,17 +71,7 @@ func (z *zobrist) ComputeHash(pos *Position) uint64 {
 	occ := pos.Occ()
 	for occ != 0 {
 		sq := occ.PopLSB()
-
-		piece, ok := pos.PieceOn(sq)
-		if !ok {
-			// looping over occupied, thus
-			// the piece cannot be NoPiece.
-			// panics if pos.Occ() and
-			// pos.Board are out of sync.
-			panic("unreachable")
-		}
-
-		hash ^= z.PieceKey(piece, sq)
+		hash ^= z.PieceKey(pos.PieceOn(sq), sq)
 	}
 
 	hash ^= z.CastlingKey(pos.Castling.ToIndex())

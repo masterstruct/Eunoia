@@ -2,9 +2,9 @@ package board
 
 func (pos *Position) Make(move Move) {
 	from, to := move.From(), move.To()
-	piece, _ := pos.PieceOn(from)
+	piece := pos.PieceOn(from)
 	pieceType := piece.Type()
-	capturedPiece, _ := pos.PieceOn(to)
+	capturedPiece := pos.PieceOn(to)
 	stm := pos.SideToMove
 	nstm := stm.Opponent()
 

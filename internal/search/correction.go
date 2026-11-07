@@ -103,7 +103,7 @@ func getNonPawnKey(pos *board.Position, stm board.Color) uint64 {
 	pieces := pos.Colors[stm] &^ pos.Pieces[board.Pawn]
 	for pieces != 0 {
 		sq := pieces.PopLSB()
-		key ^= board.ZobristTable.PieceKey(pos.Board[sq], sq)
+		key ^= board.ZobristTable.PieceKey(pos.PieceOn(sq), sq)
 	}
 	return key
 }
@@ -113,7 +113,7 @@ func getMinorKey(pos *board.Position) uint64 {
 	pieces := pos.Pieces[board.Knight] | pos.Pieces[board.Bishop] | pos.Pieces[board.King]
 	for pieces != 0 {
 		sq := pieces.PopLSB()
-		key ^= board.ZobristTable.PieceKey(pos.Board[sq], sq)
+		key ^= board.ZobristTable.PieceKey(pos.PieceOn(sq), sq)
 	}
 	return key
 }
