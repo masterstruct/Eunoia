@@ -117,8 +117,8 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 		// TODO: add queen promo bonus
 
 		victim := move.Victim(pos)
-		score = ss.captureHistory[stm][move.Attacker(pos)][victim][move.To()] / 8
-		score += seeValue(victim)
+		score = ss.captureHistory[stm][move.Attacker(pos)][victim][move.To()]
+		score += 16 * seeValue(victim)
 
 		scoredMove := move.Score(score)
 
