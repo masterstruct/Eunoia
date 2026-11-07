@@ -58,7 +58,7 @@ type ScoredMove struct {
 	Score int32
 }
 
-func (m Move) ScoredMove(score int32) ScoredMove {
+func (m Move) Score(score int32) ScoredMove {
 	return ScoredMove{Move: m, Score: score}
 }
 
@@ -166,6 +166,20 @@ func (m Move) IsNormal() bool {
 
 func (m Move) IsNoisy() bool {
 	return m.IsCapture() || m&0x7000 == flagPromoQueen
+}
+
+func (m Move) Attacker(pos *Position) PieceType {
+	return pos.PieceOn(m.From()).Type
+}
+
+func (m Move) Victim(pos *Position) PieceType {
+	if !m.IsCapture() {
+		return NoPieceType
+	}
+	if m.IsEnPassant() {
+		return Pawn
+	}
+	return pos.PieceOn(m.To()).Type
 }
 
 func (m Move) String() string {

@@ -47,7 +47,7 @@ func see(pos *board.Position, move board.Move, threshold int32) bool {
 	if move.IsPromo() {
 		nextVictim = move.Promo()
 	} else {
-		nextVictim = pos.Board[from].Type
+		nextVictim = move.Attacker(pos)
 	}
 
 	balance -= seeValue(nextVictim)
@@ -109,7 +109,7 @@ func see(pos *board.Position, move board.Move, threshold int32) bool {
 }
 
 func seeMoveValue(pos *board.Position, move board.Move) int32 {
-	value := seeValue(pos.Board[move.To()].Type)
+	value := seeValue(move.Victim(pos))
 	if move.IsPromo() {
 		value += seeValue(move.Promo())
 	} else if move.IsEnPassant() {

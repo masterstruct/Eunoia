@@ -4,9 +4,9 @@ import "testing"
 
 func TestMovelistSwap(t *testing.T) {
 	var movelist Movelist
-	first := NewMove(A1, A2).ScoredMove(10)
-	second := NewMove(B1, B2).ScoredMove(20)
-	third := NewMove(C1, C2).ScoredMove(30)
+	first := NewMove(A1, A2).Score(10)
+	second := NewMove(B1, B2).Score(20)
+	third := NewMove(C1, C2).Score(30)
 	movelist.AddScoredMove(first)
 	movelist.AddScoredMove(second)
 	movelist.AddScoredMove(third)
@@ -27,11 +27,11 @@ func TestMovelistSwap(t *testing.T) {
 
 func TestMovelistRemove(t *testing.T) {
 	moves := []ScoredMove{
-		NewMove(A1, A2).ScoredMove(10),
-		NewMove(B1, B2).ScoredMove(20),
-		NewMove(C1, C2).ScoredMove(30),
-		NewMove(D1, D2).ScoredMove(40),
-		NewMove(E1, E2).ScoredMove(50),
+		NewMove(A1, A2).Score(10),
+		NewMove(B1, B2).Score(20),
+		NewMove(C1, C2).Score(30),
+		NewMove(D1, D2).Score(40),
+		NewMove(E1, E2).Score(50),
 	}
 	tests := []struct {
 		index int

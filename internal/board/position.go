@@ -37,17 +37,16 @@ func (pos *Position) PlacePiece(piece Piece, sq Square) {
 }
 
 func (pos *Position) RemovePiece(sq Square) {
-	piece, ok := pos.PieceOn(sq)
-	if ok {
+	piece := pos.PieceOn(sq)
+	if piece != NoPiece {
 		pos.Pieces[piece.Type].ClearBit(sq)
 		pos.Colors[piece.Color].ClearBit(sq)
 		pos.Board[sq] = NoPiece
 	}
 }
 
-func (pos *Position) PieceOn(sq Square) (Piece, bool) {
-	piece := pos.Board[sq]
-	return piece, piece != NoPiece
+func (pos *Position) PieceOn(sq Square) Piece {
+	return pos.Board[sq]
 }
 
 func (pos *Position) HasNonPawns() bool {

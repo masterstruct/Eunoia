@@ -149,8 +149,7 @@ func applyMoves(pos *board.Position, moves []string) (board.Position, []uint64, 
 		if err != nil {
 			return *pos, nil, fmt.Errorf("uci: failed to parse move %q", move)
 		}
-		_, ok := newPos.PieceOn(from)
-		if !ok {
+		if newPos.PieceOn(from) == board.NoPiece {
 			return *pos, nil, fmt.Errorf("uci: illegal move %q", move)
 		}
 		to, err := board.ParseSquare(move[2:4])
