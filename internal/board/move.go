@@ -58,7 +58,7 @@ type ScoredMove struct {
 	Score int32
 }
 
-func (m Move) Score(score int32) ScoredMove {
+func (m Move) ScoredMove(score int32) ScoredMove {
 	return ScoredMove{Move: m, Score: score}
 }
 
