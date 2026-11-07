@@ -119,12 +119,12 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 
 		// MVV-LVA
 		if move.IsCapture() {
-			victim := pos.Board[to].Type
+			victim := pos.Board[to].Type()
 			if move.IsEnPassant() {
 				victim = board.Pawn
 			}
 
-			score += mvvlvaScore(victim, pos.Board[from].Type)
+			score += mvvlvaScore(victim, pos.Board[from].Type())
 		}
 
 		scoredMove := move.ScoredMove(score)

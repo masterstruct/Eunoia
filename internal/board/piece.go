@@ -42,7 +42,7 @@ func (pt PieceType) Value() int32 {
 type Piece uint8
 
 var Pieces = [12]Piece{BlackPawn, WhitePawn, BlackKnight, WhiteKnight, BlackBishop,
-	WhiteBishop, BlackRook, WhiteRook, BlackQueen, WhiteQueen, BlackKing, BlackQueen}
+	WhiteBishop, BlackRook, WhiteRook, BlackQueen, WhiteQueen, BlackKing, WhiteKing}
 
 const (
 	BlackPawn Piece = iota

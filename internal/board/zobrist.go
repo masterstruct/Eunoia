@@ -23,7 +23,7 @@ func (p *PRNG) Next() uint64 {
 }
 
 type zobrist struct {
-	piece     [2][6][64]uint64 // [color][pieceType][sq]
+	piece     [12][64]uint64
 	castling  [16]uint64
 	enPassant [8]uint64
 	stm       uint64
@@ -31,11 +31,9 @@ type zobrist struct {
 
 func NewZobrist(rng *PRNG) *zobrist {
 	z := &zobrist{}
-	for color := range NoColor {
-		for pt := range PieceTypes {
-			for sq := range NoSquare {
-				z.piece[color][pt][sq] = rng.Next()
-			}
+	for p := range Pieces {
+		for sq := range NoSquare {
+			z.piece[p][sq] = rng.Next()
 		}
 	}
 	for i := range 16 {
@@ -48,8 +46,8 @@ func NewZobrist(rng *PRNG) *zobrist {
 	return z
 }
 
-func (z *zobrist) PieceKey(color Color, piece PieceType, square Square) uint64 {
-	return z.piece[color][piece][square]
+func (z *zobrist) PieceKey(p Piece, sq Square) uint64 {
+	return z.piece[p][sq]
 }
 
 func (z *zobrist) CastlingKey(cr uint8) uint64 {
@@ -67,7 +65,7 @@ func (z *zobrist) SideToMoveKey() uint64 {
 func (z *zobrist) ComputeHash(pos *Position) uint64 {
 	var hash uint64
 
-	occ := pos.Occupied()
+	occ := pos.Occ()
 	for occ != 0 {
 		sq := occ.PopLSB()
 
@@ -75,12 +73,12 @@ func (z *zobrist) ComputeHash(pos *Position) uint64 {
 		if !ok {
 			// looping over occupied, thus
 			// the piece cannot be NoPiece.
-			// panics if pos.Occupied() and
+			// panics if pos.Occ() and
 			// pos.Board are out of sync.
 			panic("unreachable")
 		}
 
-		hash ^= z.PieceKey(piece.Color, piece.Type, sq)
+		hash ^= z.PieceKey(piece, sq)
 	}
 
 	hash ^= z.CastlingKey(pos.Castling.ToIndex())

@@ -99,12 +99,12 @@ func TestOccupied(t *testing.T) {
 			for _, pl := range tt.place {
 				pos.PlacePiece(pl.p, pl.sq)
 			}
-			got := pos.Occupied()
+			got := pos.Occ()
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
-			if pos.Occupied() != allPieceBB(&pos) {
-				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", pos.Occupied(), allPieceBB(&pos))
+			if pos.Occ() != allPieceBB(&pos) {
+				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", pos.Occ(), allPieceBB(&pos))
 			}
 		})
 	}
@@ -230,7 +230,7 @@ func TestPlacePiece(t *testing.T) {
 				}
 			}
 
-			if got := pos.Occupied(); got != tt.want {
+			if got := pos.Occ(); got != tt.want {
 				t.Fatalf("occupied: expected %v but got %v", tt.want, got)
 			}
 
@@ -295,7 +295,7 @@ func TestRemovePiece(t *testing.T) {
 
 			pos.RemovePiece(tt.remove)
 
-			if got := pos.Occupied(); got != tt.want {
+			if got := pos.Occ(); got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
 

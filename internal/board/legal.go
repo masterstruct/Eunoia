@@ -5,7 +5,7 @@ func (pos *Position) IsLegal(move Move) bool {
 	from := move.From()
 	to := move.To()
 
-	if !pos.Colors[stm].IsBitSet(from) {
+	if !pos.Us().IsBitSet(from) {
 		return false
 	}
 
@@ -41,19 +41,18 @@ func (pos *Position) IsLegal(move Move) bool {
 
 func isLegalEnPassant(pos *Position, from, epSq Square) bool {
 	stm := pos.SideToMove
-	them := pos.Colors[stm.Opponent()]
 	kingSq := pos.KingSq[stm]
 
 	capturedSq := epSq - (16*Square(stm) - 8)
 
-	occ := pos.Occupied()
+	occ := pos.Occ()
 	occ.ClearBit(from)
 	occ.ClearBit(capturedSq)
 	occ.SetBit(epSq)
 
-	bishops := pos.Pieces[Bishop] & them
-	rooks := pos.Pieces[Rook] & them
-	queens := pos.Pieces[Queen] & them
+	bishops := pos.Their(Bishop)
+	rooks := pos.Their(Rook)
+	queens := pos.Their(Queen)
 
 	return BishopAttacks(kingSq, occ)&(bishops|queens) == 0 &&
 		RookAttacks(kingSq, occ)&(rooks|queens) == 0

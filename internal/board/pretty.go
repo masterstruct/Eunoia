@@ -70,7 +70,7 @@ func (pos *Position) String() string {
 
 			piece, ok := pos.PieceOn(sq)
 			if ok {
-				sb.WriteString(pieceFG(piece.Color, sqColor))
+				sb.WriteString(pieceFG(piece.Color(), sqColor))
 				sb.WriteString(piece.PrettyString())
 			} else {
 				sb.WriteByte(' ')
