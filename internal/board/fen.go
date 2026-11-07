@@ -67,7 +67,7 @@ func ParseFEN(fen string) (Position, error) {
 				}
 
 				// place piece on the board
-				pos.PlacePiece(Piece{pt, color}, NewSquare(file, rank))
+				pos.PlacePiece(NewPiece(pt, color), NewSquare(file, rank))
 
 				file += 1
 				continue
@@ -100,7 +100,7 @@ func ParseFEN(fen string) (Position, error) {
 	pos.KingSq[White] = whiteKingBB.LSB()
 
 	// castling rights
-	rights, err := ParseCastlingRights(splits[2], pos.KingSq[White], pos.KingSq[Black], pos.PieceBB(WhiteRook), pos.PieceBB(BlackRook))
+	rights, err := ParseCastlingRights(splits[2], pos.KingSq[White], pos.KingSq[Black], pos.Rooks(White), pos.Rooks(Black))
 	if err != nil {
 		return pos, fmt.Errorf("%w: %q", err, fen)
 	}
@@ -146,11 +146,11 @@ func (pos *Position) FEN() string {
 	var rankBB Bitboard
 	var skip int
 
-	occ := pos.Occupied()
+	occ := pos.Occ()
 
 	for rank := Rank8; rank >= Rank1; rank-- {
 		rankBB = occ & rank.Bits()
-		if rankBB == EmptyBB {
+		if rankBB.IsEmpty() {
 			// skip empty rank
 			sb.WriteString("8")
 			if rank != Rank1 {
@@ -172,8 +172,7 @@ func (pos *Position) FEN() string {
 				skip = 0
 			}
 
-			piece, _ := pos.PieceOn(sq)
-			sb.WriteByte(piece.String())
+			sb.WriteByte(pos.PieceOn(sq).String())
 		}
 
 		// reached end of rank

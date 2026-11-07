@@ -25,12 +25,12 @@ func evaluatePSQT(pos *board.Position) int {
 	var eg [2]int
 	gamePhase := 0
 
-	occ := pos.Occupied()
-	for occ != 0 {
+	occ := pos.Occ()
+	for !occ.IsEmpty() {
 		sq := occ.PopLSB()
-		piece, _ := pos.PieceOn(sq)
-		pieceColor := piece.Color
-		pieceType := piece.Type
+		piece := pos.PieceOn(sq)
+		pieceColor := piece.Color()
+		pieceType := piece.Type()
 		mg[pieceColor] += mgTable[pieceColor][pieceType][sq]
 		eg[pieceColor] += egTable[pieceColor][pieceType][sq]
 		gamePhase += gamePhaseInc[pieceType]

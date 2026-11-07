@@ -109,25 +109,17 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 	mp.removeTT(&temp)
 
 	for i := range temp.Len {
-		move := temp.Moves[i].Move
-		from := move.From()
-		to := move.To()
-
 		var score int32
+		move := temp.Moves[i].Move
 
 		// TODO: add queen promo bonus
 
 		// MVV-LVA
 		if move.IsCapture() {
-			victim := pos.Board[to].Type
-			if move.IsEnPassant() {
-				victim = board.Pawn
-			}
-
-			score += mvvlvaScore(victim, pos.Board[from].Type)
+			score += mvvlvaScore(pos.Victim(move), pos.Attacker(move))
 		}
 
-		scoredMove := move.ScoredMove(score)
+		scoredMove := move.Score(score)
 
 		if !isGoodNoisy(pos, move) {
 			mp.badNoisies.AddScoredMove(scoredMove)

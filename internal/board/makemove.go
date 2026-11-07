@@ -2,9 +2,9 @@ package board
 
 func (pos *Position) Make(move Move) {
 	from, to := move.From(), move.To()
-	piece, _ := pos.PieceOn(from)
-	pieceType := piece.Type
-	capturedPiece, _ := pos.PieceOn(to)
+	piece := pos.PieceOn(from)
+	pieceType := piece.Type()
+	capturedPiece := pos.PieceOn(to)
 	stm := pos.SideToMove
 	nstm := stm.Opponent()
 
@@ -26,25 +26,25 @@ func (pos *Position) Make(move Move) {
 	}
 
 	pos.RemovePiece(from)
-	hash ^= ZobristTable.PieceKey(stm, pieceType, from)
+	hash ^= ZobristTable.PieceKey(piece, from)
 	pos.RemovePiece(to)
 
 	if !isCastle {
 		epSquare := to - (16*Square(stm) - 8)
 		if isEnPassant {
 			pos.RemovePiece(epSquare)
-			hash ^= ZobristTable.PieceKey(nstm, Pawn, epSquare)
+			hash ^= ZobristTable.PieceKey(NewPiece(Pawn, nstm), epSquare)
 		} else if isCapture {
-			hash ^= ZobristTable.PieceKey(nstm, capturedPiece.Type, to)
+			hash ^= ZobristTable.PieceKey(capturedPiece, to)
 		}
 
 		if isPromo {
-			promo := move.Promo()
-			pos.PlacePiece(NewPiece(promo, stm), to)
-			hash ^= ZobristTable.PieceKey(stm, promo, to)
+			p := NewPiece(move.Promo(), stm)
+			pos.PlacePiece(p, to)
+			hash ^= ZobristTable.PieceKey(p, to)
 		} else {
 			pos.PlacePiece(piece, to)
-			hash ^= ZobristTable.PieceKey(stm, pieceType, to)
+			hash ^= ZobristTable.PieceKey(piece, to)
 		}
 
 		// rook move - remove castling rights
@@ -56,7 +56,7 @@ func (pos *Position) Make(move Move) {
 		}
 
 		// rook captured - remove castling rights
-		if isCapture && capturedPiece.Type == Rook {
+		if isCapture && capturedPiece.Type() == Rook {
 			ok, sq := pos.Castling.HasSquare(to)
 			if ok {
 				pos.Castling.Remove(sq)
@@ -68,7 +68,7 @@ func (pos *Position) Make(move Move) {
 		}
 
 		if move.IsDoublePush() {
-			themPawns := pos.PieceBB(Piece{Type: Pawn, Color: nstm})
+			themPawns := pos.Pawns(nstm)
 			if (to.File() != FileA && themPawns.IsBitSet(to.Left())) ||
 				(to.File() != FileH && themPawns.IsBitSet(to.Right())) {
 				pos.EnPassant = epSquare
@@ -85,35 +85,35 @@ func (pos *Position) Make(move Move) {
 		// castle - move pieces
 
 		// remove rook
-		hash ^= ZobristTable.PieceKey(stm, Rook, to)
+		hash ^= ZobristTable.PieceKey(NewPiece(Rook, stm), to)
 		pos.Castling.Clear(stm)
 
 		if stm == Black {
 			if move.IsKingsideCastle() {
 				pos.PlacePiece(BlackKing, G8)
-				hash ^= ZobristTable.PieceKey(Black, King, G8)
+				hash ^= ZobristTable.PieceKey(BlackKing, G8)
 				pos.PlacePiece(BlackRook, F8)
-				hash ^= ZobristTable.PieceKey(Black, Rook, F8)
+				hash ^= ZobristTable.PieceKey(BlackRook, F8)
 				pos.KingSq[Black] = G8
 			} else {
 				pos.PlacePiece(BlackKing, C8)
-				hash ^= ZobristTable.PieceKey(Black, King, C8)
+				hash ^= ZobristTable.PieceKey(BlackKing, C8)
 				pos.PlacePiece(BlackRook, D8)
-				hash ^= ZobristTable.PieceKey(Black, Rook, D8)
+				hash ^= ZobristTable.PieceKey(BlackRook, D8)
 				pos.KingSq[Black] = C8
 			}
 		} else {
 			if move.IsKingsideCastle() {
 				pos.PlacePiece(WhiteKing, G1)
-				hash ^= ZobristTable.PieceKey(White, King, G1)
+				hash ^= ZobristTable.PieceKey(WhiteKing, G1)
 				pos.PlacePiece(WhiteRook, F1)
-				hash ^= ZobristTable.PieceKey(White, Rook, F1)
+				hash ^= ZobristTable.PieceKey(WhiteRook, F1)
 				pos.KingSq[White] = G1
 			} else {
 				pos.PlacePiece(WhiteKing, C1)
-				hash ^= ZobristTable.PieceKey(White, King, C1)
+				hash ^= ZobristTable.PieceKey(WhiteKing, C1)
 				pos.PlacePiece(WhiteRook, D1)
-				hash ^= ZobristTable.PieceKey(White, Rook, D1)
+				hash ^= ZobristTable.PieceKey(WhiteRook, D1)
 				pos.KingSq[White] = C1
 			}
 		}

@@ -86,14 +86,14 @@ func corrBonus(diff int32, depth int, mult, div int32) int32 {
 // TODO: update incrementally in makemove
 func getPawnKey(pos *board.Position) uint64 {
 	var key uint64
-	wp := pos.PieceBB(board.WhitePawn)
-	bp := pos.PieceBB(board.BlackPawn)
+	wp := pos.Pawns(board.White)
+	bp := pos.Pawns(board.Black)
 
-	for wp != 0 {
-		key ^= board.ZobristTable.PieceKey(board.White, board.Pawn, wp.PopLSB())
+	for !wp.IsEmpty() {
+		key ^= board.ZobristTable.PieceKey(board.WhitePawn, wp.PopLSB())
 	}
-	for bp != 0 {
-		key ^= board.ZobristTable.PieceKey(board.Black, board.Pawn, bp.PopLSB())
+	for !bp.IsEmpty() {
+		key ^= board.ZobristTable.PieceKey(board.BlackPawn, bp.PopLSB())
 	}
 	return key
 }
@@ -101,9 +101,9 @@ func getPawnKey(pos *board.Position) uint64 {
 func getNonPawnKey(pos *board.Position, stm board.Color) uint64 {
 	var key uint64
 	pieces := pos.Colors[stm] &^ pos.Pieces[board.Pawn]
-	for pieces != 0 {
+	for !pieces.IsEmpty() {
 		sq := pieces.PopLSB()
-		key ^= board.ZobristTable.PieceKey(stm, pos.Board[sq].Type, sq)
+		key ^= board.ZobristTable.PieceKey(pos.PieceOn(sq), sq)
 	}
 	return key
 }
@@ -111,10 +111,9 @@ func getNonPawnKey(pos *board.Position, stm board.Color) uint64 {
 func getMinorKey(pos *board.Position) uint64 {
 	var key uint64
 	pieces := pos.Pieces[board.Knight] | pos.Pieces[board.Bishop] | pos.Pieces[board.King]
-	for pieces != 0 {
+	for !pieces.IsEmpty() {
 		sq := pieces.PopLSB()
-		p := pos.Board[sq]
-		key ^= board.ZobristTable.PieceKey(p.Color, p.Type, sq)
+		key ^= board.ZobristTable.PieceKey(pos.PieceOn(sq), sq)
 	}
 	return key
 }

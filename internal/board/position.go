@@ -22,36 +22,71 @@ type Position struct {
 	Pinned   [2]Bitboard
 }
 
-func (pos *Position) PieceBB(piece Piece) Bitboard {
-	return pos.Pieces[piece.Type] & pos.Colors[piece.Color]
+func (pos *Position) Us() Bitboard {
+	return pos.Colors[pos.SideToMove]
 }
 
-func (pos *Position) Occupied() Bitboard {
+func (pos *Position) Them() Bitboard {
+	return pos.Colors[pos.SideToMove.Opponent()]
+}
+
+func (pos *Position) Our(pt PieceType) Bitboard {
+	return pos.Pieces[pt] & pos.Us()
+}
+
+func (pos *Position) Their(pt PieceType) Bitboard {
+	return pos.Pieces[pt] & pos.Them()
+}
+
+func (pos *Position) Pawns(c Color) Bitboard {
+	return pos.Pieces[Pawn] & pos.Colors[c]
+}
+
+func (pos *Position) Knights(c Color) Bitboard {
+	return pos.Pieces[Knight] & pos.Colors[c]
+}
+
+func (pos *Position) Bishops(c Color) Bitboard {
+	return pos.Pieces[Bishop] & pos.Colors[c]
+}
+
+func (pos *Position) Rooks(c Color) Bitboard {
+	return pos.Pieces[Rook] & pos.Colors[c]
+}
+
+func (pos *Position) Queens(c Color) Bitboard {
+	return pos.Pieces[Queen] & pos.Colors[c]
+}
+
+func (pos *Position) Occ() Bitboard {
 	return pos.Colors[White] | pos.Colors[Black]
 }
 
+func (pos *Position) PieceBB(piece Piece) Bitboard {
+	return pos.Pieces[piece.Type()] & pos.Colors[piece.Color()]
+}
+
 func (pos *Position) PlacePiece(piece Piece, sq Square) {
-	pos.Pieces[piece.Type].SetBit(sq)
-	pos.Colors[piece.Color].SetBit(sq)
+	pos.Pieces[piece.Type()].SetBit(sq)
+	pos.Colors[piece.Color()].SetBit(sq)
 	pos.Board[sq] = piece
 }
 
 func (pos *Position) RemovePiece(sq Square) {
-	piece, ok := pos.PieceOn(sq)
-	if ok {
-		pos.Pieces[piece.Type].ClearBit(sq)
-		pos.Colors[piece.Color].ClearBit(sq)
+	piece := pos.PieceOn(sq)
+	if piece != NoPiece {
+		pos.Pieces[piece.Type()].ClearBit(sq)
+		pos.Colors[piece.Color()].ClearBit(sq)
 		pos.Board[sq] = NoPiece
 	}
 }
 
-func (pos *Position) PieceOn(sq Square) (Piece, bool) {
-	piece := pos.Board[sq]
-	return piece, piece != NoPiece
+func (pos *Position) PieceOn(sq Square) Piece {
+	return pos.Board[sq]
 }
 
 func (pos *Position) HasNonPawns() bool {
-	return pos.Colors[pos.SideToMove]&^(pos.Pieces[King]|pos.Pieces[Pawn]) != 0
+	return !(pos.Us() &^ (pos.Pieces[King] | pos.Pieces[Pawn])).IsEmpty()
 }
 
 func newBoard() [64]Piece {

@@ -47,6 +47,10 @@ func InitBitboards() {
 	}
 }
 
+func (bb Bitboard) IsEmpty() bool {
+	return bb == EmptyBB
+}
+
 func (bb *Bitboard) SetBit(sq Square) {
 	*bb |= sq.Bit()
 }
@@ -56,7 +60,7 @@ func (bb *Bitboard) ClearBit(sq Square) {
 }
 
 func (bb Bitboard) IsBitSet(sq Square) bool {
-	return (bb & sq.Bit()) != 0
+	return !(bb & sq.Bit()).IsEmpty()
 }
 
 func (bb Bitboard) CountBits() int {

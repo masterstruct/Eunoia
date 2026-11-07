@@ -88,7 +88,7 @@ func knightAttacksSetwise(bb Bitboard) Bitboard {
 
 func bishopAttacksSetwise(bb, occ Bitboard) Bitboard {
 	out := EmptyBB
-	for bb != 0 {
+	for !bb.IsEmpty() {
 		out |= BishopAttacks(bb.PopLSB(), occ)
 	}
 	return out
@@ -96,7 +96,7 @@ func bishopAttacksSetwise(bb, occ Bitboard) Bitboard {
 
 func rookAttacksSetwise(bb, occ Bitboard) Bitboard {
 	out := EmptyBB
-	for bb != 0 {
+	for !bb.IsEmpty() {
 		out |= RookAttacks(bb.PopLSB(), occ)
 	}
 	return out

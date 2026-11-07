@@ -46,7 +46,7 @@ func Subsets(mask Bitboard) func(yield func(Bitboard) bool) {
 			if !yield(subset) {
 				return
 			}
-			if subset == 0 {
+			if subset.IsEmpty() {
 				return
 			}
 			subset = (subset - 1) & mask

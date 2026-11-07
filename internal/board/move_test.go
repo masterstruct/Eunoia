@@ -174,6 +174,103 @@ func TestNewEnPassant(t *testing.T) {
 	}
 }
 
+func TestAttacker(t *testing.T) {
+	tests := []struct {
+		name  string
+		move  Move
+		piece Piece
+		from  Square
+		want  PieceType
+	}{
+		{"pawn move", NewMove(E2, E4), WhitePawn, E2, Pawn},
+		{"knight capture", NewCapture(F6, E4), BlackKnight, F6, Knight},
+		{"promo", NewPromo(E7, E8, Queen), WhitePawn, E7, Pawn},
+		{"en passant", NewEnPassant(E5, D6), WhitePawn, E5, Pawn},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos := NewPosition()
+			pos.PlacePiece(tt.piece, tt.from)
+
+			got := pos.Attacker(tt.move)
+			if got != tt.want {
+				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVictim(t *testing.T) {
+	tests := []struct {
+		name string
+		move Move
+		pt   PieceType
+		sq   Square
+		want PieceType
+	}{
+		{
+			name: "capture",
+			move: NewCapture(E4, D5),
+			pt:   Pawn,
+			sq:   D5,
+			want: Pawn,
+		},
+		{
+			name: "capture promo",
+			move: NewCapturePromo(E7, D8, Queen),
+			pt:   Rook,
+			sq:   D8,
+			want: Rook,
+		},
+		{
+			name: "en croissant ;P",
+			move: NewEnPassant(E5, D6),
+			pt:   Pawn,
+			sq:   D5,
+			want: Pawn,
+		},
+		{
+			name: "quiet move",
+			move: NewMove(E2, E4),
+			want: NoPieceType,
+		},
+		{
+			name: "quiet move to occupied square",
+			move: NewMove(E2, E4),
+			pt:   Pawn,
+			sq:   E4,
+			want: NoPieceType,
+		},
+		{
+			name: "regular promo",
+			move: NewPromo(E7, E8, Queen),
+			want: NoPieceType,
+		},
+		{
+			name: "castle",
+			move: NewCastle(E1, H1),
+			pt:   Rook,
+			sq:   H1,
+			want: NoPieceType,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pos := NewPosition()
+			if tt.pt != NoPieceType {
+				pos.PlacePiece(NewPiece(tt.pt, Black), tt.sq)
+			}
+
+			got := pos.Victim(tt.move)
+			if got != tt.want {
+				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestNewPromo(t *testing.T) {
 	tests := []struct {
 		name string

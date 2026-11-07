@@ -6,32 +6,9 @@ import "github.com/masterstruct/Eunoia/internal/board"
 // https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/search/see.rs
 
 const (
-	seePawnValue   = 100
-	seeKnightValue = 300
-	seeBishopValue = 330
-	seeRookValue   = 500
-	seeQueenValue  = 900
-
 	seeQuietScale = -80
 	seeNoisyScale = -100
 )
-
-func seeValue(pt board.PieceType) int32 {
-	switch pt {
-	case board.Pawn:
-		return seePawnValue
-	case board.Knight:
-		return seeKnightValue
-	case board.Bishop:
-		return seeBishopValue
-	case board.Rook:
-		return seeRookValue
-	case board.Queen:
-		return seeQueenValue
-	default:
-		return 0
-	}
-}
 
 func see(pos *board.Position, move board.Move, threshold int32) bool {
 	from := move.From()
@@ -47,16 +24,16 @@ func see(pos *board.Position, move board.Move, threshold int32) bool {
 	if move.IsPromo() {
 		nextVictim = move.Promo()
 	} else {
-		nextVictim = pos.Board[from].Type
+		nextVictim = pos.Attacker(move)
 	}
 
-	balance -= seeValue(nextVictim)
+	balance -= nextVictim.Value()
 
 	if balance >= 0 {
 		return true
 	}
 
-	occ := pos.Occupied() &^ from.Bit() &^ to.Bit()
+	occ := pos.Occ() &^ from.Bit() &^ to.Bit()
 	if move.IsEnPassant() {
 		epSq := to - (16*board.Square(pos.SideToMove) - 8)
 		occ ^= epSq.Bit()
@@ -77,12 +54,12 @@ func see(pos *board.Position, move board.Move, threshold int32) bool {
 
 	for {
 		ourAttackers := attackers & pos.Colors[stm]
-		if ourAttackers == 0 {
+		if ourAttackers.IsEmpty() {
 			break
 		}
 
 		attacker := leastValuableAttacker(pos, ourAttackers)
-		if attacker == board.King && (attackers&pos.Colors[stm.Opponent()]) != 0 {
+		if attacker == board.King && !(attackers & pos.Colors[stm.Opponent()]).IsEmpty() {
 			break
 		}
 
@@ -91,7 +68,7 @@ func see(pos *board.Position, move board.Move, threshold int32) bool {
 		occ.ClearBit(sq)
 		stm = stm.Opponent()
 
-		balance = -balance - 1 - seeValue(attacker)
+		balance = -balance - 1 - attacker.Value()
 		if balance >= 0 {
 			break
 		}
@@ -109,18 +86,18 @@ func see(pos *board.Position, move board.Move, threshold int32) bool {
 }
 
 func seeMoveValue(pos *board.Position, move board.Move) int32 {
-	value := seeValue(pos.Board[move.To()].Type)
+	value := pos.Victim(move).Value()
 	if move.IsPromo() {
-		value += seeValue(move.Promo())
+		value += move.Promo().Value()
 	} else if move.IsEnPassant() {
-		value = seeValue(board.Pawn)
+		value = board.Pawn.Value()
 	}
 	return value
 }
 
 func seeSquareAttackers(pos *board.Position, sq board.Square, occ board.Bitboard) board.Bitboard {
-	wPawns := board.PawnAttacks[board.Black][sq] & pos.PieceBB(board.WhitePawn)
-	bPawns := board.PawnAttacks[board.White][sq] & pos.PieceBB(board.BlackPawn)
+	wPawns := board.PawnAttacks[board.Black][sq] & pos.Pawns(board.White)
+	bPawns := board.PawnAttacks[board.White][sq] & pos.Pawns(board.Black)
 	knights := board.KnightAttacks[sq] & pos.Pieces[board.Knight]
 	kings := board.KingAttacks[sq] & pos.Pieces[board.King]
 
@@ -134,22 +111,22 @@ func seeSquareAttackers(pos *board.Position, sq board.Square, occ board.Bitboard
 }
 
 func leastValuableAttacker(pos *board.Position, ourAttackers board.Bitboard) board.PieceType {
-	if (ourAttackers & pos.Pieces[board.Pawn]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Pawn]).IsEmpty() {
 		return board.Pawn
 	}
-	if (ourAttackers & pos.Pieces[board.Knight]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Knight]).IsEmpty() {
 		return board.Knight
 	}
-	if (ourAttackers & pos.Pieces[board.Bishop]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Bishop]).IsEmpty() {
 		return board.Bishop
 	}
-	if (ourAttackers & pos.Pieces[board.Rook]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Rook]).IsEmpty() {
 		return board.Rook
 	}
-	if (ourAttackers & pos.Pieces[board.Queen]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Queen]).IsEmpty() {
 		return board.Queen
 	}
-	if (ourAttackers & pos.Pieces[board.King]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.King]).IsEmpty() {
 		return board.King
 	}
 	panic("No attackers found")

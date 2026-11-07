@@ -99,12 +99,12 @@ func TestOccupied(t *testing.T) {
 			for _, pl := range tt.place {
 				pos.PlacePiece(pl.p, pl.sq)
 			}
-			got := pos.Occupied()
+			got := pos.Occ()
 			if got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
-			if pos.Occupied() != allPieceBB(&pos) {
-				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", pos.Occupied(), allPieceBB(&pos))
+			if pos.Occ() != allPieceBB(&pos) {
+				t.Fatalf("occupied and piece bitboards out of sync: %v vs %v", pos.Occ(), allPieceBB(&pos))
 			}
 		})
 	}
@@ -225,12 +225,12 @@ func TestPlacePiece(t *testing.T) {
 			for _, pl := range tt.placements {
 				pos.PlacePiece(pl.p, pl.sq)
 
-				if pos.Board[pl.sq] != pl.p {
+				if pos.PieceOn(pl.sq) != pl.p {
 					t.Fatalf("placed piece %v on square %v but board did not update", pl.p, pl.sq)
 				}
 			}
 
-			if got := pos.Occupied(); got != tt.want {
+			if got := pos.Occ(); got != tt.want {
 				t.Fatalf("occupied: expected %v but got %v", tt.want, got)
 			}
 
@@ -295,7 +295,7 @@ func TestRemovePiece(t *testing.T) {
 
 			pos.RemovePiece(tt.remove)
 
-			if got := pos.Occupied(); got != tt.want {
+			if got := pos.Occ(); got != tt.want {
 				t.Fatalf("expected %v but got %v", tt.want, got)
 			}
 
@@ -304,7 +304,7 @@ func TestRemovePiece(t *testing.T) {
 			}
 
 			for _, pl := range tt.place {
-				if tt.remove == pl.sq && pos.Board[pl.sq] != NoPiece {
+				if tt.remove == pl.sq && pos.PieceOn(pl.sq) != NoPiece {
 					t.Fatalf("removed piece %v on square %v but board did not update", pl.p, pl.sq)
 				}
 			}
@@ -331,22 +331,18 @@ func TestPieceOn(t *testing.T) {
 	pos.PlacePiece(BlackPawn, E7)
 
 	tests := []struct {
-		name   string
-		sq     Square
-		want   Piece
-		wantOk bool
+		name string
+		sq   Square
+		want Piece
 	}{
-		{"white king on e1", E1, WhiteKing, true},
-		{"black pawn on e7", E7, BlackPawn, true},
-		{"empty square", E4, NoPiece, false},
+		{"white king on e1", E1, WhiteKing},
+		{"black pawn on e7", E7, BlackPawn},
+		{"empty square", E4, NoPiece},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, ok := pos.PieceOn(tt.sq)
-			if ok != tt.wantOk {
-				t.Errorf("expected ok=%v but got %v", tt.wantOk, ok)
-			}
+			got := pos.PieceOn(tt.sq)
 			if got != tt.want {
 				t.Errorf("expected %q but got %q", tt.want, got)
 			}
@@ -358,14 +354,13 @@ func BenchmarkPieceOn(b *testing.B) {
 	pos := StartingPosition()
 
 	var piece Piece
-	var ok bool
 	b.ResetTimer()
 	for i := 0; b.Loop(); i++ {
 		for sq := range A8 {
-			piece, ok = pos.PieceOn(sq)
+			piece = pos.PieceOn(sq)
 		}
 	}
-	_, _ = piece, ok
+	_ = piece
 }
 
 func setBits(sqs []Square) Bitboard {

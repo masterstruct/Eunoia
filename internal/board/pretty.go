@@ -68,9 +68,9 @@ func (pos *Position) String() string {
 
 			sb.WriteString(squareBG(sqColor))
 
-			piece, ok := pos.PieceOn(sq)
-			if ok {
-				sb.WriteString(pieceFG(piece.Color, sqColor))
+			piece := pos.PieceOn(sq)
+			if piece != NoPiece {
+				sb.WriteString(pieceFG(piece.Color(), sqColor))
 				sb.WriteString(piece.PrettyString())
 			} else {
 				sb.WriteByte(' ')
