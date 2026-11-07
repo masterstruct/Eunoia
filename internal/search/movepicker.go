@@ -114,11 +114,13 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 		var score int32
 		move := temp.Moves[i].Move
 
-		// TODO: add queen promo bonus
-
 		victim := move.Victim(pos)
 		score = ss.captureHistory[stm][move.Attacker(pos)][victim][move.To()]
 		score += 16 * seeValue(victim)
+
+		if move.IsPromo() {
+			score += seeValue(board.Queen) - seeValue(board.Pawn)
+		}
 
 		scoredMove := move.Score(score)
 
@@ -128,6 +130,7 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 		}
 
 		mp.movelist.AddScoredMove(scoredMove)
+
 	}
 }
 
