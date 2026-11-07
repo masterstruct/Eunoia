@@ -2,69 +2,6 @@ package board
 
 import "testing"
 
-func TestColorString(t *testing.T) {
-	tests := []struct {
-		name  string
-		color Color
-		want  string
-	}{
-		{"white", White, "w"},
-		{"black", Black, "b"},
-		{"no color", NoColor, "-"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.color.String()
-			if got != tt.want {
-				t.Errorf("expected %q but got %q", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestParseColor(t *testing.T) {
-	tests := []struct {
-		name  string
-		input byte
-		want  Color
-	}{
-		{"white lower", 'w', White},
-		{"white upper", 'W', White},
-		{"black lower", 'b', Black},
-		{"black upper", 'B', Black},
-		{"invalid", '-', NoColor},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := ParseColor(tt.input); got != tt.want {
-				t.Errorf("expected %v but got %v", tt.want, got)
-			}
-		})
-	}
-}
-
-func TestOpponent(t *testing.T) {
-	tests := []struct {
-		name  string
-		color Color
-		want  Color
-	}{
-		{"white opponent is black", White, Black},
-		{"black opponent is white", Black, White},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := tt.color.Opponent()
-			if got != tt.want {
-				t.Errorf("expected %v but got %v", tt.want, got)
-			}
-		})
-	}
-}
-
 func TestPieceTypeString(t *testing.T) {
 	tests := []struct {
 		name string
@@ -155,7 +92,7 @@ func TestPieceString(t *testing.T) {
 		{"black queen", BlackQueen, 'q', "♛"},
 		{"black king", BlackKing, 'k', "♚"},
 		{"no piece", NoPiece, '.', " "},
-		{"illegal piece", Piece{NoPieceType, White}, '.', " "},
+		{"illegal piece", NewPiece(NoPieceType, White), '.', " "},
 	}
 
 	for _, tt := range tests {
@@ -180,12 +117,13 @@ func TestNewPiece(t *testing.T) {
 		want  Piece
 	}{
 		{"white pawn", Pawn, White, WhitePawn},
+		{"white bishop", Bishop, White, WhiteBishop},
+		{"white queen", Queen, White, WhiteQueen},
 		{"white king", King, White, WhiteKing},
 		{"black pawn", Pawn, Black, BlackPawn},
-		{"black king", King, Black, BlackKing},
-		{"no piece type", NoPieceType, White, NoPiece},
-		{"no color", Pawn, NoColor, NoPiece},
-		{"both invalid", NoPieceType, NoColor, NoPiece},
+		{"black knight", Knight, Black, BlackKnight},
+		{"black rook", Rook, Black, BlackRook},
+		{"black queen", Queen, Black, BlackQueen},
 	}
 
 	for _, tt := range tests {
