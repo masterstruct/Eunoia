@@ -104,6 +104,8 @@ func pickBest(movelist *board.Movelist) board.Move {
 }
 
 func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
+	stm := pos.SideToMove
+
 	var temp board.Movelist
 	board.GenerateLegalMoves(pos, &temp, board.Noisies)
 	mp.removeTT(&temp)
@@ -114,10 +116,9 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 
 		// TODO: add queen promo bonus
 
-		// MVV-LVA
-		if move.IsCapture() {
-			score += mvvlvaScore(move.Victim(pos), move.Attacker(pos))
-		}
+		victim := move.Victim(pos)
+		score = ss.captureHistory[stm][move.Attacker(pos)][victim][move.To()] / 8
+		score += seeValue(victim)
 
 		scoredMove := move.Score(score)
 
@@ -159,11 +160,6 @@ func (mp *MovePicker) removeTT(movelist *board.Movelist) {
 			return
 		}
 	}
-}
-
-// formula from https://asteri.sm/files/2023-02-20-viri-wiki#mvvlva
-func mvvlvaScore(victim, attacker board.PieceType) int32 {
-	return int32(victim)*1000 + 60 - int32(attacker)*10
 }
 
 func isGoodNoisy(pos *board.Position, move board.Move) bool {
