@@ -195,7 +195,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		if isQuiet {
 			historyScore = ss.history.Quiet.Get(stm, from, to)
 		} else {
-			historyScore = ss.captureHistory[stm][move.Attacker(&pos)][move.Victim(&pos)][to]
+			historyScore = ss.captureHistory[stm][pos.Attacker(move)][pos.Victim(move)][to]
 		}
 
 		// futility pruning
@@ -315,7 +315,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			flag = tt.Lower
 			bonus := 300*int32(depth) - 250
 			if !isQuiet {
-				ss.updateCaptureHistory(stm, move.Attacker(&pos), move.Victim(&pos), to, bonus)
+				ss.updateCaptureHistory(stm, pos.Attacker(move), pos.Victim(move), to, bonus)
 			} else {
 				ss.stack[ply].killer = bestMove
 
