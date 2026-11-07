@@ -26,7 +26,7 @@ func evaluatePSQT(pos *board.Position) int {
 	gamePhase := 0
 
 	occ := pos.Occ()
-	for occ != 0 {
+	for !occ.IsEmpty() {
 		sq := occ.PopLSB()
 		piece := pos.PieceOn(sq)
 		pieceColor := piece.Color()

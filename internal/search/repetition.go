@@ -33,7 +33,7 @@ func isInsufficientMaterial(pos *board.Position) bool {
 	pawns := pos.Pieces[board.Pawn]
 	rooks := pos.Pieces[board.Rook]
 	queens := pos.Pieces[board.Queen]
-	if (pawns | rooks | queens) != 0 {
+	if !(pawns | rooks | queens).IsEmpty() {
 		return false
 	}
 

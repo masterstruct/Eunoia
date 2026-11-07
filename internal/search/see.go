@@ -54,12 +54,12 @@ func see(pos *board.Position, move board.Move, threshold int32) bool {
 
 	for {
 		ourAttackers := attackers & pos.Colors[stm]
-		if ourAttackers == 0 {
+		if ourAttackers.IsEmpty() {
 			break
 		}
 
 		attacker := leastValuableAttacker(pos, ourAttackers)
-		if attacker == board.King && (attackers&pos.Colors[stm.Opponent()]) != 0 {
+		if attacker == board.King && !(attackers & pos.Colors[stm.Opponent()]).IsEmpty() {
 			break
 		}
 
@@ -111,22 +111,22 @@ func seeSquareAttackers(pos *board.Position, sq board.Square, occ board.Bitboard
 }
 
 func leastValuableAttacker(pos *board.Position, ourAttackers board.Bitboard) board.PieceType {
-	if (ourAttackers & pos.Pieces[board.Pawn]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Pawn]).IsEmpty() {
 		return board.Pawn
 	}
-	if (ourAttackers & pos.Pieces[board.Knight]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Knight]).IsEmpty() {
 		return board.Knight
 	}
-	if (ourAttackers & pos.Pieces[board.Bishop]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Bishop]).IsEmpty() {
 		return board.Bishop
 	}
-	if (ourAttackers & pos.Pieces[board.Rook]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Rook]).IsEmpty() {
 		return board.Rook
 	}
-	if (ourAttackers & pos.Pieces[board.Queen]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.Queen]).IsEmpty() {
 		return board.Queen
 	}
-	if (ourAttackers & pos.Pieces[board.King]) != 0 {
+	if !(ourAttackers & pos.Pieces[board.King]).IsEmpty() {
 		return board.King
 	}
 	panic("No attackers found")

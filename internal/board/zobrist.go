@@ -69,7 +69,7 @@ func (z *zobrist) ComputeHash(pos *Position) uint64 {
 	var hash uint64
 
 	occ := pos.Occ()
-	for occ != 0 {
+	for !occ.IsEmpty() {
 		sq := occ.PopLSB()
 		hash ^= z.PieceKey(pos.PieceOn(sq), sq)
 	}

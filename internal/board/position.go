@@ -86,7 +86,7 @@ func (pos *Position) PieceOn(sq Square) Piece {
 }
 
 func (pos *Position) HasNonPawns() bool {
-	return pos.Us()&^(pos.Pieces[King]|pos.Pieces[Pawn]) != 0
+	return !(pos.Us() &^ (pos.Pieces[King] | pos.Pieces[Pawn])).IsEmpty()
 }
 
 func newBoard() [64]Piece {

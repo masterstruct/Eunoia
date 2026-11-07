@@ -24,14 +24,14 @@ func (pos *Position) IsLegal(move Move) bool {
 	}
 
 	if pos.Pinned[stm].IsBitSet(from) {
-		return pos.Checkers == 0 && Extending(kingSq, from).IsBitSet(to)
+		return pos.Checkers.IsEmpty() && Extending(kingSq, from).IsBitSet(to)
 	}
 
 	if pos.Checkers.CountBits() > 1 {
 		return false
 	}
 
-	if pos.Checkers == 0 {
+	if pos.Checkers.IsEmpty() {
 		return true
 	}
 
@@ -54,6 +54,6 @@ func isLegalEnPassant(pos *Position, from, epSq Square) bool {
 	rooks := pos.Their(Rook)
 	queens := pos.Their(Queen)
 
-	return BishopAttacks(kingSq, occ)&(bishops|queens) == 0 &&
-		RookAttacks(kingSq, occ)&(rooks|queens) == 0
+	return (BishopAttacks(kingSq, occ) & (bishops | queens)).IsEmpty() &&
+		(RookAttacks(kingSq, occ) & (rooks | queens)).IsEmpty()
 }

@@ -30,7 +30,7 @@ var (
 
 // returns true if the side to move is in check
 func (pos *Position) InCheck() bool {
-	return pos.Checkers != 0
+	return !pos.Checkers.IsEmpty()
 }
 
 func GenKnightMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
@@ -41,7 +41,7 @@ func GenKnightMoves(pos *Position, filterMask Bitboard, movelist *Movelist) {
 
 	// loop over each knight
 	knights := pos.Knights(stm) &^ pinned
-	for knights != 0 {
+	for !knights.IsEmpty() {
 		from := knights.PopLSB()
 		attacks := KnightAttacks[from] & filterMask
 		collectAttackMoves(movelist, from, attacks, them, occ)
@@ -56,14 +56,14 @@ func collectSliderMoves(pos *Position, pieces, filterMask Bitboard, attacks func
 	pinned := pos.Pinned[stm]
 
 	free := pieces &^ pinned
-	for free != 0 {
+	for !free.IsEmpty() {
 		from := free.PopLSB()
 		attacks := attacks(from, occ) & filterMask
 		collectAttackMoves(movelist, from, attacks, them, occ)
 	}
 
 	stuck := pieces & pinned
-	for stuck != 0 {
+	for !stuck.IsEmpty() {
 		from := stuck.PopLSB()
 		attacks := attacks(from, occ) & Extending(kingSq, from) & filterMask
 		collectAttackMoves(movelist, from, attacks, them, occ)
@@ -73,11 +73,11 @@ func collectSliderMoves(pos *Position, pieces, filterMask Bitboard, attacks func
 func collectAttackMoves(movelist *Movelist, from Square, attacks, them, occ Bitboard) {
 	captures := attacks & them
 	quiets := attacks &^ occ
-	for captures != 0 {
+	for !captures.IsEmpty() {
 		// capture
 		movelist.Add(NewCapture(from, captures.PopLSB()))
 	}
-	for quiets != 0 {
+	for !quiets.IsEmpty() {
 		// quiet move
 		movelist.Add(NewMove(from, quiets.PopLSB()))
 	}
@@ -109,7 +109,7 @@ func GenPawnMoves(pos *Position, filter MoveFilter, evasionMask Bitboard, moveli
 	}
 
 	up, promos := collectPawnPushes(pos, pawns, pinned, evasionMask, filter, movelist)
-	if promos == EmptyBB {
+	if promos.IsEmpty() {
 		return
 	}
 
@@ -127,7 +127,7 @@ func collectEnPassant(pos *Position, pawns Bitboard, movelist *Movelist) {
 	epSq := pos.EnPassant
 	nstm := pos.SideToMove.Opponent()
 	attackers := PawnAttacks[nstm][epSq] & pawns
-	for attackers != 0 {
+	for !attackers.IsEmpty() {
 		move := NewEnPassant(attackers.PopLSB(), epSq)
 		if pos.IsLegal(move) {
 			movelist.Add(move)
@@ -144,7 +144,7 @@ func collectPawnCaptures(pos *Position, pawns, pinned Bitboard, kingSq Square, e
 	pawnsRight := freePawns
 
 	if stm == Black {
-		if pinned != EmptyBB {
+		if !pinned.IsEmpty() {
 			pawnsLeft |= pawns & pinned & Diagonal(kingSq, SouthEast)
 			pawnsRight |= pawns & pinned & Diagonal(kingSq, SouthWest)
 		}
@@ -153,7 +153,7 @@ func collectPawnCaptures(pos *Position, pawns, pinned Bitboard, kingSq Square, e
 		collectPawnCaptureMoves(movelist, capturesLeft, -7, Rank1.Bits())
 		collectPawnCaptureMoves(movelist, capturesRight, -9, Rank1.Bits())
 	} else {
-		if pinned != EmptyBB {
+		if !pinned.IsEmpty() {
 			pawnsLeft |= pawns & pinned & Diagonal(kingSq, NorthWest)
 			pawnsRight |= pawns & pinned & Diagonal(kingSq, NorthEast)
 		}
@@ -193,7 +193,7 @@ func collectPawnPushes(pos *Position, pawns, pinned Bitboard, evasionMask Bitboa
 }
 
 func collectPawnPromos(movelist *Movelist, destinations Bitboard, offset int8, promos []PieceType) {
-	for destinations != 0 {
+	for !destinations.IsEmpty() {
 		to := destinations.PopLSB()
 		from := Square(int(to) - int(offset))
 		for _, promo := range promos {
@@ -203,7 +203,7 @@ func collectPawnPromos(movelist *Movelist, destinations Bitboard, offset int8, p
 }
 
 func collectPawnQuiets(movelist *Movelist, destinations Bitboard, offset int8) {
-	for destinations != 0 {
+	for !destinations.IsEmpty() {
 		to := destinations.PopLSB()
 		from := Square(int(to) - int(offset))
 		movelist.Add(NewMove(from, to))
@@ -211,7 +211,7 @@ func collectPawnQuiets(movelist *Movelist, destinations Bitboard, offset int8) {
 }
 
 func collectPawnDoublePushes(movelist *Movelist, destinations Bitboard, offset int8) {
-	for destinations != 0 {
+	for !destinations.IsEmpty() {
 		to := destinations.PopLSB()
 		from := Square(int(to) - int(offset))
 		movelist.Add(NewDoublePush(from, to))
@@ -221,12 +221,12 @@ func collectPawnDoublePushes(movelist *Movelist, destinations Bitboard, offset i
 func collectPawnCaptureMoves(movelist *Movelist, destinations Bitboard, offset int8, promoRank Bitboard) {
 	promos := destinations & promoRank
 	destinations &^= promoRank
-	for destinations != 0 {
+	for !destinations.IsEmpty() {
 		to := destinations.PopLSB()
 		from := Square(int(to) - int(offset))
 		movelist.Add(NewCapture(from, to))
 	}
-	for promos != 0 {
+	for !promos.IsEmpty() {
 		to := promos.PopLSB()
 		from := Square(int(to) - int(offset))
 		for _, promo := range allPromos {
@@ -267,12 +267,12 @@ func canCastle(pos *Position, kingSq, rookSq Square) bool {
 
 	travel := (kingTravel | rookTravel) &^ kingSq.Bit()
 	occ := pos.Occ() &^ rookSq.Bit()
-	if travel&occ != 0 {
+	if !(travel & occ).IsEmpty() {
 		return false
 	}
 
 	safety := kingTravel | kingSq.Bit()
-	if safety&pos.Threats != 0 {
+	if !(safety & pos.Threats).IsEmpty() {
 		return false
 	}
 
@@ -292,7 +292,7 @@ func GenerateLegalMoves(pos *Position, movelist *Movelist, filter MoveFilter) {
 	us := pos.Us()
 	them := pos.Them()
 	kingSq := pos.KingSq[stm]
-	inCheck := pos.Checkers != 0
+	inCheck := !pos.Checkers.IsEmpty()
 
 	filterMask := FullBB
 	switch filter {
@@ -378,7 +378,7 @@ func (pos *Position) calculatePinned(stm Color) Bitboard {
 	diagonals := pos.Bishops(stm.Opponent()) | pos.Queens(stm.Opponent())
 	orthogonals := pos.Rooks(stm.Opponent()) | pos.Queens(stm.Opponent())
 
-	if diagonals|orthogonals == EmptyBB {
+	if (diagonals | orthogonals).IsEmpty() {
 		return EmptyBB
 	}
 
@@ -387,7 +387,7 @@ func (pos *Position) calculatePinned(stm Color) Bitboard {
 
 	pinned := EmptyBB
 
-	for potentialAttackers != 0 {
+	for !potentialAttackers.IsEmpty() {
 		attacker := potentialAttackers.PopLSB()
 		between := Between(king, attacker)
 		maybePinned := us & between

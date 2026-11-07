@@ -150,7 +150,7 @@ func (pos *Position) FEN() string {
 
 	for rank := Rank8; rank >= Rank1; rank-- {
 		rankBB = occ & rank.Bits()
-		if rankBB == EmptyBB {
+		if rankBB.IsEmpty() {
 			// skip empty rank
 			sb.WriteString("8")
 			if rank != Rank1 {
