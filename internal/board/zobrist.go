@@ -31,9 +31,12 @@ type zobrist struct {
 
 func NewZobrist(rng *PRNG) *zobrist {
 	z := &zobrist{}
-	for p := range Pieces {
-		for sq := range NoSquare {
-			z.piece[p][sq] = rng.Next()
+	for color := range NoColor {
+		for pt := range PieceTypes {
+			piece := NewPiece(PieceType(pt), Color(color))
+			for sq := range NoSquare {
+				z.piece[piece][sq] = rng.Next()
+			}
 		}
 	}
 	for i := range 16 {
