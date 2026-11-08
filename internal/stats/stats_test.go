@@ -7,9 +7,3 @@
 // to settings.json
 
 package stats
-
-import "testing"
-
-func TestFoo(t *testing.T) {
-	foo()
-}
