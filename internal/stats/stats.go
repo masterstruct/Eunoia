@@ -2,7 +2,12 @@
 
 package stats
 
-import "math"
+import (
+	"fmt"
+	"io"
+	"math"
+	"os"
+)
 
 // to disable warning in VSCode, add
 // "gopls": {
@@ -49,6 +54,21 @@ func (tv *TrackedValue) Stats() ValueStats {
 		Mean:     tv.mean(),
 		StdDev:   tv.stdDev(),
 	}
+}
+
+func (tv *TrackedValue) Print() {
+	tv.Stats().Print()
+}
+
+func (s ValueStats) Print() {
+	s.WriteTo(os.Stdout)
+}
+
+func (s *ValueStats) WriteTo(w io.Writer) (int64, error) {
+	n, err := fmt.Fprintf(w,
+		"%s: Count %d, Total %d, TotalAbs %d, Min %d, Max %d, Mean %.3f, StdDev %.3f\n",
+		s.Name, s.Count, s.Total, s.TotalAbs, s.Min, s.Max, s.Mean, s.StdDev)
+	return int64(n), err
 }
 
 func (tv *TrackedValue) mean() float64 {
