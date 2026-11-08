@@ -23,18 +23,6 @@ type TrackedValue struct {
 	max      int64  // largest value
 }
 
-type ValueStats struct {
-	Name     string
-	Count    uint64
-	Total    int64
-	TotalAbs uint64
-	TotalSq  uint64
-	Min      int64
-	Max      int64
-	Mean     float64
-	StdDev   float64
-}
-
 // record a value
 func (tv *TrackedValue) Record(value int64) {
 	if tv.count == 0 {
@@ -83,14 +71,6 @@ func (tv *TrackedValue) stdDev() float64 {
 
 type HitMissCounter struct {
 	hits, misses uint64
-}
-
-type HitMissStats struct {
-	Hits        uint64
-	Misses      uint64
-	Total       uint64
-	HitPercent  float64 // 0-100
-	MissPercent float64 // 0-100
 }
 
 func (c *HitMissCounter) Stats() HitMissStats {
