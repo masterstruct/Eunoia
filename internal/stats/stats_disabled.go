@@ -13,4 +13,8 @@ func (tv *TrackedValue) Stats() ValueStats { return ValueStats{} }
 
 type HitMissCounter struct{}
 
+func (c *HitMissCounter) Hit() {}
+
+func (c *HitMissCounter) Miss() {}
+
 func (c *HitMissCounter) Stats() HitMissStats { return HitMissStats{} }

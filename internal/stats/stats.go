@@ -73,6 +73,14 @@ type HitMissCounter struct {
 	hits, misses uint64
 }
 
+func (c *HitMissCounter) Hit() {
+	c.hits++
+}
+
+func (c *HitMissCounter) Miss() {
+	c.misses++
+}
+
 func (c *HitMissCounter) Stats() HitMissStats {
 	return HitMissStats{
 		Hits:        c.hits,
