@@ -20,13 +20,17 @@ import (
 // https://github.com/cosmobobak/viridithas/blob/master/src/stats.rs
 
 type TrackedValue struct {
-	Name     string // name of the tracked value
+	name     string // name of the tracked value
 	count    uint64 // number of samples
 	total    int64  // sum of all values
 	totalAbs uint64 // sum of all absolute values
 	totalSq  uint64 // sum of squared values
 	min      int64  // smallest value
 	max      int64  // largest value
+}
+
+func NewTrackedValue(name string) TrackedValue {
+	return TrackedValue{name: name}
 }
 
 // record a value
@@ -54,7 +58,7 @@ func (tv *TrackedValue) Reset() {
 
 func (tv *TrackedValue) Stats() ValueStats {
 	return ValueStats{
-		Name:     tv.Name,
+		Name:     tv.name,
 		Count:    tv.count,
 		Total:    tv.total,
 		TotalAbs: tv.totalAbs,
@@ -99,8 +103,12 @@ func (tv *TrackedValue) stdDev() float64 {
 	return math.Sqrt(math.Max(variance, 0))
 }
 
+func NewHitMissCounter(name string) HitMissCounter {
+	return HitMissCounter{name: name}
+}
+
 type HitMissCounter struct {
-	Name         string
+	name         string
 	hits, misses uint64
 }
 
@@ -119,7 +127,7 @@ func (c *HitMissCounter) Reset() {
 
 func (c *HitMissCounter) Stats() HitMissStats {
 	return HitMissStats{
-		Name:        c.Name,
+		Name:        c.name,
 		Hits:        c.hits,
 		Misses:      c.misses,
 		Total:       c.hits + c.misses,

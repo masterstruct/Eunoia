@@ -112,7 +112,7 @@ func Test_abs(t *testing.T) {
 		{
 			name: "largest int64 value",
 			v:    math.MaxInt64,
-			want: math.MaxInt64 + 1,
+			want: math.MaxInt64,
 		},
 	}
 	for _, tt := range tests {

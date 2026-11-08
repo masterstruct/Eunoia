@@ -11,6 +11,8 @@ import (
 
 type TrackedValue struct{}
 
+func NewTrackedValue(name string) TrackedValue { return TrackedValue{} }
+
 func (tv *TrackedValue) Record(value int64) {}
 
 func (tv *TrackedValue) Reset() {}
@@ -24,6 +26,8 @@ func (s ValueStats) Print() {}
 func (s *ValueStats) WriteTo(w io.Writer) (int64, error) { return 0, nil }
 
 type HitMissCounter struct{}
+
+func NewHitMissCounter(name string) HitMissCounter { return HitMissCounter{} }
 
 func (c *HitMissCounter) Hit() {}
 
