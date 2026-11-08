@@ -90,6 +90,7 @@ func (tv *TrackedValue) stdDev() float64 {
 }
 
 type HitMissCounter struct {
+	name         string
 	hits, misses uint64
 }
 
@@ -103,12 +104,28 @@ func (c *HitMissCounter) Miss() {
 
 func (c *HitMissCounter) Stats() HitMissStats {
 	return HitMissStats{
+		Name:        c.name,
 		Hits:        c.hits,
 		Misses:      c.misses,
 		Total:       c.hits + c.misses,
 		HitPercent:  percent(c.hits, c.hits+c.misses),
 		MissPercent: percent(c.misses, c.hits+c.misses),
 	}
+}
+
+func (c *HitMissCounter) Print() {
+	c.Stats().Print()
+}
+
+func (s HitMissStats) Print() {
+	s.WriteTo(os.Stdout)
+}
+
+func (s *HitMissStats) WriteTo(w io.Writer) (int64, error) {
+	n, err := fmt.Fprintf(w,
+		"%s: Total %d, Hits %d (%.2f%%), Misses %d (%.2f%%)\n",
+		s.Name, s.Total, s.Hits, s.HitPercent, s.Misses, s.MissPercent)
+	return int64(n), err
 }
 
 func percent(count, total uint64) float64 {

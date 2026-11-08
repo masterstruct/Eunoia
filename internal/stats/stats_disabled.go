@@ -1,6 +1,6 @@
 //go:build !stats
 
-package stats
+package stats // ignore this warning
 
 import (
 	"io"
@@ -28,3 +28,9 @@ func (c *HitMissCounter) Hit() {}
 func (c *HitMissCounter) Miss() {}
 
 func (c *HitMissCounter) Stats() HitMissStats { return HitMissStats{} }
+
+func (c *HitMissCounter) Print() {}
+
+func (s HitMissStats) Print() {}
+
+func (s *HitMissStats) WriteTo(w io.Writer) (int64, error) { return 0, nil }

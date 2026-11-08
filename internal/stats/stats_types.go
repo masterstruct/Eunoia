@@ -13,6 +13,7 @@ type ValueStats struct {
 }
 
 type HitMissStats struct {
+	Name        string
 	Hits        uint64
 	Misses      uint64
 	Total       uint64
