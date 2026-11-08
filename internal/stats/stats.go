@@ -2,6 +2,13 @@
 
 package stats
 
+// to disable the warning in VSCode
+// and properly run tests, add
+// "gopls": {
+//     "buildFlags": ["-tags=stats"]
+// },
+// to settings.json
+
 import (
 	"fmt"
 	"io"
@@ -9,17 +16,11 @@ import (
 	"os"
 )
 
-// to disable warning in VSCode, add
-// "gopls": {
-//     "buildFlags": ["-tags=stats"]
-// },
-// to settings.json
-
 // inspired by Viridithas, thank you Cosmo!
 // https://github.com/cosmobobak/viridithas/blob/master/src/stats.rs
 
 type TrackedValue struct {
-	name     string // name of the tracked value
+	Name     string // name of the tracked value
 	count    uint64 // number of samples
 	total    int64  // sum of all values
 	totalAbs uint64 // sum of all absolute values
@@ -42,9 +43,18 @@ func (tv *TrackedValue) Record(value int64) {
 	tv.totalSq += uint64(value) * uint64(value)
 }
 
+func (tv *TrackedValue) Reset() {
+	tv.count = 0
+	tv.total = 0
+	tv.totalAbs = 0
+	tv.totalSq = 0
+	tv.min = 0
+	tv.max = 0
+}
+
 func (tv *TrackedValue) Stats() ValueStats {
 	return ValueStats{
-		Name:     tv.name,
+		Name:     tv.Name,
 		Count:    tv.count,
 		Total:    tv.total,
 		TotalAbs: tv.totalAbs,
@@ -90,7 +100,7 @@ func (tv *TrackedValue) stdDev() float64 {
 }
 
 type HitMissCounter struct {
-	name         string
+	Name         string
 	hits, misses uint64
 }
 
@@ -102,9 +112,14 @@ func (c *HitMissCounter) Miss() {
 	c.misses++
 }
 
+func (c *HitMissCounter) Reset() {
+	c.hits = 0
+	c.misses = 0
+}
+
 func (c *HitMissCounter) Stats() HitMissStats {
 	return HitMissStats{
-		Name:        c.name,
+		Name:        c.Name,
 		Hits:        c.hits,
 		Misses:      c.misses,
 		Total:       c.hits + c.misses,

@@ -13,6 +13,8 @@ type TrackedValue struct{}
 
 func (tv *TrackedValue) Record(value int64) {}
 
+func (tv *TrackedValue) Reset() {}
+
 func (tv *TrackedValue) Stats() ValueStats { return ValueStats{} }
 
 func (tv *TrackedValue) Print() {}
@@ -26,6 +28,8 @@ type HitMissCounter struct{}
 func (c *HitMissCounter) Hit() {}
 
 func (c *HitMissCounter) Miss() {}
+
+func (c *HitMissCounter) Reset() {}
 
 func (c *HitMissCounter) Stats() HitMissStats { return HitMissStats{} }
 
