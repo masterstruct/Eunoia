@@ -22,3 +22,15 @@ type ValueStats struct {
 func (tv *TrackedValue) Record(value int64) {}
 
 func (tv *TrackedValue) Stats() ValueStats { return ValueStats{} }
+
+type HitMissCounter struct{}
+
+type HitMissStats struct {
+	Hits        uint64
+	Misses      uint64
+	Total       uint64
+	HitPercent  float64 // 0-100
+	MissPercent float64 // 0-100
+}
+
+func (c *HitMissCounter) Stats() HitMissStats { return HitMissStats{} }

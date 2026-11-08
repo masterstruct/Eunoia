@@ -81,6 +81,35 @@ func (tv *TrackedValue) stdDev() float64 {
 	return math.Sqrt(math.Max(variance, 0))
 }
 
+type HitMissCounter struct {
+	hits, misses uint64
+}
+
+type HitMissStats struct {
+	Hits        uint64
+	Misses      uint64
+	Total       uint64
+	HitPercent  float64 // 0-100
+	MissPercent float64 // 0-100
+}
+
+func (c *HitMissCounter) Stats() HitMissStats {
+	return HitMissStats{
+		Hits:        c.hits,
+		Misses:      c.misses,
+		Total:       c.hits + c.misses,
+		HitPercent:  percent(c.hits, c.hits+c.misses),
+		MissPercent: percent(c.misses, c.hits+c.misses),
+	}
+}
+
+func percent(count, total uint64) float64 {
+	if total == 0 {
+		return 0
+	}
+	return 100 * float64(count) / float64(total)
+}
+
 func abs(v int64) uint64 {
 	if v < 0 {
 		return uint64(-v)
