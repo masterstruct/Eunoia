@@ -124,3 +124,44 @@ func Test_abs(t *testing.T) {
 		})
 	}
 }
+
+func TestMean(t *testing.T) {
+	tests := []struct {
+		name   string
+		values []int64
+		want   float64
+	}{
+		{
+			name:   "empty returns 0",
+			values: []int64{},
+			want:   0,
+		},
+		{
+			name:   "mean is 0",
+			values: []int64{-5, 5},
+			want:   0,
+		},
+		{
+			name:   "mean is 2.5",
+			values: []int64{0, 1, 2, 3, 4, 5},
+			want:   2.5,
+		},
+		{
+			name:   "mixed values",
+			values: []int64{0, -1, -2, -3, 4, 5},
+			want:   0.5,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var tv TrackedValue
+			for _, value := range tt.values {
+				tv.Record(value)
+			}
+			got := tv.Mean()
+			if got != tt.want {
+				t.Errorf("Mean() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

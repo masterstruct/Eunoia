@@ -21,6 +21,18 @@ type TrackedValue struct {
 	max      int64  // largest value
 }
 
+// TODO: add Standard deviation
+type ValueStats struct {
+	Name     string
+	Count    uint64
+	Total    int64
+	TotalAbs uint64
+	TotalSq  uint64
+	Min      int64
+	Max      int64
+	Mean     float64
+}
+
 // record a value
 func (tv *TrackedValue) Record(value int64) {
 	if tv.count == 0 {
@@ -33,6 +45,26 @@ func (tv *TrackedValue) Record(value int64) {
 	tv.total += value
 	tv.totalAbs += abs(value)
 	tv.totalSq += uint64(value) * uint64(value)
+}
+
+func (tv *TrackedValue) Stats() ValueStats {
+	return ValueStats{
+		Name:     tv.name,
+		Count:    tv.count,
+		Total:    tv.total,
+		TotalAbs: tv.totalAbs,
+		TotalSq:  tv.totalSq,
+		Min:      tv.min,
+		Max:      tv.max,
+		Mean:     tv.Mean(),
+	}
+}
+
+func (tv *TrackedValue) Mean() float64 {
+	if tv.count == 0 {
+		return 0
+	}
+	return float64(tv.total) / float64(tv.count)
 }
 
 func abs(v int64) uint64 {
