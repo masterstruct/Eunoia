@@ -137,17 +137,17 @@ func TestMean(t *testing.T) {
 			want:   0,
 		},
 		{
-			name:   "mean is 0",
+			name:   "symmetric values",
 			values: []int64{-5, 5},
 			want:   0,
 		},
 		{
-			name:   "mean is 2.5",
+			name:   "multiple values",
 			values: []int64{0, 1, 2, 3, 4, 5},
 			want:   2.5,
 		},
 		{
-			name:   "mixed values",
+			name:   "multiple mixed values",
 			values: []int64{0, -1, -2, -3, 4, 5},
 			want:   0.5,
 		},
@@ -158,9 +158,57 @@ func TestMean(t *testing.T) {
 			for _, value := range tt.values {
 				tv.Record(value)
 			}
-			got := tv.Mean()
+			got := tv.mean()
 			if got != tt.want {
 				t.Errorf("Mean() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestStdDev(t *testing.T) {
+	tests := []struct {
+		name   string
+		values []int64
+		want   float64
+	}{
+		{
+			name:   "empty",
+			values: []int64{},
+			want:   0,
+		},
+		{
+			name:   "one value",
+			values: []int64{7},
+			want:   0,
+		},
+		{
+			name:   "equal values",
+			values: []int64{4, 4, 4},
+			want:   0,
+		},
+		{
+			name:   "symmetric values",
+			values: []int64{-5, 5},
+			want:   5,
+		},
+		{
+			name:   "three values",
+			values: []int64{1, 2, 3},
+			want:   math.Sqrt(2.0 / 3.0),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var tv TrackedValue
+			for _, v := range tt.values {
+				tv.Record(v)
+			}
+
+			got := tv.stdDev()
+			if math.Abs(got-tt.want) > 0.0000001 {
+				t.Errorf("StdDev() = %v, want %v", got, tt.want)
 			}
 		})
 	}

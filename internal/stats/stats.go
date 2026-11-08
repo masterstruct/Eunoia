@@ -2,6 +2,8 @@
 
 package stats
 
+import "math"
+
 // to disable warning in VSCode, add
 // "gopls": {
 //     "buildFlags": ["-tags=stats"]
@@ -21,7 +23,6 @@ type TrackedValue struct {
 	max      int64  // largest value
 }
 
-// TODO: add Standard deviation
 type ValueStats struct {
 	Name     string
 	Count    uint64
@@ -31,6 +32,7 @@ type ValueStats struct {
 	Min      int64
 	Max      int64
 	Mean     float64
+	StdDev   float64
 }
 
 // record a value
@@ -56,15 +58,27 @@ func (tv *TrackedValue) Stats() ValueStats {
 		TotalSq:  tv.totalSq,
 		Min:      tv.min,
 		Max:      tv.max,
-		Mean:     tv.Mean(),
+		Mean:     tv.mean(),
+		StdDev:   tv.stdDev(),
 	}
 }
 
-func (tv *TrackedValue) Mean() float64 {
+func (tv *TrackedValue) mean() float64 {
 	if tv.count == 0 {
 		return 0
 	}
 	return float64(tv.total) / float64(tv.count)
+}
+
+func (tv *TrackedValue) stdDev() float64 {
+	if tv.count == 0 {
+		return 0
+	}
+	n := float64(tv.count)
+	mean := float64(tv.total) / n
+	variance := float64(tv.totalSq)/n - mean*mean
+
+	return math.Sqrt(math.Max(variance, 0))
 }
 
 func abs(v int64) uint64 {
