@@ -6,3 +6,5 @@ package stats
 // if it is not compiled with `stats` tag.
 
 type TrackedValue struct{}
+
+func (tv *TrackedValue) Record(value int64) {}

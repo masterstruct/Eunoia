@@ -20,3 +20,24 @@ type TrackedValue struct {
 	min      int64  // smallest value
 	max      int64  // largest value
 }
+
+// record a value
+func (tv *TrackedValue) Record(value int64) {
+	if tv.count == 0 {
+		tv.min, tv.max = value, value
+	} else {
+		tv.min = min(tv.min, value)
+		tv.max = max(tv.max, value)
+	}
+	tv.count++
+	tv.total += value
+	tv.totalAbs += abs(value)
+	tv.totalSq += uint64(value) * uint64(value)
+}
+
+func abs(v int64) uint64 {
+	if v < 0 {
+		return uint64(-v)
+	}
+	return uint64(v)
+}
