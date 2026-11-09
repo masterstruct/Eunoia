@@ -20,7 +20,7 @@ repos:
         files: \.go$
         pass_filenames: false
         entry: go
-        args: ["vet", "./..."]
+        args: ["vet", "-tags=stats", "./..."]
         stages: [pre-push]
 
       - id: go-test
@@ -30,5 +30,5 @@ repos:
         files: \.go$
         pass_filenames: false
         entry: go
-        args: ["test", "./..."]
+        args: ["test", "-tags=stats", "./..."]
         stages: [pre-push]
