@@ -49,7 +49,7 @@ func (ch *CorrHist) get(stm board.Color, key uint64, bucket int) int32 {
 
 func (ch *CorrHist) update(stm board.Color, key uint64, bucket int, bonus int32) {
 	entry := &ch.entries[bucket][stm][key&corrHistMask]
-	*entry = int16(gravity(int32(*entry), bonus, corrHistMax))
+	gravity(entry, bonus, corrHistMax, corrHistMax)
 }
 
 func (ch *CorrHist) Clear() {

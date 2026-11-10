@@ -140,7 +140,7 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 		from := move.Move.From()
 		to := move.Move.To()
 
-		move.Score = ss.history.Quiet[stm][from][to]
+		move.Score = ss.history.Quiet.Get(stm, from, to)
 
 		// killer move bonus
 		if ss.stack[mp.ply].killer == move.Move {

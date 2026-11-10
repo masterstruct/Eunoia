@@ -1,33 +1,40 @@
 package history
 
-import "github.com/masterstruct/Eunoia/internal/board"
-
 const (
 	maxHistory = 16384
 )
 
 type History struct {
-	Quiet [2][64][64]int32
+	Quiet quietHistory
 }
 
 func (h *History) Clear() {
 	clear(h.Quiet[:])
 }
 
-func gravity(current, update, max int32) int32 {
-	return gravityBase(current, update, current, max)
+func gravity(entry *int16, bonus, maxBonus, maxValue int32) {
+	gravityWithDecay(entry, int32(*entry), bonus, maxBonus, maxValue)
 }
 
-func gravityBase(current, update, base, max int32) int32 {
-	absUpdate := update
-	if absUpdate < 0 {
-		absUpdate = -absUpdate
+func gravityWithDecay(entry *int16, decay, bonus, maxBonus, maxValue int32) {
+	bonus = clampInt32(bonus, -maxBonus, maxBonus)
+	decay = decay * absInt32(bonus) / maxValue
+	*entry += int16(bonus - decay)
+}
+
+func clampInt32(v, low, high int32) int32 {
+	if v < low {
+		return low
 	}
-	return current + update - base*absUpdate/max
+	if v > high {
+		return high
+	}
+	return v
 }
 
-func (h *History) UpdateQuietHistory(stm board.Color, from, to board.Square, bonus int32) {
-	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
-	h.Quiet[stm][from][to] =
-		gravity(h.Quiet[stm][from][to], clampedBonus, maxHistory)
+func absInt32(v int32) int32 {
+	if v < 0 {
+		return -v
+	}
+	return v
 }
