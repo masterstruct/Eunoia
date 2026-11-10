@@ -19,6 +19,7 @@ const (
 
 	rfpScale    = 150
 	rfpImpScale = 50
+	rfpDepth    = 7
 
 	fpBase  = 100
 	fpScale = 50
@@ -114,7 +115,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	if !isPV && !inCheck && !singularSearch {
 		// reverse futility pruning
 		rfpMargin := rfpMargin(depth, improving)
-		if !ttHit && staticEval >= beta+rfpMargin {
+		if !ttHit && depth <= rfpDepth && staticEval-rfpMargin >= beta {
 			return staticEval
 		}
 
