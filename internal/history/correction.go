@@ -1,4 +1,4 @@
-package search
+package history
 
 import "github.com/masterstruct/Eunoia/internal/board"
 
