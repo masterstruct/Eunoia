@@ -8,8 +8,6 @@ import (
 // https://github.com/kelseyde/hobbes-chess-engine/blob/main/src/search/movepicker.rs
 
 const (
-	maxHistory = 2 << 13
-
 	killerBonus = 10_000_000
 )
 
@@ -142,7 +140,7 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 		from := move.Move.From()
 		to := move.Move.To()
 
-		move.Score = ss.butterflyHistory[stm][from][to]
+		move.Score = ss.history.Quiet.Get(stm, from, to)
 
 		// killer move bonus
 		if ss.stack[mp.ply].killer == move.Move {
@@ -172,27 +170,6 @@ func isGoodNoisy(pos *board.Position, move board.Move) bool {
 	}
 	threshold := int32(-100)
 	return see(pos, move, threshold)
-}
-
-func (ss *SearchState) updateButterflyHistory(stm board.Color, from, to board.Square, bonus int32) {
-	// history gravity
-	// https://chessprogramming.org/History_Heuristic#history-bonuses
-
-	// 	_____________________
-	// /        scaler       \
-	// | 25k: -1.61 +- 3.63  |
-	// | STC: -0.97 +- 9.20  |
-	// \ LTC: 35.39 +- 12.74 /
-	//  ---------------------
-	//         \   ^__^
-	//          \  (oo)\_______
-	//             (__)\       )\/\
-	//                 ||----w |
-	//                 ||     ||
-
-	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
-	ss.butterflyHistory[stm][from][to] =
-		gravity(ss.butterflyHistory[stm][from][to], clampedBonus, maxHistory)
 }
 
 func gravity(current, update, max int32) int32 {
