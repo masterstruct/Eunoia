@@ -4,7 +4,6 @@ import "github.com/masterstruct/Eunoia/internal/board"
 
 const (
 	corrHistSize = 16384
-	corrHistMask = corrHistSize - 1
 
 	corrHistGrain    = 16 // entry units per centipawn
 	corrMaxCP        = 64
@@ -44,11 +43,11 @@ type CorrHist struct {
 }
 
 func (ch *CorrHist) get(stm board.Color, key uint64, bucket int) int32 {
-	return int32(ch.entries[bucket][stm][key&corrHistMask])
+	return int32(ch.entries[bucket][stm][key%corrHistSize])
 }
 
 func (ch *CorrHist) update(stm board.Color, key uint64, bucket int, bonus int32) {
-	entry := &ch.entries[bucket][stm][key&corrHistMask]
+	entry := &ch.entries[bucket][stm][key%corrHistSize]
 	gravity(entry, bonus, corrHistMax, corrHistMax)
 }
 
