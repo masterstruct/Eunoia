@@ -3,15 +3,10 @@ package history
 import "github.com/masterstruct/Eunoia/internal/board"
 
 const (
-	corrHistSize = 16384
-	corrHistMask = corrHistSize - 1
+	corrSize = 16384
 
-	corrHistGrain    = 16 // entry units per centipawn
-	corrMaxCP        = 64
-	corrHistMax      = corrMaxCP * corrHistGrain
-	corrHistMaxBonus = corrHistMax / 4
-
-	corrWeightScale = 256
+	corrMax      = 1024
+	corrMaxBonus = corrMax / 4
 )
 
 // CorrHist buckets
@@ -24,67 +19,54 @@ const (
 	numCorrBuckets
 )
 
-// bonus = diff * depth * mult / div
 const (
-	corrPawnBonusMult = 16
-	corrPawnBonusDiv  = 128
-	corrPawnWeight    = 256
-
-	corrNonPawnBonusMult = 16
-	corrNonPawnBonusDiv  = 128
-	corrNonPawnWeight    = 256
-
-	corrMinorBonusMult = 16
-	corrMinorBonusDiv  = 128
-	corrMinorWeight    = 256
+	corrPawnWeight    = 64
+	corrNonPawnWeight = 64
+	corrMinorWeight   = 64
 )
 
-type CorrHist struct {
-	entries [numCorrBuckets][2][corrHistSize]int16 // [bucket][stm][key]
+type CorrHist [numCorrBuckets][2][corrSize]int16 // [bucket][stm][hash]
+
+func (h *CorrHist) get(stm board.Color, hash uint64, bucket int) int32 {
+	return int32(h[bucket][stm][hash%corrSize])
 }
 
-func (ch *CorrHist) get(stm board.Color, key uint64, bucket int) int32 {
-	return int32(ch.entries[bucket][stm][key&corrHistMask])
+func (h *CorrHist) update(stm board.Color, bucket int, hash uint64, bonus int32) {
+	entry := &h[bucket][stm][hash%corrSize]
+	gravity(entry, bonus, corrMaxBonus, corrMax)
 }
 
-func (ch *CorrHist) update(stm board.Color, key uint64, bucket int, bonus int32) {
-	entry := &ch.entries[bucket][stm][key&corrHistMask]
-	gravity(entry, bonus, corrHistMax, corrHistMax)
+func (h *CorrHist) Clear() {
+	clear(h[:])
 }
 
-func (ch *CorrHist) Clear() {
-	clear(ch.entries[:])
-}
-
-func (ch *CorrHist) Correction(pos *board.Position) int32 {
+func (h *CorrHist) Correction(pos *board.Position) int32 {
 	stm := pos.SideToMove
 
-	sum := ch.get(stm, getPawnKey(pos), corrPawn) * corrPawnWeight
-	sum += ch.get(stm, getNonPawnKey(pos, board.White), corrWhite) * corrNonPawnWeight
-	sum += ch.get(stm, getNonPawnKey(pos, board.Black), corrBlack) * corrNonPawnWeight
-	sum += ch.get(stm, getMinorKey(pos), corrMinor) * corrMinorWeight
+	corr := h.get(stm, getPawnHash(pos), corrPawn) * corrPawnWeight
+	corr += h.get(stm, getNonPawnHash(pos, board.White), corrWhite) * corrNonPawnWeight
+	corr += h.get(stm, getNonPawnHash(pos, board.Black), corrBlack) * corrNonPawnWeight
+	corr += h.get(stm, getMinorHash(pos), corrMinor) * corrMinorWeight
 
-	cp := sum / (corrHistGrain * corrWeightScale)
-	return min(max(cp, -corrMaxCP), corrMaxCP)
+	return corr / corrMax
 }
 
-func (ch *CorrHist) Update(pos *board.Position, depth int, staticEval, bestScore int32) {
+func (h *CorrHist) Update(pos *board.Position, depth int, score, staticEval int32) {
 	stm := pos.SideToMove
-	diff := bestScore - staticEval
+	bonus := corrBonus(score-staticEval, depth)
 
-	ch.update(stm, getPawnKey(pos), corrPawn, corrBonus(diff, depth, corrPawnBonusMult, corrPawnBonusDiv))
-	ch.update(stm, getNonPawnKey(pos, board.White), corrWhite, corrBonus(diff, depth, corrNonPawnBonusMult, corrNonPawnBonusDiv))
-	ch.update(stm, getNonPawnKey(pos, board.Black), corrBlack, corrBonus(diff, depth, corrNonPawnBonusMult, corrNonPawnBonusDiv))
-	ch.update(stm, getMinorKey(pos), corrMinor, corrBonus(diff, depth, corrMinorBonusMult, corrMinorBonusDiv))
+	h.update(stm, corrPawn, getPawnHash(pos), bonus)
+	h.update(stm, corrWhite, getNonPawnHash(pos, board.White), bonus)
+	h.update(stm, corrBlack, getNonPawnHash(pos, board.Black), bonus)
+	h.update(stm, corrMinor, getMinorHash(pos), bonus)
 }
 
-func corrBonus(diff int32, depth int, mult, div int32) int32 {
-	bonus := diff * int32(depth) * mult / div
-	return min(max(bonus, -corrHistMaxBonus), corrHistMaxBonus)
+func corrBonus(diff int32, depth int) int32 {
+	return (diff * int32(depth)) / 8
 }
 
 // TODO: update incrementally in makemove
-func getPawnKey(pos *board.Position) uint64 {
+func getPawnHash(pos *board.Position) uint64 {
 	var key uint64
 	wp := pos.Pawns(board.White)
 	bp := pos.Pawns(board.Black)
@@ -98,7 +80,7 @@ func getPawnKey(pos *board.Position) uint64 {
 	return key
 }
 
-func getNonPawnKey(pos *board.Position, stm board.Color) uint64 {
+func getNonPawnHash(pos *board.Position, stm board.Color) uint64 {
 	var key uint64
 	pieces := pos.Colors[stm] &^ pos.Pieces[board.Pawn]
 	for !pieces.IsEmpty() {
@@ -108,7 +90,7 @@ func getNonPawnKey(pos *board.Position, stm board.Color) uint64 {
 	return key
 }
 
-func getMinorKey(pos *board.Position) uint64 {
+func getMinorHash(pos *board.Position) uint64 {
 	var key uint64
 	pieces := pos.Pieces[board.Knight] | pos.Pieces[board.Bishop] | pos.Pieces[board.King]
 	for !pieces.IsEmpty() {

@@ -27,6 +27,10 @@ func matedIn(ply uint16) int32 {
 	return -MATE + int32(ply)
 }
 
+func clampMate(score int32) int32 {
+	return max(min(score, MATE), -MATE)
+}
+
 func isDefined(score int32) bool {
 	return score >= -MATE && score <= MATE
 }
