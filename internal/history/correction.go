@@ -5,12 +5,8 @@ import "github.com/masterstruct/Eunoia/internal/board"
 const (
 	corrSize = 16384
 
-	corrGrain    = 16 // entry units per centipawn
-	corrMaxCP    = 64
-	corrMax      = corrMaxCP * corrGrain
+	corrMax      = 1024
 	corrMaxBonus = corrMax / 4
-
-	corrWeightScale = 256
 )
 
 // CorrHist buckets
@@ -23,19 +19,10 @@ const (
 	numCorrBuckets
 )
 
-// bonus = diff * depth * mult / div
 const (
-	corrPawnBonusMult = 16
-	corrPawnBonusDiv  = 128
-	corrPawnWeight    = 256
-
-	corrNonPawnBonusMult = 16
-	corrNonPawnBonusDiv  = 128
-	corrNonPawnWeight    = 256
-
-	corrMinorBonusMult = 16
-	corrMinorBonusDiv  = 128
-	corrMinorWeight    = 256
+	corrPawnWeight    = 64
+	corrNonPawnWeight = 64
+	corrMinorWeight   = 64
 )
 
 type CorrHist [numCorrBuckets][2][corrSize]int16 // [bucket][stm][hash]
@@ -44,7 +31,7 @@ func (h *CorrHist) get(stm board.Color, hash uint64, bucket int) int32 {
 	return int32(h[bucket][stm][hash%corrSize])
 }
 
-func (h *CorrHist) update(stm board.Color, hash uint64, bucket int, bonus int32) {
+func (h *CorrHist) update(stm board.Color, bucket int, hash uint64, bonus int32) {
 	entry := &h[bucket][stm][hash%corrSize]
 	gravity(entry, bonus, corrMaxBonus, corrMax)
 }
@@ -56,28 +43,26 @@ func (h *CorrHist) Clear() {
 func (h *CorrHist) Correction(pos *board.Position) int32 {
 	stm := pos.SideToMove
 
-	sum := h.get(stm, getPawnHash(pos), corrPawn) * corrPawnWeight
-	sum += h.get(stm, getNonPawnHash(pos, board.White), corrWhite) * corrNonPawnWeight
-	sum += h.get(stm, getNonPawnHash(pos, board.Black), corrBlack) * corrNonPawnWeight
-	sum += h.get(stm, getMinorHash(pos), corrMinor) * corrMinorWeight
+	corr := h.get(stm, getPawnHash(pos), corrPawn) * corrPawnWeight
+	corr += h.get(stm, getNonPawnHash(pos, board.White), corrWhite) * corrNonPawnWeight
+	corr += h.get(stm, getNonPawnHash(pos, board.Black), corrBlack) * corrNonPawnWeight
+	corr += h.get(stm, getMinorHash(pos), corrMinor) * corrMinorWeight
 
-	cp := sum / (corrGrain * corrWeightScale)
-	return min(max(cp, -corrMaxCP), corrMaxCP)
+	return corr / corrMax
 }
 
 func (h *CorrHist) Update(pos *board.Position, depth int, score, staticEval int32) {
 	stm := pos.SideToMove
-	diff := score - staticEval
+	bonus := corrBonus(score-staticEval, depth)
 
-	h.update(stm, getPawnHash(pos), corrPawn, corrBonus(diff, depth, corrPawnBonusMult, corrPawnBonusDiv))
-	h.update(stm, getNonPawnHash(pos, board.White), corrWhite, corrBonus(diff, depth, corrNonPawnBonusMult, corrNonPawnBonusDiv))
-	h.update(stm, getNonPawnHash(pos, board.Black), corrBlack, corrBonus(diff, depth, corrNonPawnBonusMult, corrNonPawnBonusDiv))
-	h.update(stm, getMinorHash(pos), corrMinor, corrBonus(diff, depth, corrMinorBonusMult, corrMinorBonusDiv))
+	h.update(stm, corrPawn, getPawnHash(pos), bonus)
+	h.update(stm, corrWhite, getNonPawnHash(pos, board.White), bonus)
+	h.update(stm, corrBlack, getNonPawnHash(pos, board.Black), bonus)
+	h.update(stm, corrMinor, getMinorHash(pos), bonus)
 }
 
-func corrBonus(diff int32, depth int, mult, div int32) int32 {
-	bonus := diff * int32(depth) * mult / div
-	return min(max(bonus, -corrMaxBonus), corrMaxBonus)
+func corrBonus(diff int32, depth int) int32 {
+	return (diff * int32(depth)) / 8
 }
 
 // TODO: update incrementally in makemove

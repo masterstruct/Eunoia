@@ -100,7 +100,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	if !inCheck {
 		rawEval = evaluate(&pos)
 		correction = ss.corrHist.Correction(&pos)
-		staticEval = rawEval + correction
+		staticEval = clampMate(rawEval + correction)
 	}
 	ss.stack[ply].staticEval = staticEval
 
@@ -345,7 +345,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	if !inCheck && !singularSearch && !bestMove.IsNoisy() && !isMateScore(bestScore) &&
 		!(flag == tt.Upper && bestScore >= staticEval) &&
 		!(flag == tt.Lower && bestScore <= staticEval) {
-		ss.corrHist.Update(&pos, depth, staticEval, bestScore)
+		ss.corrHist.Update(&pos, depth, bestScore, staticEval)
 	}
 
 	if !singularSearch {
