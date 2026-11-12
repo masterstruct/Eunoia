@@ -113,7 +113,7 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 		move := temp.Moves[i].Move
 
 		victim := pos.Victim(move)
-		score = ss.captureHistory[stm][pos.Attacker(move)][victim][move.To()]
+		score = ss.history.Noisy.Get(stm, pos.Attacker(move), victim, move.To())
 		score += 16 * victim.Value()
 
 		if move.IsPromo() {
@@ -169,22 +169,4 @@ func isGoodNoisy(pos *board.Position, move board.Move) bool {
 	}
 	threshold := int32(-100)
 	return see(pos, move, threshold)
-}
-
-func (ss *SearchState) updateCaptureHistory(stm board.Color, attacker, victim board.PieceType, to board.Square, bonus int32) {
-	clampedBonus := min(max(bonus, -maxHistory), maxHistory) // clamp
-	ss.captureHistory[stm][attacker][victim][to] =
-		gravity(ss.captureHistory[stm][attacker][victim][to], clampedBonus, maxHistory)
-}
-
-func gravity(current, update, max int32) int32 {
-	return gravityBase(current, update, current, max)
-}
-
-func gravityBase(current, update, base, max int32) int32 {
-	absUpdate := update
-	if absUpdate < 0 {
-		absUpdate = -absUpdate
-	}
-	return current + update - base*absUpdate/max
 }
