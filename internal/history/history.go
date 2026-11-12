@@ -6,10 +6,12 @@ const (
 
 type History struct {
 	Quiet quietHistory
+	Cont  ContHist
 }
 
 func (h *History) Clear() {
 	clear(h.Quiet[:])
+	clear(h.Cont[:])
 }
 
 func gravity(entry *int16, bonus, maxBonus, maxValue int32) {
