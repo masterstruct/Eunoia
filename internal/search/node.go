@@ -1,12 +1,16 @@
 package search
 
-import "github.com/masterstruct/Eunoia/internal/board"
+import (
+	"github.com/masterstruct/Eunoia/internal/board"
+)
 
 type Node struct {
 	// add fields, update MakeMove and UnmakeMove
 	staticEval int32
+	piece      board.Piece
+	move       board.Move
 	killer     board.Move
-	singular   board.Move
+	excluded   board.Move
 }
 
 // headroom if accessing stack[ply+N]
@@ -17,8 +21,10 @@ func (stack *NodeStack) reset() {
 		stack[i] = Node{
 			// set defaults
 			staticEval: -INF,
+			piece:      board.NoPiece,
+			move:       board.NullMove,
 			killer:     board.NullMove,
-			singular:   board.NullMove,
+			excluded:   board.NullMove,
 		}
 	}
 }

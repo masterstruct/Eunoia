@@ -143,7 +143,7 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 		move.Score = ss.history.Quiet.Get(stm, from, to)
 
 		// killer move bonus
-		if ss.stack[mp.ply].killer == move.Move {
+		if ss.Stack[mp.ply].killer == move.Move {
 			move.Score += killerBonus
 		}
 		mp.movelist.AddScoredMove(move)

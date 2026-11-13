@@ -42,9 +42,9 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 		}
 
 		newPos := pos
-		ss.makeMove(&newPos, move)
+		ss.makeMove(&newPos, move, ply)
 		score := -ss.qsearch(newPos, ply+1, -beta, -alpha)
-		ss.unmakeMove()
+		ss.unmakeMove(ply)
 
 		if ss.ShouldStop(Hard) {
 			return 0

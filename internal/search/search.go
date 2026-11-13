@@ -80,13 +80,17 @@ func (ss *SearchState) handleNoLegalMoves(pos *board.Position) board.Move {
 	return ss.bestMove
 }
 
-func (ss *SearchState) makeMove(pos *board.Position, move board.Move) {
+func (ss *SearchState) makeMove(pos *board.Position, move board.Move, ply uint16) {
+	ss.Stack[ply].move = move
+	ss.Stack[ply].piece = pos.PieceOn(move.From())
 	pos.Make(move)
 	ss.Keys.Push(pos.Hash)
 	ss.tt.Prefetch(pos.Hash)
 	ss.Nodes++
 }
 
-func (ss *SearchState) unmakeMove() {
+func (ss *SearchState) unmakeMove(ply uint16) {
+	ss.Stack[ply].move = board.NullMove
+	ss.Stack[ply].piece = board.NoPiece
 	ss.Keys.Pop()
 }

@@ -50,7 +50,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return alpha
 	}
 
-	singular := ss.stack[ply].singular
+	singular := ss.Stack[ply].excluded
 	singularSearch := singular != board.NullMove
 
 	// TT lookup
@@ -102,7 +102,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		correction = ss.corrHist.Correction(&pos)
 		staticEval = clampMate(rawEval + correction)
 	}
-	ss.stack[ply].staticEval = staticEval
+	ss.Stack[ply].staticEval = staticEval
 
 	improving := ss.improvement(ply, staticEval, inCheck) > 0
 	improvingInt := 0
@@ -183,7 +183,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
-		isKiller := ss.stack[ply].killer == move
+		isKiller := ss.Stack[ply].killer == move
 		from := move.From()
 		to := move.To()
 
@@ -235,9 +235,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			sBeta := max(ttScore-2*int32(depth), -MATE+1)
 			sDepth := (depth - 1) / 2
 
-			ss.stack[ply].singular = move
+			ss.Stack[ply].excluded = move
 			score := ss.negamax(pos, sDepth, ply, sBeta-1, sBeta)
-			ss.stack[ply].singular = board.NullMove
+			ss.Stack[ply].excluded = board.NullMove
 
 			if score < sBeta {
 				extension = 1
@@ -245,7 +245,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		newPos := pos
-		ss.makeMove(&newPos, move)
+		ss.makeMove(&newPos, move, ply)
 
 		newDepth := depth + extension - 1
 
@@ -287,7 +287,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			}
 		}
 
-		ss.unmakeMove()
+		ss.unmakeMove(ply)
 		searchedMoves++
 
 		if ss.ShouldStop(Hard) {
@@ -310,7 +310,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		if score >= beta { // beta cutoff
 			flag = tt.Lower
 			if isQuiet {
-				ss.stack[ply].killer = bestMove
+				ss.Stack[ply].killer = bestMove
 
 				bonus := 300*int32(depth) - 250
 				ss.history.Quiet.Update(stm, from, to, bonus)
@@ -356,11 +356,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 }
 
 func (ss *SearchState) improvement(ply uint16, staticEval int32, inCheck bool) int32 {
-	if !inCheck && ply >= 2 && isDefined(ss.stack[ply-2].staticEval) {
-		return staticEval - ss.stack[ply-2].staticEval
+	if !inCheck && ply >= 2 && isDefined(ss.Stack[ply-2].staticEval) {
+		return staticEval - ss.Stack[ply-2].staticEval
 	}
-	if !inCheck && ply >= 4 && isDefined(ss.stack[ply-4].staticEval) {
-		return staticEval - ss.stack[ply-4].staticEval
+	if !inCheck && ply >= 4 && isDefined(ss.Stack[ply-4].staticEval) {
+		return staticEval - ss.Stack[ply-4].staticEval
 	}
 	return 0
 }
