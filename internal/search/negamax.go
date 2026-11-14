@@ -2,6 +2,7 @@ package search
 
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
+	"github.com/masterstruct/Eunoia/internal/history"
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
@@ -312,13 +313,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			if isQuiet {
 				ss.Stack[ply].killer = bestMove
 
-				bonus := 300*int32(depth) - 250
-				ss.history.Quiet.Update(stm, from, to, bonus)
-
+				ss.history.ApplyQuietBonus(&pos, history.ContIndices{}, int32(depth), move)
 				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
 					quietMove := quietsTried.Moves[i].Move
-					ss.history.Quiet.Update(stm, quietMove.From(), quietMove.To(), -bonus)
+					ss.history.ApplyQuietMalus(&pos, history.ContIndices{}, int32(depth), quietMove)
 				}
 			}
 			break

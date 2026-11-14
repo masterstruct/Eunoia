@@ -19,11 +19,32 @@ func (h *History) Clear() {
 func (h *History) Cont1(pos *board.Position, indices ContIndices, move board.Move) int32 {
 	return h.ContOdd.get(
 		pos.SideToMove,
-		indices.cont1.pt,
-		indices.cont1.to,
+		indices.cont1,
 		pos.Attacker(move),
 		move.To(),
 	)
+}
+
+func (h *History) ApplyQuietBonus(pos *board.Position, indices ContIndices,
+	depth int32, move board.Move) {
+	stm := pos.SideToMove
+	from := move.From()
+	to := move.To()
+	attacker := pos.Attacker(move)
+
+	h.Quiet.applyBonus(stm, from, to, depth)
+	h.ContOdd.applyBonus(stm, indices.cont1, attacker, to, depth)
+}
+
+func (h *History) ApplyQuietMalus(pos *board.Position, indices ContIndices,
+	depth int32, move board.Move) {
+	stm := pos.SideToMove
+	from := move.From()
+	to := move.To()
+	attacker := pos.Attacker(move)
+
+	h.Quiet.applyMalus(stm, from, to, depth)
+	h.ContOdd.applyMalus(stm, indices.cont1, attacker, to, depth)
 }
 
 func gravity(entry *int16, bonus, maxBonus, maxValue int32) {
