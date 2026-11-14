@@ -1,17 +1,29 @@
 package history
 
+import "github.com/masterstruct/Eunoia/internal/board"
+
 const (
 	maxHistory = 16384
 )
 
 type History struct {
-	Quiet quietHistory
-	Cont  ContHist
+	Quiet   quietHistory
+	ContOdd ContHist
 }
 
 func (h *History) Clear() {
 	clear(h.Quiet[:])
-	clear(h.Cont[:])
+	clear(h.ContOdd[:])
+}
+
+func (h *History) Cont1(pos *board.Position, indices ContIndices, move board.Move) int32 {
+	return h.ContOdd.get(
+		pos.SideToMove,
+		indices.cont1.pt,
+		indices.cont1.to,
+		pos.Attacker(move),
+		move.To(),
+	)
 }
 
 func gravity(entry *int16, bonus, maxBonus, maxValue int32) {

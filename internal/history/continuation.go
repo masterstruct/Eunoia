@@ -7,7 +7,7 @@ import (
 // [stm][prev piece][prev to][piece][to]
 type ContHist [2][6][64][6][64]int16
 
-func (h *ContHist) Get(stm board.Color, prevPt board.PieceType,
+func (h *ContHist) get(stm board.Color, prevPt board.PieceType,
 	prevTo board.Square, pt board.PieceType, to board.Square) int32 {
 	return int32(h[stm][prevPt][prevTo][pt][to])
 }
