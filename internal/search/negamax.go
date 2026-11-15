@@ -310,16 +310,18 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		if score >= beta { // beta cutoff
 			flag = tt.Lower
+
 			if isQuiet {
 				ss.Stack[ply].killer = bestMove
-
-				ss.history.ApplyQuietBonus(&pos, history.ContIndices{}, int32(depth), move)
-				for i := range quietsTried.Len {
-					// penalize quiets that didn't cause beta cutoff
-					quietMove := quietsTried.Moves[i].Move
-					ss.history.ApplyQuietMalus(&pos, history.ContIndices{}, int32(depth), quietMove)
-				}
 			}
+
+			ss.history.Update(
+				&pos,
+				history.ContIndices{}, // TODO: use real ContIndices
+				int32(depth),
+				bestMove,
+				&quietsTried,
+			)
 			break
 		}
 

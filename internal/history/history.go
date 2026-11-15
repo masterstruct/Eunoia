@@ -1,6 +1,8 @@
 package history
 
-import "github.com/masterstruct/Eunoia/internal/board"
+import (
+	"github.com/masterstruct/Eunoia/internal/board"
+)
 
 const (
 	maxHistory = 16384
@@ -25,7 +27,22 @@ func (h *History) Cont1(pos *board.Position, indices ContIndices, move board.Mov
 	)
 }
 
-func (h *History) ApplyQuietBonus(pos *board.Position, indices ContIndices,
+func (h *History) Update(pos *board.Position, indices ContIndices,
+	depth int32, bestMove board.Move, quietsTried *board.Movelist) {
+	// TODO: replace movelist with a cheaper array
+	if bestMove.IsNoisy() {
+		// TODO: noisy history
+	} else {
+		h.applyQuietBonus(pos, indices, depth, bestMove)
+		for i := range quietsTried.Len {
+			// penalize quiets that didn't cause beta cutoff
+			quiet := quietsTried.Moves[i].Move
+			h.applyQuietMalus(pos, indices, depth, quiet)
+		}
+	}
+}
+
+func (h *History) applyQuietBonus(pos *board.Position, indices ContIndices,
 	depth int32, move board.Move) {
 	stm := pos.SideToMove
 	from := move.From()
@@ -36,7 +53,7 @@ func (h *History) ApplyQuietBonus(pos *board.Position, indices ContIndices,
 	h.ContOdd.applyBonus(stm, indices.cont1, attacker, to, depth)
 }
 
-func (h *History) ApplyQuietMalus(pos *board.Position, indices ContIndices,
+func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
 	depth int32, move board.Move) {
 	stm := pos.SideToMove
 	from := move.From()
