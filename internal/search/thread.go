@@ -66,7 +66,7 @@ func (ss *SearchState) ResizeTT(sizeMiB uint) {
 }
 
 func (ss *SearchState) PreviousMove(ply uint16, back uint16) (board.Piece, board.Move) {
-	if back < ply {
+	if ply >= back {
 		return ss.Stack[ply-back].piece, ss.Stack[ply-back].move
 	}
 	return board.NoPiece, board.NullMove
