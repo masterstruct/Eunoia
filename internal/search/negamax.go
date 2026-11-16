@@ -2,7 +2,6 @@ package search
 
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
-	"github.com/masterstruct/Eunoia/internal/history"
 	"github.com/masterstruct/Eunoia/internal/tt"
 )
 
@@ -169,6 +168,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	searchedMoves := 0
 	flag := tt.Upper
 
+	contIndices := ss.NewContIndices(ply)
 	movePicker := NewMovePicker(ply, ttMove, false)
 
 	var quietsTried board.Movelist
@@ -317,7 +317,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 			ss.history.Update(
 				&pos,
-				history.ContIndices{}, // TODO: use real ContIndices
+				contIndices,
 				int32(depth),
 				bestMove,
 				&quietsTried,

@@ -10,21 +10,16 @@ const (
 
 type History struct {
 	Quiet   quietHistory
-	ContOdd ContHist
+	contOdd ContHist
 }
 
 func (h *History) Clear() {
 	clear(h.Quiet[:])
-	clear(h.ContOdd[:])
+	clear(h.contOdd[:])
 }
 
-func (h *History) Cont1(pos *board.Position, indices ContIndices, move board.Move) int32 {
-	return h.ContOdd.get(
-		pos.SideToMove,
-		indices.cont1,
-		pos.Attacker(move),
-		move.To(),
-	)
+func (h *History) ScoreQuiet(pos *board.Position, move board.Move, indices ContIndices) int32 {
+	return h.Quiet.Get(pos.SideToMove, move.From(), move.To()) + h.cont(pos, indices, move)
 }
 
 func (h *History) Update(pos *board.Position, indices ContIndices,
@@ -49,8 +44,8 @@ func (h *History) applyQuietBonus(pos *board.Position, indices ContIndices,
 	to := move.To()
 	attacker := pos.Attacker(move)
 
-	h.Quiet.applyBonus(stm, from, to, depth)
-	h.ContOdd.applyBonus(stm, indices.cont1, attacker, to, depth)
+	h.Quiet.update(stm, from, to, h.Quiet.bonus(depth))
+	h.contOdd.update(stm, indices.cont1, attacker, to, h.contOdd.bonus(depth))
 }
 
 func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
@@ -60,8 +55,17 @@ func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
 	to := move.To()
 	attacker := pos.Attacker(move)
 
-	h.Quiet.applyMalus(stm, from, to, depth)
-	h.ContOdd.applyMalus(stm, indices.cont1, attacker, to, depth)
+	h.Quiet.update(stm, from, to, h.Quiet.malus(depth))
+	h.contOdd.update(stm, indices.cont1, attacker, to, h.contOdd.malus(depth))
+}
+
+func (h *History) cont(pos *board.Position, indices ContIndices, move board.Move) int32 {
+	return h.contOdd.get(
+		pos.SideToMove,
+		indices.cont1,
+		pos.Attacker(move),
+		move.To(),
+	)
 }
 
 func gravity(entry *int16, bonus, maxBonus, maxValue int32) {

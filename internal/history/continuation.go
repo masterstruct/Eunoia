@@ -7,11 +7,9 @@ import (
 const (
 	cont1BonusBase  = 128
 	cont1BonusScale = 128
-	cont1BonusMax   = 2048
-
 	cont1MalusBase  = 128
 	cont1MalusScale = 128
-	cont1MalusMax   = 2048
+	cont1Max        = 2048
 )
 
 // [stm][prev piece][prev to][piece][to]
@@ -19,6 +17,9 @@ type ContHist [2][6][64][6][64]int16
 
 func (h *ContHist) get(stm board.Color, entry contEntry,
 	pt board.PieceType, to board.Square) int32 {
+	if entry.pt == board.NoPieceType {
+		return 0
+	}
 	return int32(h[stm][entry.pt][entry.to][pt][to])
 }
 
@@ -30,24 +31,16 @@ func (h *ContHist) malus(depth int32) int32 {
 	return -(cont1MalusBase + cont1MalusScale*depth)
 }
 
-func (h *ContHist) applyBonus(stm board.Color, entry contEntry,
-	pt board.PieceType, to board.Square, depth int32) {
-	gravity(
-		&h[stm][entry.pt][entry.to][pt][to],
-		h.bonus(depth),
-		cont1BonusMax,
-		maxHistory,
-	)
-}
-
-func (h *ContHist) applyMalus(stm board.Color, entry contEntry,
-	pt board.PieceType, to board.Square, depth int32) {
-	gravity(
-		&h[stm][entry.pt][entry.to][pt][to],
-		h.malus(depth),
-		cont1MalusMax,
-		maxHistory,
-	)
+func (h *ContHist) update(stm board.Color, entry contEntry,
+	pt board.PieceType, to board.Square, bonus int32) {
+	if entry.pt != board.NoPieceType {
+		gravity(
+			&h[stm][entry.pt][entry.to][pt][to],
+			bonus,
+			cont1Max,
+			maxHistory,
+		)
+	}
 }
 
 type contEntry struct {

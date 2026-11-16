@@ -16,19 +16,18 @@ func (h *quietHistory) Get(stm board.Color, from, to board.Square) int32 {
 	return int32(h[stm][from][to])
 }
 
-func (h *quietHistory) applyBonus(stm board.Color, from, to board.Square, depth int32) {
-	gravity(
-		&h[stm][from][to],
-		quietBonusBase+quietBonusScale*depth,
-		maxHistory,
-		maxHistory,
-	)
+func (h *quietHistory) bonus(depth int32) int32 {
+	return quietBonusBase + quietBonusScale*depth
 }
 
-func (h *quietHistory) applyMalus(stm board.Color, from, to board.Square, depth int32) {
+func (h *quietHistory) malus(depth int32) int32 {
+	return -(quietMalusBase + quietMalusScale*depth)
+}
+
+func (h *quietHistory) update(stm board.Color, from, to board.Square, bonus int32) {
 	gravity(
 		&h[stm][from][to],
-		-(quietMalusBase + quietMalusScale*depth),
+		bonus,
 		maxHistory,
 		maxHistory,
 	)
