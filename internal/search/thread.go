@@ -22,7 +22,7 @@ type SearchState struct {
 	pv *PVTable
 
 	Keys  Keys // history of position hashes for 3fold detection
-	Stack NodeStack
+	stack NodeStack
 
 	history  *history.History
 	corrHist *history.CorrHist
@@ -33,7 +33,7 @@ func (ss *SearchState) Init(ttSizeMiB uint) {
 	ss.tt = tt.NewTable(ttSizeMiB)
 	ss.pv = NewPVTable()
 	ss.Keys = Keys{keys: make([]uint64, 0, MaxPly)}
-	ss.Stack.reset()
+	ss.stack.reset()
 	ss.history = &history.History{}
 	ss.corrHist = &history.CorrHist{}
 }
@@ -45,7 +45,7 @@ func (ss *SearchState) PrepareForSearch() {
 	ss.bestMoveStability = 0
 	ss.depth = 1
 	ss.resetTimeManager()
-	ss.Stack.reset()
+	ss.stack.reset()
 }
 
 func (ss *SearchState) ClearTables() {
@@ -67,7 +67,7 @@ func (ss *SearchState) ResizeTT(sizeMiB uint) {
 
 func (ss *SearchState) PreviousMove(ply uint16, back uint16) (board.Piece, board.Move, bool) {
 	if ply >= back {
-		n := &ss.Stack[ply-back]
+		n := &ss.stack[ply-back]
 		return n.piece, n.move, n.piece != board.NoPiece
 	}
 	return board.NoPiece, board.NullMove, false

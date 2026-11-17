@@ -50,7 +50,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return alpha
 	}
 
-	singular := ss.Stack[ply].excluded
+	singular := ss.stack[ply].excluded
 	singularSearch := singular != board.NullMove
 
 	// TT lookup
@@ -102,7 +102,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		correction = ss.corrHist.Correction(&pos)
 		staticEval = clampMate(rawEval + correction)
 	}
-	ss.Stack[ply].staticEval = staticEval
+	ss.stack[ply].staticEval = staticEval
 
 	improving := ss.improvement(ply, staticEval, inCheck) > 0
 	improvingInt := 0
@@ -184,7 +184,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
-		isKiller := ss.Stack[ply].killer == move
+		isKiller := ss.stack[ply].killer == move
 		from := move.From()
 		to := move.To()
 
@@ -236,9 +236,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			sBeta := max(ttScore-2*int32(depth), -MATE+1)
 			sDepth := (depth - 1) / 2
 
-			ss.Stack[ply].excluded = move
+			ss.stack[ply].excluded = move
 			score := ss.negamax(pos, sDepth, ply, sBeta-1, sBeta)
-			ss.Stack[ply].excluded = board.NullMove
+			ss.stack[ply].excluded = board.NullMove
 
 			if score < sBeta {
 				extension = 1
@@ -312,7 +312,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			flag = tt.Lower
 
 			if isQuiet {
-				ss.Stack[ply].killer = bestMove
+				ss.stack[ply].killer = bestMove
 			}
 
 			ss.history.Update(
@@ -357,11 +357,11 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 }
 
 func (ss *SearchState) improvement(ply uint16, staticEval int32, inCheck bool) int32 {
-	if !inCheck && ply >= 2 && isDefined(ss.Stack[ply-2].staticEval) {
-		return staticEval - ss.Stack[ply-2].staticEval
+	if !inCheck && ply >= 2 && isDefined(ss.stack[ply-2].staticEval) {
+		return staticEval - ss.stack[ply-2].staticEval
 	}
-	if !inCheck && ply >= 4 && isDefined(ss.Stack[ply-4].staticEval) {
-		return staticEval - ss.Stack[ply-4].staticEval
+	if !inCheck && ply >= 4 && isDefined(ss.stack[ply-4].staticEval) {
+		return staticEval - ss.stack[ply-4].staticEval
 	}
 	return 0
 }

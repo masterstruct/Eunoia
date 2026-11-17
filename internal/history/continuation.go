@@ -5,10 +5,10 @@ import (
 )
 
 const (
-	cont1BonusBase  = 128
-	cont1BonusScale = 128
-	cont1MalusBase  = 128
-	cont1MalusScale = 128
+	cont1BonusBase  = -250
+	cont1BonusScale = 300
+	cont1MalusBase  = -250
+	cont1MalusScale = 300
 	cont1Max        = 2048
 )
 
