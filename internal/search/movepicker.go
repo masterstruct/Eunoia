@@ -2,6 +2,7 @@ package search
 
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
+	"github.com/masterstruct/Eunoia/internal/history"
 )
 
 // based on Hobbes implementation
@@ -22,25 +23,27 @@ const (
 )
 
 type MovePicker struct {
-	movelist   board.Movelist
-	stage      Stage
-	ttMove     board.Move
-	skipQuiets bool
-	ply        uint16
-	badNoisies board.Movelist
+	movelist    board.Movelist
+	stage       Stage
+	ttMove      board.Move
+	skipQuiets  bool
+	ply         uint16
+	badNoisies  board.Movelist
+	contIndices history.ContIndices
 }
 
-func NewMovePicker(ply uint16, ttMove board.Move, skipQuiets bool) MovePicker {
+func NewMovePicker(ply uint16, ttMove board.Move, skipQuiets bool, contIndices history.ContIndices) MovePicker {
 	stage := TTMove
 	if ttMove == board.NullMove {
 		stage = GenerateNoisies
 	}
 	return MovePicker{
-		movelist:   board.Movelist{},
-		stage:      stage,
-		ttMove:     ttMove,
-		skipQuiets: skipQuiets,
-		ply:        ply,
+		movelist:    board.Movelist{},
+		stage:       stage,
+		ttMove:      ttMove,
+		skipQuiets:  skipQuiets,
+		ply:         ply,
+		contIndices: contIndices,
 	}
 }
 
@@ -129,24 +132,20 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 }
 
 func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
-	stm := pos.SideToMove
-
 	var temp board.Movelist
 	board.GenerateLegalMoves(pos, &temp, board.Quiets)
 	mp.removeTT(&temp)
 
 	for i := range temp.Len {
-		move := temp.Moves[i]
-		from := move.Move.From()
-		to := move.Move.To()
+		move := temp.Moves[i].Move
 
-		move.Score = ss.history.Quiet.Get(stm, from, to)
+		score := ss.history.ScoreQuiet(pos, move, mp.contIndices)
 
 		// killer move bonus
-		if ss.Stack[mp.ply].killer == move.Move {
-			move.Score += killerBonus
+		if ss.Stack[mp.ply].killer == move {
+			score += killerBonus
 		}
-		mp.movelist.AddScoredMove(move)
+		mp.movelist.AddScoredMove(move.Score(score))
 	}
 }
 

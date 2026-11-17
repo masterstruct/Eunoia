@@ -169,7 +169,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	flag := tt.Upper
 
 	contIndices := ss.NewContIndices(ply)
-	movePicker := NewMovePicker(ply, ttMove, false)
+	movePicker := NewMovePicker(ply, ttMove, false, contIndices)
 
 	var quietsTried board.Movelist
 

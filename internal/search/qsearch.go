@@ -2,6 +2,7 @@ package search
 
 import (
 	"github.com/masterstruct/Eunoia/internal/board"
+	"github.com/masterstruct/Eunoia/internal/history"
 )
 
 func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32) int32 {
@@ -29,7 +30,7 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 		alpha = max(alpha, standPat)
 	}
 
-	movePicker := NewMovePicker(ply, board.NullMove, !inCheck)
+	movePicker := NewMovePicker(ply, board.NullMove, !inCheck, history.ContIndices{})
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 
 	legalMoves := 0
