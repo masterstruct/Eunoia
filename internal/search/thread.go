@@ -65,11 +65,12 @@ func (ss *SearchState) ResizeTT(sizeMiB uint) {
 	ss.tt.Resize(sizeMiB)
 }
 
-func (ss *SearchState) PreviousMove(ply uint16, back uint16) (board.Piece, board.Move) {
+func (ss *SearchState) PreviousMove(ply uint16, back uint16) (board.Piece, board.Move, bool) {
 	if ply >= back {
-		return ss.Stack[ply-back].piece, ss.Stack[ply-back].move
+		n := &ss.Stack[ply-back]
+		return n.piece, n.move, n.piece != board.NoPiece
 	}
-	return board.NoPiece, board.NullMove
+	return board.NoPiece, board.NullMove, false
 }
 
 func (ss *SearchState) NewContIndices(ply uint16) history.ContIndices {

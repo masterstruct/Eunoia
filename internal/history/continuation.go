@@ -17,7 +17,7 @@ type ContHist [2][6][64][6][64]int16
 
 func (h *ContHist) get(stm board.Color, entry contEntry,
 	pt board.PieceType, to board.Square) int32 {
-	if entry.pt == board.NoPieceType {
+	if !entry.ok {
 		return 0
 	}
 	return int32(h[stm][entry.pt][entry.to][pt][to])
@@ -33,7 +33,7 @@ func (h *ContHist) malus(depth int32) int32 {
 
 func (h *ContHist) update(stm board.Color, entry contEntry,
 	pt board.PieceType, to board.Square, bonus int32) {
-	if entry.pt != board.NoPieceType {
+	if entry.ok {
 		gravity(
 			&h[stm][entry.pt][entry.to][pt][to],
 			bonus,
@@ -46,12 +46,14 @@ func (h *ContHist) update(stm board.Color, entry contEntry,
 type contEntry struct {
 	pt board.PieceType
 	to board.Square
+	ok bool
 }
 
-func NewContEntry(piece board.Piece, move board.Move) contEntry {
+func NewContEntry(piece board.Piece, move board.Move, ok bool) contEntry {
 	return contEntry{
 		pt: piece.Type(),
 		to: move.To(),
+		ok: ok,
 	}
 }
 
