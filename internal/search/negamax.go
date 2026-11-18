@@ -312,13 +312,13 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			if isQuiet {
 				ss.stack[ply].killer = bestMove
 
-				bonus := 300*int32(depth) - 250
-				ss.history.Quiet.Update(stm, from, to, bonus)
+				ss.history.Quiet.Update(stm, from, to, 250+160*int32(depth))
 
+				malus := 200 + 211*int32(depth)
 				for i := range quietsTried.Len {
 					// penalize quiets that didn't cause beta cutoff
 					quietMove := quietsTried.Moves[i].Move
-					ss.history.Quiet.Update(stm, quietMove.From(), quietMove.To(), -bonus)
+					ss.history.Quiet.Update(stm, quietMove.From(), quietMove.To(), -malus)
 				}
 			}
 			break
