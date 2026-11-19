@@ -45,7 +45,7 @@ func (h *History) applyQuietBonus(pos *board.Position, indices ContIndices,
 	attacker := pos.Attacker(move)
 
 	h.Quiet.update(stm, from, to, h.Quiet.bonus(depth))
-	h.contOdd.update(stm, indices.cont1, attacker, to, h.contOdd.bonus(depth))
+	indices.Cont1.update(attacker, to, h.contOdd.bonus(depth))
 }
 
 func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
@@ -56,16 +56,15 @@ func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
 	attacker := pos.Attacker(move)
 
 	h.Quiet.update(stm, from, to, h.Quiet.malus(depth))
-	h.contOdd.update(stm, indices.cont1, attacker, to, h.contOdd.malus(depth))
+	indices.Cont1.update(attacker, to, h.contOdd.malus(depth))
+}
+
+func (h *History) Cont1Row(stm board.Color, pt board.PieceType, to board.Square) *ContRow {
+	return &h.contOdd[stm][pt][to]
 }
 
 func (h *History) cont(pos *board.Position, indices ContIndices, move board.Move) int32 {
-	return h.contOdd.get(
-		pos.SideToMove,
-		indices.cont1,
-		pos.Attacker(move),
-		move.To(),
-	)
+	return indices.Cont1.get(pos.Attacker(move), move.To())
 }
 
 func gravity(entry *int16, bonus, maxBonus, maxValue int32) {
