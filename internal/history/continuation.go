@@ -9,7 +9,7 @@ const (
 	cont1BonusScale = 300
 	cont1MalusBase  = -250
 	cont1MalusScale = 300
-	cont1Max        = 2048
+	cont1Max        = 16384
 )
 
 // [stm][prev piece][prev to][piece][to]
