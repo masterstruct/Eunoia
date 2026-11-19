@@ -138,12 +138,13 @@ func (mp *MovePicker) genQuiets(pos *board.Position, ss *SearchState) {
 
 	for i := range temp.Len {
 		move := temp.Moves[i].Move
-
-		score := ss.history.ScoreQuiet(pos, move, mp.contIndices)
+		var score int32
 
 		// killer move bonus
 		if ss.stack[mp.ply].killer == move {
-			score += killerBonus
+			score = killerBonus
+		} else {
+			score = ss.history.ScoreQuiet(pos, move, mp.contIndices)
 		}
 		mp.movelist.AddScoredMove(move.Score(score))
 	}

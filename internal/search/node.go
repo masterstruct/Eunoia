@@ -23,6 +23,7 @@ func (stack *NodeStack) reset() {
 			staticEval: -INF,
 			killer:     board.NullMove,
 			excluded:   board.NullMove,
+			cont:       nil,
 		}
 	}
 }
