@@ -1,8 +1,6 @@
 package history
 
-import (
-	"github.com/masterstruct/Eunoia/internal/board"
-)
+import "github.com/masterstruct/Eunoia/internal/board"
 
 const (
 	maxHistory = 16384
@@ -10,11 +8,13 @@ const (
 
 type History struct {
 	Quiet   quietHistory
+	noisy   noisyHistory
 	contOdd ContHist
 }
 
 func (h *History) Clear() {
 	clear(h.Quiet[:])
+	clear(h.noisy[:])
 	clear(h.contOdd[:])
 }
 
@@ -22,18 +22,34 @@ func (h *History) ScoreQuiet(pos *board.Position, move board.Move, indices ContI
 	return h.Quiet.Get(pos.SideToMove, move.From(), move.To()) + h.cont(pos, indices, move)
 }
 
+func (h *History) ScoreNoisy(pos *board.Position, move board.Move) int32 {
+	return h.noisy.get(pos.SideToMove, pos.Attacker(move), pos.Victim(move), move.To())
+}
+
 func (h *History) Update(pos *board.Position, indices ContIndices,
-	depth int32, bestMove board.Move, quietsTried *board.Movelist) {
+	depth int32, move board.Move, quietsTried, noisiesTried *board.Movelist) {
 	// TODO: replace movelist with a cheaper array
-	if bestMove.IsNoisy() {
-		// TODO: noisy history
+	stm := pos.SideToMove
+	if move.IsNoisy() {
+		h.noisy.update(stm, pos.Attacker(move),
+			pos.Victim(move), move.To(), h.noisy.bonus(depth))
 	} else {
-		h.applyQuietBonus(pos, indices, depth, bestMove)
+		h.applyQuietBonus(pos, indices, depth, move)
+
+		// penalize quiets that didn't cause beta cutoff
 		for i := range quietsTried.Len {
-			// penalize quiets that didn't cause beta cutoff
 			quiet := quietsTried.Moves[i].Move
 			h.applyQuietMalus(pos, indices, depth, quiet)
 		}
+	}
+
+	// penalize all noisies that didn't cause beta cutoff
+	// regardless if the best move is quiet or noisy
+	noisyMalus := h.noisy.malus(depth)
+	for i := range noisiesTried.Len {
+		noisyMove := noisiesTried.Moves[i].Move
+		h.noisy.update(stm, pos.Attacker(noisyMove),
+			pos.Victim(noisyMove), noisyMove.To(), noisyMalus)
 	}
 }
 

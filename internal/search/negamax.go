@@ -172,6 +172,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	movePicker := NewMovePicker(ply, ttMove, false, contIndices)
 
 	var quietsTried board.Movelist
+	var noisiesTried board.Movelist
 
 	var score int32
 
@@ -193,6 +194,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		var historyScore int32
 		if isQuiet {
 			historyScore = ss.history.Quiet.Get(stm, from, to)
+		} else {
+			// TODO
+			// historyScore = ss.history.ScoreNoisy(&pos, move)
 		}
 
 		// futility pruning
@@ -321,12 +325,15 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 				int32(depth),
 				bestMove,
 				&quietsTried,
+				&noisiesTried,
 			)
 			break
 		}
 
 		if isQuiet {
 			quietsTried.Add(move)
+		} else {
+			noisiesTried.Add(move)
 		}
 	}
 
