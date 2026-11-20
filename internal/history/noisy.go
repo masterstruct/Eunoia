@@ -26,9 +26,9 @@ func (h *noisyHistory) update(stm board.Color, attacker, victim board.PieceType,
 }
 
 func (h *noisyHistory) bonus(depth int32) int32 {
-	return noisyBonusBase + noisyBonusScale*depth
+	return max(noisyBonusBase+noisyBonusScale*depth, 0)
 }
 
 func (h *noisyHistory) malus(depth int32) int32 {
-	return -(noisyMalusBase + noisyMalusScale*depth)
+	return -max(noisyMalusBase+noisyMalusScale*depth, 0)
 }

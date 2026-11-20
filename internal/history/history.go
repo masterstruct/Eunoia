@@ -29,10 +29,8 @@ func (h *History) ScoreNoisy(pos *board.Position, move board.Move) int32 {
 func (h *History) Update(pos *board.Position, indices ContIndices,
 	depth int32, move board.Move, quietsTried, noisiesTried *board.Movelist) {
 	// TODO: replace movelist with a cheaper array
-	stm := pos.SideToMove
 	if move.IsNoisy() {
-		h.noisy.update(stm, pos.Attacker(move),
-			pos.Victim(move), move.To(), h.noisy.bonus(depth))
+		h.applyNoisyBonus(pos, move, h.noisy.bonus(depth))
 	} else {
 		h.applyQuietBonus(pos, indices, depth, move)
 
@@ -47,9 +45,7 @@ func (h *History) Update(pos *board.Position, indices ContIndices,
 	// regardless if the best move is quiet or noisy
 	noisyMalus := h.noisy.malus(depth)
 	for i := range noisiesTried.Len {
-		noisyMove := noisiesTried.Moves[i].Move
-		h.noisy.update(stm, pos.Attacker(noisyMove),
-			pos.Victim(noisyMove), noisyMove.To(), noisyMalus)
+		h.applyNoisyBonus(pos, noisiesTried.Moves[i].Move, noisyMalus)
 	}
 }
 
@@ -73,6 +69,10 @@ func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
 
 	h.Quiet.update(stm, from, to, h.Quiet.malus(depth))
 	indices.Cont1.update(attacker, to, h.contOdd.malus(depth))
+}
+
+func (h *History) applyNoisyBonus(pos *board.Position, move board.Move, bonus int32) {
+	h.noisy.update(pos.SideToMove, pos.Attacker(move), pos.Victim(move), move.To(), bonus)
 }
 
 func (h *History) Cont1Row(stm board.Color, pt board.PieceType, to board.Square) *ContRow {

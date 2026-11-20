@@ -113,11 +113,11 @@ func (mp *MovePicker) genNoisies(pos *board.Position, ss *SearchState) {
 		var score int32
 		move := temp.Moves[i].Move
 
-		score = ss.history.ScoreNoisy(pos, move) / 8
-		score += 8 * pos.Victim(move).Value()
+		// TODO: add queen promo bonus
 
-		if move.IsPromo() {
-			score += board.Queen.Value() - board.Pawn.Value()
+		score = ss.history.ScoreNoisy(pos, move)
+		if move.IsCapture() {
+			score += mvvlvaScore(pos.Victim(move), pos.Attacker(move))
 		}
 
 		scoredMove := move.Score(score)
@@ -165,4 +165,8 @@ func isGoodNoisy(pos *board.Position, move board.Move) bool {
 	}
 	threshold := int32(-100)
 	return see(pos, move, threshold)
+}
+
+func mvvlvaScore(victim, attacker board.PieceType) int32 {
+	return (int32(victim)+2)*1000 + (5 - int32(attacker))
 }
