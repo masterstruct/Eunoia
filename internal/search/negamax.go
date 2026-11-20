@@ -50,7 +50,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		return alpha
 	}
 
-	singular := ss.stack[ply].singular
+	singular := ss.stack[ply].excluded
 	singularSearch := singular != board.NullMove
 
 	// TT lookup
@@ -168,7 +168,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	searchedMoves := 0
 	flag := tt.Upper
 
-	movePicker := NewMovePicker(ply, ttMove, false)
+	contIndices := ss.NewContIndices(ply)
+	movePicker := NewMovePicker(ply, ttMove, false, contIndices)
 
 	var quietsTried board.Movelist
 
@@ -235,9 +236,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			sBeta := max(ttScore-2*int32(depth), -MATE+1)
 			sDepth := (depth - 1) / 2
 
-			ss.stack[ply].singular = move
+			ss.stack[ply].excluded = move
 			score := ss.negamax(pos, sDepth, ply, sBeta-1, sBeta)
-			ss.stack[ply].singular = board.NullMove
+			ss.stack[ply].excluded = board.NullMove
 
 			if score < sBeta {
 				extension = 1
@@ -245,7 +246,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		newPos := pos
-		ss.makeMove(&newPos, move)
+		ss.makeMove(&newPos, move, ply)
 
 		newDepth := depth + extension - 1
 
@@ -287,7 +288,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			}
 		}
 
-		ss.unmakeMove()
+		ss.unmakeMove(ply)
 		searchedMoves++
 
 		if ss.ShouldStop(Hard) {
@@ -309,18 +310,18 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		if score >= beta { // beta cutoff
 			flag = tt.Lower
+
 			if isQuiet {
 				ss.stack[ply].killer = bestMove
-
-				bonus := 300*int32(depth) - 250
-				ss.history.Quiet.Update(stm, from, to, bonus)
-
-				for i := range quietsTried.Len {
-					// penalize quiets that didn't cause beta cutoff
-					quietMove := quietsTried.Moves[i].Move
-					ss.history.Quiet.Update(stm, quietMove.From(), quietMove.To(), -bonus)
-				}
 			}
+
+			ss.history.Update(
+				&pos,
+				contIndices,
+				int32(depth),
+				bestMove,
+				&quietsTried,
+			)
 			break
 		}
 
