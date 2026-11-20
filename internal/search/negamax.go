@@ -84,7 +84,6 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 	}
 
-	stm := pos.SideToMove
 	inCheck := pos.InCheck()
 
 	if depth <= 0 && !inCheck {
@@ -185,14 +184,12 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		isQuiet := !move.IsNoisy()
 		isMated := isMated(bestScore)
 		isKiller := ss.stack[ply].killer == move
-		from := move.From()
-		to := move.To()
 
 		extension := 0
 
 		var historyScore int32
 		if isQuiet {
-			historyScore = ss.history.Quiet.Get(stm, from, to)
+			historyScore = ss.history.ScoreQuiet(&pos, move, contIndices)
 		}
 
 		// futility pruning
