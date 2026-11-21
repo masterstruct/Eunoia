@@ -53,6 +53,7 @@ func (ss *SearchState) ClearTables() {
 	*ss.pv = PVTable{}
 	ss.history.Clear()
 	ss.corrHist.Clear()
+	ss.stack.reset()
 }
 
 // clears ONLY the TT - intended for `setoption name Clear Hash`.
@@ -65,7 +66,7 @@ func (ss *SearchState) ResizeTT(sizeMiB uint) {
 	ss.tt.Resize(sizeMiB)
 }
 
-func (ss *SearchState) prevCont(ply, back uint16) *history.ContRow {
+func (ss *SearchState) prevCont(ply, back uint16) *history.ContEntry {
 	if ply < back {
 		return nil
 	}
@@ -73,5 +74,9 @@ func (ss *SearchState) prevCont(ply, back uint16) *history.ContRow {
 }
 
 func (ss *SearchState) NewContIndices(ply uint16) history.ContIndices {
-	return history.NewContIndices(ss.prevCont(ply, 1))
+	var indices history.ContIndices
+	for i := range indices {
+		indices[i] = ss.prevCont(ply, history.ContPlyAt(i))
+	}
+	return indices
 }

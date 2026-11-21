@@ -4,43 +4,69 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-const (
-	cont1BonusBase  = -250
-	cont1BonusScale = 300
-	cont1MalusBase  = -250
-	cont1MalusScale = 300
-	cont1Max        = 2048
-)
+type contParams struct {
+	ply                   uint16
+	bonusBase, bonusScale int32
+	malusBase, malusScale int32
+	maxBonus              int32
+}
 
-type ContRow [6][64]int16
-type ContHist [2][6][64]ContRow // [stm][prev piece][prev to][piece][to]
+var contPlies = [...]contParams{
+	{
+		ply:        1,
+		bonusBase:  -250,
+		bonusScale: 300,
+		malusBase:  250,
+		malusScale: -300,
+		maxBonus:   2048,
+	},
+}
 
-func (r *ContRow) get(pt board.PieceType, to board.Square) int32 {
+const plyCount = len(contPlies)
+
+func ContPlyAt(i int) uint16 {
+	return contPlies[i].ply
+}
+
+type ContEntry [2][6][64]int16    // [stm][piece][to]
+type ContHist [2][6][64]ContEntry // [prev stm][prev piece][prev to][stm][piece][to]
+
+func (r *ContEntry) get(stm board.Color, pt board.PieceType, to board.Square) int32 {
 	if r == nil {
 		return 0
 	}
-	return int32(r[pt][to])
+	return int32(r[stm][pt][to])
 }
 
-func (r *ContRow) update(pt board.PieceType, to board.Square, bonus int32) {
-	if r == nil {
-		return
+func (r *ContEntry) update(stm board.Color, pt board.PieceType, to board.Square, bonus, maxBonus int32) {
+	if r != nil {
+		gravity(&r[stm][pt][to], bonus, maxBonus, maxHistory)
 	}
-	gravity(&r[pt][to], bonus, cont1Max, maxHistory)
 }
 
-func (h *ContHist) bonus(depth int32) int32 {
-	return cont1BonusBase + cont1BonusScale*depth
+// contains a ContEntry for each ply-N,
+// basically ss.stack[ply-N].cont
+type ContIndices [plyCount]*ContEntry
+
+// sums the score of all conthist plies
+func (i *ContIndices) score(pos *board.Position, move board.Move) (score int32) {
+	attacker := pos.Attacker(move)
+	stm := pos.SideToMove
+	to := move.To()
+
+	for ply := range i {
+		score += i[ply].get(stm, attacker, to)
+	}
+	return
 }
 
-func (h *ContHist) malus(depth int32) int32 {
-	return -(cont1MalusBase + cont1MalusScale*depth)
-}
-
-type ContIndices struct {
-	Cont1 *ContRow
-}
-
-func NewContIndices(cont1 *ContRow) ContIndices {
-	return ContIndices{Cont1: cont1}
+// updates all conthist plies at the same time
+func (i *ContIndices) update(stm board.Color, pt board.PieceType, to board.Square, depth int32, bonus bool) {
+	for ply, params := range contPlies {
+		base, scale := params.malusBase, params.malusScale
+		if bonus {
+			base, scale = params.bonusBase, params.bonusScale
+		}
+		i[ply].update(stm, pt, to, base+scale*depth, params.maxBonus)
+	}
 }
