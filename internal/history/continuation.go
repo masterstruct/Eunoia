@@ -4,7 +4,9 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-var contPlies = [...]int{1, 2, 4} // mock plies
+var ContPlies = [...]uint16{1, 2, 4} // mock plies
+
+const plyCount = len(ContPlies)
 
 var contBonuses = [plyCount][5]int32{
 	{ // 1
@@ -30,10 +32,6 @@ var contBonuses = [plyCount][5]int32{
 	},
 }
 
-const (
-	plyCount = len(contPlies)
-)
-
 type ContEntry [2][6][64]int16    // [stm][piece][to]
 type ContHist [2][6][64]ContEntry // [prev stm][prev piece][prev to][stm][piece][to]
 
@@ -53,10 +51,6 @@ func (r *ContEntry) update(stm board.Color, pt board.PieceType, to board.Square,
 // contains a ContEntry for each ply-N,
 // basically ss.stack[ply-N].cont
 type ContIndices [plyCount]*ContEntry
-
-func NewContIndices(cont1 *ContEntry) ContIndices {
-	return ContIndices{cont1}
-}
 
 // sums the score of all conthist plies
 func (i *ContIndices) score(pos *board.Position, move board.Move) (score int32) {
