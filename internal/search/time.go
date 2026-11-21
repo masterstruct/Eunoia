@@ -40,7 +40,7 @@ const (
 	moveStabilityMin      = 0.6
 	moveStabilityMinDepth = 5
 
-	scoreStabilityThreshold = 12
+	scoreStabilityThreshold = 20
 	scoreStabilityBase      = 1.23
 	scoreStabilityScale     = 0.045
 	scoreStabilityMin       = 0.9
