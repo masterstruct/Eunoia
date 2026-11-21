@@ -20,6 +20,14 @@ var contPlies = [...]contParams{
 		malusScale: -300,
 		maxBonus:   2048,
 	},
+	{
+		ply:        2,
+		bonusBase:  -250,
+		bonusScale: 300,
+		malusBase:  250,
+		malusScale: -300,
+		maxBonus:   2048,
+	},
 }
 
 const plyCount = len(contPlies)
