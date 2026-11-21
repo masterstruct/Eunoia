@@ -65,7 +65,7 @@ func (ss *SearchState) ResizeTT(sizeMiB uint) {
 	ss.tt.Resize(sizeMiB)
 }
 
-func (ss *SearchState) prevCont(ply, back uint16) *history.ContRow {
+func (ss *SearchState) prevCont(ply, back uint16) *history.ContEntry {
 	if ply < back {
 		return nil
 	}
