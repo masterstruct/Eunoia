@@ -34,21 +34,20 @@ const (
 	plyCount = len(contPlies)
 )
 
-type ContEntry [6][64]int16       // [piece][to]
-type ContHist [2][6][64]ContEntry // [stm][prev piece][prev to][piece][to]
+type ContEntry [2][6][64]int16    // [stm][piece][to]
+type ContHist [2][6][64]ContEntry // [prev stm][prev piece][prev to][stm][piece][to]
 
-func (r *ContEntry) get(pt board.PieceType, to board.Square) int32 {
+func (r *ContEntry) get(stm board.Color, pt board.PieceType, to board.Square) int32 {
 	if r == nil {
 		return 0
 	}
-	return int32(r[pt][to])
+	return int32(r[stm][pt][to])
 }
 
-func (r *ContEntry) update(pt board.PieceType, to board.Square, bonus, maxBonus int32) {
-	if r == nil {
-		return
+func (r *ContEntry) update(stm board.Color, pt board.PieceType, to board.Square, bonus, maxBonus int32) {
+	if r != nil {
+		gravity(&r[stm][pt][to], bonus, maxBonus, maxHistory)
 	}
-	gravity(&r[pt][to], bonus, maxBonus, maxHistory)
 }
 
 // contains a ContEntry for each ply-N,
@@ -60,24 +59,25 @@ func NewContIndices(cont1 *ContEntry) ContIndices {
 }
 
 // sums the score of all conthist plies
-func (i *ContIndices) score(pos *board.Position, move board.Move) int32 {
+func (i *ContIndices) score(pos *board.Position, move board.Move) (score int32) {
 	attacker := pos.Attacker(move)
+	stm := pos.SideToMove
 	to := move.To()
-	var score int32
-	for ply := range plyCount {
-		score += i[ply].get(attacker, to)
+
+	for ply := range i {
+		score += i[ply].get(stm, attacker, to)
 	}
-	return score
+	return
 }
 
 // updates all conthist plies at the same time
-func (i *ContIndices) update(pt board.PieceType, to board.Square, depth int32, bonus bool) {
+func (i *ContIndices) update(stm board.Color, pt board.PieceType, to board.Square, depth int32, bonus bool) {
 	offset := 2
 	if bonus {
 		offset = 0
 	}
 	for ply := range i {
 		bonus := contBonuses[ply][0+offset] + contBonuses[ply][1+offset]*depth
-		i[ply].update(pt, to, bonus, contBonuses[ply][4])
+		i[ply].update(stm, pt, to, bonus, contBonuses[ply][4])
 	}
 }

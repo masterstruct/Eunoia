@@ -10,7 +10,7 @@ const (
 
 type History struct {
 	Quiet quietHistory
-	cont  [2]ContHist
+	cont  ContHist
 }
 
 func (h *History) Clear() {
@@ -45,7 +45,7 @@ func (h *History) applyQuietBonus(pos *board.Position, indices ContIndices,
 	attacker := pos.Attacker(move)
 
 	h.Quiet.update(stm, from, to, h.Quiet.bonus(depth))
-	indices.update(attacker, to, depth, true)
+	indices.update(stm, attacker, to, depth, true)
 }
 
 func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
@@ -56,11 +56,11 @@ func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
 	attacker := pos.Attacker(move)
 
 	h.Quiet.update(stm, from, to, h.Quiet.malus(depth))
-	indices.update(attacker, to, depth, false)
+	indices.update(stm, attacker, to, depth, false)
 }
 
 func (h *History) ContEntry(pos *board.Position, move board.Move) *ContEntry {
-	return &h.cont[0][pos.SideToMove][pos.Attacker(move)][move.To()]
+	return &h.cont[pos.SideToMove][pos.Attacker(move)][move.To()]
 }
 
 func gravity(entry *int16, bonus, maxBonus, maxValue int32) {
