@@ -75,8 +75,8 @@ func (ss *SearchState) prevCont(ply, back uint16) *history.ContEntry {
 
 func (ss *SearchState) NewContIndices(ply uint16) history.ContIndices {
 	var indices history.ContIndices
-	for i, back := range history.ContPlies {
-		indices[i] = ss.prevCont(ply, back)
+	for i := range indices {
+		indices[i] = ss.prevCont(ply, history.ContPlyAt(i))
 	}
 	return indices
 }

@@ -4,32 +4,28 @@ import (
 	"github.com/masterstruct/Eunoia/internal/board"
 )
 
-var ContPlies = [...]uint16{1, 2, 4} // mock plies
+type contParams struct {
+	ply                   uint16
+	bonusBase, bonusScale int32
+	malusBase, malusScale int32
+	maxBonus              int32
+}
 
-const plyCount = len(ContPlies)
+var contPlies = [...]contParams{
+	{
+		ply:        1,
+		bonusBase:  -250,
+		bonusScale: 300,
+		malusBase:  250,
+		malusScale: -300,
+		maxBonus:   2048,
+	},
+}
 
-var contBonuses = [plyCount][5]int32{
-	{ // 1
-		-250, // bonus base
-		300,  // bonus scale
-		250,  // malus base
-		-300, // malus scale
-		2048, // max   bonus
-	},
-	{ // 2
-		-250, // bonus base
-		300,  // bonus scale
-		250,  // malus base
-		-300, // malus scale
-		2048, // max   bonus
-	},
-	{ // 4
-		-250, // bonus base
-		300,  // bonus scale
-		250,  // malus base
-		-300, // malus scale
-		2048, // max   bonus
-	},
+const plyCount = len(contPlies)
+
+func ContPlyAt(i int) uint16 {
+	return contPlies[i].ply
 }
 
 type ContEntry [2][6][64]int16    // [stm][piece][to]
@@ -66,12 +62,11 @@ func (i *ContIndices) score(pos *board.Position, move board.Move) (score int32) 
 
 // updates all conthist plies at the same time
 func (i *ContIndices) update(stm board.Color, pt board.PieceType, to board.Square, depth int32, bonus bool) {
-	offset := 2
-	if bonus {
-		offset = 0
-	}
-	for ply := range i {
-		bonus := contBonuses[ply][0+offset] + contBonuses[ply][1+offset]*depth
-		i[ply].update(stm, pt, to, bonus, contBonuses[ply][4])
+	for ply, params := range contPlies {
+		base, scale := params.malusBase, params.malusScale
+		if bonus {
+			base, scale = params.bonusBase, params.bonusScale
+		}
+		i[ply].update(stm, pt, to, base+scale*depth, params.maxBonus)
 	}
 }
