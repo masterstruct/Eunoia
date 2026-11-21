@@ -10,7 +10,7 @@ type Node struct {
 	staticEval int32
 	killer     board.Move
 	excluded   board.Move
-	cont       *history.ContEntry
+	cont       *history.ContEntry // holds piece that moved and to square
 }
 
 // headroom if accessing stack[ply+N]

@@ -59,8 +59,8 @@ func (h *History) applyQuietMalus(pos *board.Position, indices ContIndices,
 	indices.update(attacker, to, depth, false)
 }
 
-func (h *History) Cont1Row(stm board.Color, pt board.PieceType, to board.Square) *ContEntry {
-	return &h.cont[0][stm][pt][to]
+func (h *History) ContEntry(pos *board.Position, move board.Move) *ContEntry {
+	return &h.cont[0][pos.SideToMove][pos.Attacker(move)][move.To()]
 }
 
 func gravity(entry *int16, bonus, maxBonus, maxValue int32) {

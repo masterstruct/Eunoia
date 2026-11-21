@@ -81,7 +81,7 @@ func (ss *SearchState) handleNoLegalMoves(pos *board.Position) board.Move {
 }
 
 func (ss *SearchState) makeMove(pos *board.Position, move board.Move, ply uint16) {
-	ss.stack[ply].cont = ss.history.Cont1Row(pos.SideToMove.Opponent(), pos.Attacker(move), move.To())
+	ss.stack[ply].cont = ss.history.ContEntry(pos, move)
 	pos.Make(move)
 	ss.Keys.Push(pos.Hash)
 	ss.tt.Prefetch(pos.Hash)
