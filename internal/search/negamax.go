@@ -250,41 +250,28 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 
 		newDepth := depth + extension - 1
 
-		// late move reductions
-		isReduced := false
-		if searchedMoves >= lmrMinMoves && depth >= lmrMinDepth &&
-			isQuiet {
-			reduction := lmr[min(newDepth, lmrMaxDepth)][min(searchedMoves, lmrMaxMoves)]
-			if !improving {
-				reduction += 1
-			}
-
-			if reduction > 0 {
-				reducedDepth := max(newDepth-reduction, 1)
-
-				// search "late" moves with a
-				// reduced depth, in a null window
-				score = -ss.negamax(newPos, reducedDepth, ply+1, -alpha-1, -alpha)
-
-				if score <= alpha {
-					// this move is trash, don't search it in PVS
-					isReduced = true
-				}
-			}
-		}
-
 		// principal variation search
-		if !isReduced {
-			if searchedMoves == 0 {
-				// full window search for principal variation
-				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
-			} else {
-				// null window search for non-PV line
-				score = -ss.negamax(newPos, newDepth, ply+1, -alpha-1, -alpha)
-				if alpha < score && score < beta {
-					// null window failed, re-search with full window
-					score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
+		if searchedMoves == 0 {
+			score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
+		} else {
+			// late move reductions
+			var lmr int32
+			if depth >= lmrMinDepth && searchedMoves >= lmrMinMoves && isQuiet {
+				lmr = getLMR(newDepth, searchedMoves)
+				if !improving {
+					lmr++
 				}
+			}
+
+			lmrDepth := min(max(newDepth-lmr, 1), newDepth)
+			score = -ss.negamax(newPos, lmrDepth, ply+1, -alpha-1, -alpha)
+
+			if lmr > 0 && score > alpha {
+				score = -ss.negamax(newPos, newDepth, ply+1, -alpha-1, -alpha)
+			}
+
+			if isPV && score > alpha && score < beta {
+				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
 			}
 		}
 
