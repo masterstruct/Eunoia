@@ -54,7 +54,7 @@ func (h *CorrHist) Correction(pos *board.Position) int32 {
 	return corr / corrMax
 }
 
-func (h *CorrHist) Update(pos *board.Position, depth int, score, staticEval int32) {
+func (h *CorrHist) Update(pos *board.Position, depth int32, score, staticEval int32) {
 	stm := pos.SideToMove
 	bonus := corrBonus(score-staticEval, depth)
 
@@ -65,8 +65,8 @@ func (h *CorrHist) Update(pos *board.Position, depth int, score, staticEval int3
 	h.update(stm, corrBlack, getNonPawnHash(pos, board.Black), bonus)
 }
 
-func corrBonus(diff int32, depth int) int32 {
-	return (diff * int32(depth)) / 8
+func corrBonus(diff int32, depth int32) int32 {
+	return (diff * depth) / 8
 }
 
 // TODO: update incrementally in makemove

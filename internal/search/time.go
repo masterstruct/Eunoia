@@ -52,7 +52,7 @@ func (ss *SearchState) hardLimitReached() bool {
 		ss.MaxTime > 0 && time.Since(ss.StartTime) >= ss.MaxTime {
 		return true
 	}
-	if ss.depth > int(ss.MaxDepth) {
+	if ss.depth > ss.MaxDepth {
 		return true
 	}
 	return false
@@ -61,7 +61,7 @@ func (ss *SearchState) hardLimitReached() bool {
 func (ss *SearchState) softLimitReached() bool {
 	return ss.Stop ||
 		(ss.SoftNodes > 0 && ss.Nodes >= ss.SoftNodes) ||
-		ss.depth > int(ss.MaxDepth) ||
+		ss.depth > ss.MaxDepth ||
 		(ss.SoftTime > 0 && time.Since(ss.StartTime) >= ss.scaledSoftTime())
 }
 

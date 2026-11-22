@@ -14,7 +14,7 @@ type PerftResult struct {
 func Perft(pos *Position, depth int) PerftResult {
 	start := time.Now()
 
-	nodes := perft(*pos, depth)
+	nodes := perft(*pos, int32(depth))
 
 	elapsed := time.Since(start)
 	ns := max(uint64(elapsed.Nanoseconds()), 1)
@@ -26,7 +26,7 @@ func Perft(pos *Position, depth int) PerftResult {
 	}
 }
 
-func perft(pos Position, depth int) uint64 {
+func perft(pos Position, depth int32) uint64 {
 	var movelist Movelist
 	GenerateLegalMoves(&pos, &movelist, All)
 
@@ -58,7 +58,7 @@ func SplitPerft(pos *Position, depth int) PerftResult {
 		for i := 0; i < movelist.Len; i++ {
 			newPos := *pos
 			newPos.Make(movelist.Moves[i].Move)
-			nodes := perft(newPos, depth-1)
+			nodes := perft(newPos, int32(depth)-1)
 			fmt.Println(movelist.Moves[i], nodes)
 			total += nodes
 		}

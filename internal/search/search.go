@@ -26,7 +26,7 @@ func (ss *SearchState) SearchBestMove(pos board.Position) board.Move {
 
 	// iterative deepening
 iterativeDeepening:
-	for ss.depth <= int(MaxPly) && !ss.ShouldStop(Soft) {
+	for ss.depth <= MaxPly && !ss.ShouldStop(Soft) {
 		ss.selDepth = 0
 
 		if ss.depth >= aspirationMinDepth {
@@ -35,7 +35,7 @@ iterativeDeepening:
 
 		// aspiration search
 		for {
-			score = ss.negamax(pos, ss.depth, 0, aw.alpha, aw.beta)
+			score = ss.negamax(pos, int32(ss.depth), 0, aw.alpha, aw.beta)
 			if ss.ShouldStop(Hard) {
 				break iterativeDeepening
 			}

@@ -14,7 +14,7 @@ type SearchState struct {
 	bestMove          board.Move
 	bestScore         int32
 	bestMoveStability uint8
-	depth             int
+	depth             uint16
 	selDepth          uint16
 	nmpMinPly         uint16
 

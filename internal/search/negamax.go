@@ -24,7 +24,7 @@ const (
 	fpScale = 50
 )
 
-func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha, beta int32) int32 {
+func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alpha, beta int32) int32 {
 	ss.pv.Clear(ply)
 	ss.selDepth = max(ss.selDepth, ply)
 
@@ -57,7 +57,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	ttHit := false
 	ttMove := board.NullMove
 	ttFlag := tt.Lower
-	ttDepth := 0
+	var ttDepth int32
 	ttScore := -INF
 	if !singularSearch {
 		entry := ss.tt.Probe(pos.Hash)
@@ -66,8 +66,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			ttMove = entry.Move
 			ttFlag = entry.Flag
 			ttScore = scoreFromTT(entry.Score, ply)
-			ttDepth = int(entry.Depth)
-			if !isPV && entry.Depth >= uint8(depth) {
+			ttDepth = int32(entry.Depth)
+			if !isPV && uint8(ttDepth) >= uint8(depth) { // FIXME: negamax depth can be negative here
 				switch ttFlag {
 				case tt.Exact:
 					return ttScore
@@ -96,7 +96,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	// static eval
 	rawEval := -INF
 	staticEval := -INF
-	correction := int32(0)
+	var correction int32
 	if !inCheck {
 		rawEval = evaluate(&pos)
 		correction = ss.corrHist.Correction(&pos)
@@ -105,9 +105,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	ss.stack[ply].staticEval = staticEval
 
 	improving := ss.improvement(ply, staticEval, inCheck) > 0
-	improvingInt := 0
+	var improvingInt32 int32
 	if improving {
-		improvingInt = 1
+		improvingInt32 = 1
 	}
 
 	// pre-moveloop pruning
@@ -165,7 +165,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 	bestScore := -INF
 	bestMove := board.NullMove
 	legalMoves := 0
-	searchedMoves := 0
+	var searchedMoves int32
 	flag := tt.Upper
 
 	contIndices := ss.NewContIndices(ply)
@@ -188,7 +188,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		from := move.From()
 		to := move.To()
 
-		extension := 0
+		var extension int32
 
 		var historyScore int32
 		if isQuiet {
@@ -196,7 +196,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		}
 
 		// futility pruning
-		futilityMargin := fpBase + fpScale*int32(depth)
+		futilityMargin := fpBase + fpScale*depth
 		if !isRoot && isQuiet && !inCheck && !isMated &&
 			depth < fpMaxDepth && staticEval+futilityMargin <= alpha {
 			movePicker.skipQuiets = true
@@ -205,14 +205,14 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 
 		// late move pruning
 		if !isPV && isQuiet && !inCheck && !isMated &&
-			depth <= lmpMaxDepth && searchedMoves >= lmpBase+(lmpScale*depth*depth)/(2-improvingInt) {
+			depth <= lmpMaxDepth && searchedMoves >= lmpBase+(lmpScale*depth*depth)/(2-improvingInt32) {
 			movePicker.skipQuiets = true
 			continue
 		}
 
 		// history pruning
 		if !isRoot && !isMated && !isKiller && isQuiet && depth <= hpMaxDepth &&
-			historyScore < hpScale*int32(depth*depth) {
+			historyScore < hpScale*depth*depth {
 			movePicker.skipQuiets = true
 			continue
 		}
@@ -220,9 +220,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 		// SEE pruning
 		var seeThreshold int32
 		if isQuiet {
-			seeThreshold = seeQuietScale * int32(depth)
+			seeThreshold = seeQuietScale * depth
 		} else {
-			seeThreshold = seeNoisyScale * int32(depth)
+			seeThreshold = seeNoisyScale * depth
 		}
 		if !isMated && !see(&pos, move, seeThreshold) {
 			continue
@@ -233,7 +233,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			ttHit && move == ttMove && ttFlag != tt.Upper &&
 			depth >= 8 && ttDepth >= depth-3 {
 
-			sBeta := max(ttScore-2*int32(depth), -MATE+1)
+			sBeta := max(ttScore-2*depth, -MATE+1)
 			sDepth := (depth - 1) / 2
 
 			ss.stack[ply].excluded = move
@@ -318,7 +318,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int, ply uint16, alpha,
 			ss.history.Update(
 				&pos,
 				contIndices,
-				int32(depth),
+				depth,
 				bestMove,
 				&quietsTried,
 			)
@@ -366,9 +366,9 @@ func (ss *SearchState) improvement(ply uint16, staticEval int32, inCheck bool) i
 	return 0
 }
 
-func rfpMargin(depth int, improving bool) int32 {
+func rfpMargin(depth int32, improving bool) int32 {
 	if improving {
-		return int32(depth) * rfpImpScale
+		return depth * rfpImpScale
 	}
-	return int32(depth) * rfpScale
+	return depth * rfpScale
 }

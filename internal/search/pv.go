@@ -69,7 +69,7 @@ func (ss *SearchState) printPV(w io.Writer, score int32, bound tt.Flag) {
 	nps := 1000 * nodes / uint64(elapsed)
 
 	buf.WriteString("info depth ")
-	buf.WriteString(strconv.Itoa(ss.depth))
+	buf.WriteString(strconv.Itoa(int(ss.depth)))
 	buf.WriteString(" seldepth ")
 	buf.WriteString(strconv.Itoa(int(ss.selDepth)))
 	if isMateScore(score) {

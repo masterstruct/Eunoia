@@ -14,7 +14,7 @@ const (
 	lmrDivisor = 3.14
 )
 
-var lmr [lmrMaxDepth + 1][lmrMaxMoves + 1]int
+var lmr [lmrMaxDepth + 1][lmrMaxMoves + 1]int32
 
 func init() {
 	initLMRTable()
@@ -31,6 +31,6 @@ func initLMRTable() {
 	}
 }
 
-func computeLMR(depth, move int) int {
-	return int(lmrBase + math.Log(float64(depth))*math.Log(float64(move))/lmrDivisor)
+func computeLMR(depth, move int) int32 {
+	return int32(lmrBase + math.Log(float64(depth))*math.Log(float64(move))/lmrDivisor)
 }
