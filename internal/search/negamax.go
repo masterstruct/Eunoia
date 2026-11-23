@@ -265,6 +265,9 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 				if !improving {
 					lmr++
 				}
+				if inCheck {
+					lmr--
+				}
 			}
 
 			lmrDepth := min(max(newDepth-lmr, 1), newDepth)
