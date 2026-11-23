@@ -43,6 +43,8 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 		return evaluate(&pos)
 	}
 
+	depth = max(depth, 0)
+
 	// mate distance pruning
 	alpha = max(alpha, matedIn(ply))
 	beta = min(beta, mateIn(ply))
@@ -67,7 +69,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 			ttFlag = entry.Flag
 			ttScore = scoreFromTT(entry.Score, ply)
 			ttDepth = int32(entry.Depth)
-			if !isPV && uint8(ttDepth) >= uint8(depth) { // FIXME: negamax depth can be negative here
+			if !isPV && ttDepth >= depth {
 				switch ttFlag {
 				case tt.Exact:
 					return ttScore
@@ -90,9 +92,6 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 	if depth <= 0 && !inCheck {
 		return ss.qsearch(pos, ply, alpha, beta)
 	}
-
-	depth = max(depth, 0)
-
 	// static eval
 	rawEval := -INF
 	staticEval := -INF
