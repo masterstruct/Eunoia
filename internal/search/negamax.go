@@ -22,6 +22,8 @@ const (
 
 	fpBase  = 100
 	fpScale = 50
+
+	seDoubleExtMargin = 20
 )
 
 func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alpha, beta int32) int32 {
@@ -246,6 +248,10 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 
 			if score < sBeta {
 				extension = 1
+
+				if !isPV && score < sBeta-seDoubleExtMargin {
+					extension = 2
+				}
 			}
 		}
 
