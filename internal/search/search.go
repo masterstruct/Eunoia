@@ -35,7 +35,7 @@ iterativeDeepening:
 
 		// aspiration search
 		for {
-			score = ss.negamax(pos, int32(ss.depth), 0, aw.alpha, aw.beta)
+			score = ss.negamax(pos, int32(ss.depth), 0, aw.alpha, aw.beta, false)
 			if ss.ShouldStop(Hard) {
 				break iterativeDeepening
 			}

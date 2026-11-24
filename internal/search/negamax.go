@@ -24,7 +24,7 @@ const (
 	fpScale = 50
 )
 
-func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alpha, beta int32) int32 {
+func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alpha, beta int32, cutnode bool) int32 {
 	ss.pv.Clear(ply)
 	ss.selDepth = max(ss.selDepth, ply)
 
@@ -133,7 +133,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 			ss.Nodes++
 
 			ss.Keys.Push(newPos.Hash)
-			score := -ss.negamax(newPos, reducedDepth, ply+1, -beta, -beta+1)
+			score := -ss.negamax(newPos, reducedDepth, ply+1, -beta, -beta+1, !cutnode)
 			ss.Keys.Pop()
 
 			if ss.ShouldStop(Hard) {
@@ -152,7 +152,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 
 				// verification search
 				ss.nmpMinPly = ply + 3*uint16(reducedDepth)/4
-				verifScore := ss.negamax(pos, reducedDepth, ply, beta-1, beta)
+				verifScore := ss.negamax(pos, reducedDepth, ply, beta-1, beta, true)
 				ss.nmpMinPly = 0
 
 				if ss.ShouldStop(Hard) {
@@ -241,7 +241,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 			sDepth := (depth - 1) / 2
 
 			ss.stack[ply].excluded = move
-			score := ss.negamax(pos, sDepth, ply, sBeta-1, sBeta)
+			score := ss.negamax(pos, sDepth, ply, sBeta-1, sBeta, cutnode)
 			ss.stack[ply].excluded = board.NullMove
 
 			if score < sBeta {
@@ -256,7 +256,7 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 
 		// principal variation search
 		if searchedMoves == 0 {
-			score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
+			score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha, !cutnode)
 		} else {
 			// late move reductions
 			var lmr int32
@@ -265,17 +265,20 @@ func (ss *SearchState) negamax(pos board.Position, depth int32, ply uint16, alph
 				if !improving {
 					lmr++
 				}
+				if cutnode {
+					lmr++
+				}
 			}
 
 			lmrDepth := min(max(newDepth-lmr, 1), newDepth)
-			score = -ss.negamax(newPos, lmrDepth, ply+1, -alpha-1, -alpha)
+			score = -ss.negamax(newPos, lmrDepth, ply+1, -alpha-1, -alpha, true)
 
 			if lmr > 0 && score > alpha {
-				score = -ss.negamax(newPos, newDepth, ply+1, -alpha-1, -alpha)
+				score = -ss.negamax(newPos, newDepth, ply+1, -alpha-1, -alpha, !cutnode)
 			}
 
 			if isPV && score > alpha && score < beta {
-				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha)
+				score = -ss.negamax(newPos, newDepth, ply+1, -beta, -alpha, false)
 			}
 		}
 
