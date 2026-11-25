@@ -4,7 +4,7 @@
   width="250"
   alt="Eunoia logo"
   src="resources/eunoia.png">
- 
+
 <h3>Eunoia</h3>
 
 <b>UCI chess engine written in Go</b>
@@ -13,7 +13,6 @@
 Eunoia (/juːˈnɔɪ.ə/) is a Greek word meaning "beautiful thinking".
 <br>
 </div>
-
 
 ## Requirements
 
@@ -27,11 +26,13 @@ Build natively with:
 ```bash
 make
 ```
+
 Cross compile with:
 
 ```bash
 make windows
 make linux
+make dawin
 ```
 
 ## Credits
@@ -56,3 +57,4 @@ In no particular order, engines used for ideas or inspiration:
 - [Hobbes](https://github.com/kelseyde/hobbes-chess-engine)
 - [Reckless](https://github.com/codedeliveryservice/Reckless/)
 - [Potential](https://github.com/ProgramciDusunur/Potential)
+- [Icarus](https://github.com/Sp00ph/icarus)
