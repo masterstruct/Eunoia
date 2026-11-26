@@ -32,7 +32,7 @@ Cross compile with:
 ```bash
 make windows
 make linux
-make dawin
+make darwin
 ```
 
 ## Credits
