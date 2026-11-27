@@ -5,6 +5,10 @@ import (
 	"github.com/masterstruct/Eunoia/internal/history"
 )
 
+const (
+	qsFutilityMargin = 150
+)
+
 func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32) int32 {
 	ss.pv.Clear(ply)
 	ss.selDepth = max(ss.selDepth, ply)
@@ -20,26 +24,35 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	isPV := beta > alpha+1
 	inCheck := pos.InCheck()
 
-	best := -INF
+	staticEval := -INF
 	if !inCheck {
-		standPat := clampMate(evaluate(&pos) + ss.corrHist.Correction(&pos))
-		if standPat >= beta {
-			return standPat
+		staticEval = clampMate(evaluate(&pos) + ss.corrHist.Correction(&pos))
+		if staticEval >= beta {
+			return staticEval
 		}
-		best = standPat
-		alpha = max(alpha, standPat)
+		alpha = max(alpha, staticEval)
 	}
 
 	movePicker := NewMovePicker(ply, board.NullMove, !inCheck, history.ContIndices{})
 	nextMove := func() board.Move { return movePicker.Next(&pos, ss) }
 
+	futility := staticEval + qsFutilityMargin
+	bestScore := staticEval
+
 	legalMoves := 0
 	for move := nextMove(); move != board.NullMove; move = nextMove() {
 		legalMoves++
+		if !isMated(bestScore) {
+			// futility pruning
+			if futility <= alpha && !see(&pos, move, 1) {
+				bestScore = max(bestScore, futility)
+				continue
+			}
 
-		// SEE pruning
-		if !inCheck && !see(&pos, move, 0) {
-			continue
+			// SEE pruning
+			if !inCheck && !see(&pos, move, 0) {
+				continue
+			}
 		}
 
 		newPos := pos
@@ -51,8 +64,8 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 			return 0
 		}
 
-		if score > best {
-			best = score
+		if score > bestScore {
+			bestScore = score
 			if score > alpha {
 				alpha = score
 				if isPV {
@@ -68,5 +81,5 @@ func (ss *SearchState) qsearch(pos board.Position, ply uint16, alpha, beta int32
 	if inCheck && legalMoves == 0 {
 		return matedIn(ply)
 	}
-	return best
+	return bestScore
 }
